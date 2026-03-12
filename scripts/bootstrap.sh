@@ -7,7 +7,7 @@ readonly COLOR_RED='\033[1;31m'
 readonly COLOR_RESET='\033[0m'
 
 readonly DEFAULT_REPO_URL='https://github.com/drinkataco/nix-mac.git'
-readonly DEFAULT_REPO_DIR="${HOME}/code/nix-mac"
+readonly DEFAULT_REPO_DIR="${HOME}/projects/nix-mac"
 readonly DEFAULT_HOSTNAME='watts'
 
 REPO_URL="${DEFAULT_REPO_URL}"
@@ -204,7 +204,7 @@ first_switch() {
   log "Applying nix-darwin configuration for host $HOSTNAME_VALUE"
   cd "$REPO_DIR"
   nix flake update
-  nix run nix-darwin/master#darwin-rebuild -- switch --flake ".#$HOSTNAME_VALUE"
+  sudo nix run nix-darwin/master#darwin-rebuild -- switch --flake ".#$HOSTNAME_VALUE"
 }
 
 #######################################
