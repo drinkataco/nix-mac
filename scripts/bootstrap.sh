@@ -149,8 +149,8 @@ install_nix() {
     err "Nix is not installed and INSTALL_NIX is disabled"
   fi
 
-  log "Installing upstream Nix in multi-user mode"
-  sh <(curl -fsSL https://nixos.org/nix/install) --daemon
+  log "Installing upstream Nix"
+  sh <(curl -L https://nixos.org/nix/install)
 }
 
 #######################################

@@ -29,7 +29,7 @@ sudo darwin-rebuild switch --flake .#watts
 ### Resetting Nix
 
 If a machine already has a different Nix installation and you want to reset it
-onto the repo's expected upstream multi-user install, use:
+onto the repo's expected upstream Nix install, use:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/drinkataco/nix-mac/main/scripts/reset-nix.sh | bash
