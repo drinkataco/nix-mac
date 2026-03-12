@@ -1,6 +1,6 @@
 { pkgs, ... }:
 {
-  nix.enable = false;
+  nix.enable = true;
 
   nixpkgs.config.allowUnfree = true;
 
@@ -8,8 +8,6 @@
     git
     vim
   ];
-
-  services.nix-daemon.enable = true;
 
   nix.settings = {
     experimental-features = [

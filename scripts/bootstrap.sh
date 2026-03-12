@@ -43,8 +43,9 @@ Usage:
   bash bootstrap.sh [options]
 
 Description:
-  Installs Xcode Command Line Tools and Nix if needed, clones or updates this
-  repo, and applies the nix-darwin configuration for the selected host.
+  Installs Xcode Command Line Tools and upstream Nix if needed, clones or
+  updates this repo, and applies the nix-darwin configuration for the selected
+  host.
 
 Options:
   --hostname HOSTNAME   Flake host to build. Default: ${DEFAULT_HOSTNAME}
@@ -134,7 +135,7 @@ install_xcode_clt() {
 }
 
 #######################################
-# Installs Nix unless it is already present or explicitly disabled.
+# Installs upstream Nix unless it is already present or explicitly disabled.
 # Globals:
 #   INSTALL_NIX
 #######################################
@@ -148,8 +149,8 @@ install_nix() {
     err "Nix is not installed and INSTALL_NIX is disabled"
   fi
 
-  log "Installing Nix"
-  sh <(curl -fsSL https://install.determinate.systems/nix) install --determinate
+  log "Installing upstream Nix in multi-user mode"
+  sh <(curl -fsSL https://nixos.org/nix/install) --daemon
 }
 
 #######################################

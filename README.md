@@ -9,6 +9,10 @@ Nix-based macOS configuration for a MacBook Pro.
 For a fresh Mac, use the following command to install prerequisites, clone this
 repo, and run the first `nix-darwin` switch.
 
+The bootstrap script installs upstream Nix, and this repo is configured so
+`nix-darwin` manages Nix itself. The installer path follows the official macOS
+instructions from `nix.dev`.
+
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/drinkataco/nix-mac/main/scripts/bootstrap.sh | bash
@@ -20,6 +24,15 @@ After the repo is on the machine, apply changes with:
 
 ```bash
 sudo darwin-rebuild switch --flake .#watts
+```
+
+### Resetting Nix
+
+If a machine already has a different Nix installation and you want to reset it
+onto the repo's expected upstream multi-user install, use:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/drinkataco/nix-mac/main/scripts/reset-nix.sh | bash
 ```
 
 ## Structure
