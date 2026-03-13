@@ -32,7 +32,7 @@ install_xcode_clt() {
   xcode-select --install || true
 
   printf 'Finish the Apple installer window, then press Enter to continue... '
-  read -r _
+  read -r _ </dev/tty
 
   until xcode-select -p >/dev/null 2>&1; do
     printf 'Waiting for Xcode Command Line Tools installation to complete...\n'
