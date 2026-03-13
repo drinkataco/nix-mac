@@ -208,7 +208,7 @@ first_switch() {
   log "Applying nix-darwin configuration for host $HOSTNAME_VALUE"
   cd "$REPO_DIR"
   nix flake update
-  sudo env NIX_CONFIG="${NIX_CONFIG}" \
+  sudo -H env NIX_CONFIG="${NIX_CONFIG}" \
     nix run nix-darwin/master#darwin-rebuild -- switch --flake ".#$HOSTNAME_VALUE"
 }
 
