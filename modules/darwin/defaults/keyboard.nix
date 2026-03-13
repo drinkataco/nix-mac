@@ -1,6 +1,6 @@
 {
   system.defaults.NSGlobalDomain = {
     InitialKeyRepeat = 15;
-    KeyRepeat = 2;
+    KeyRepeat = 1;
   };
 }
