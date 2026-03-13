@@ -14,6 +14,9 @@ REPO_URL="${DEFAULT_REPO_URL}"
 REPO_DIR="${DEFAULT_REPO_DIR}"
 HOSTNAME_VALUE="${DEFAULT_HOSTNAME}"
 INSTALL_NIX='1'
+readonly NIX_INSTALL_CONFIG=$'experimental-features = nix-command flakes'
+
+export NIX_CONFIG="${NIX_INSTALL_CONFIG}"
 
 #######################################
 # Prints a formatted progress message.
