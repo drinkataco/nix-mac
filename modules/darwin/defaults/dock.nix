@@ -27,11 +27,6 @@
       {
         app = "/Applications/Rancher Desktop.app";
       }
-      {
-        spacer = {
-          small = false;
-        };
-      }
     ];
     persistent-others = [
       {
