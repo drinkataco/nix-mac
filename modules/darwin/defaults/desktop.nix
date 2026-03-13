@@ -1,3 +1,1 @@
-{
-  system.defaults.NSGlobalDomain = {};
-}
+{}
