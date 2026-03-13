@@ -40,7 +40,7 @@ Options:
   --repo-dir PATH       Checkout path. Default: ${DEFAULT_REPO_DIR}
   --repo-url URL        Git URL for this repository. Default: ${DEFAULT_REPO_URL}
   --no-install          Skip scripts/install.sh.
-  --no-provision        Skip scripts/provision-init.sh.
+  --no-provision        Skip scripts/provision.sh.
   -h, --help            Show this help text.
 EOF
 }
@@ -121,7 +121,7 @@ main() {
   fi
 
   if [[ "${PROVISION_NIX}" == '1' ]]; then
-    "${REPO_DIR}/scripts/provision-init.sh" \
+    "${REPO_DIR}/scripts/provision.sh" \
       --hostname "${HOSTNAME_VALUE}" \
       --repo-dir "${REPO_DIR}" \
       --repo-url "${REPO_URL}"

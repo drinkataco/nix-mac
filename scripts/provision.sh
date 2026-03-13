@@ -14,7 +14,7 @@ readonly SCRIPT_DIR
 usage() {
   cat <<EOF
 Usage:
-  bash provision-init.sh [options]
+  bash provision.sh [options]
 
 Description:
   Clones or updates this repo and applies the nix-darwin configuration.
@@ -25,6 +25,20 @@ Options:
   --repo-url URL        Git URL for this repository. Default: ${DEFAULT_REPO_URL}
   -h, --help            Show this help text.
 EOF
+}
+
+#######################################
+# Moves conflicting /etc shell init files aside before nix-darwin activation.
+#######################################
+prepare_etc_shell_files() {
+  local path
+
+  for path in /etc/bashrc /etc/zshrc /etc/bash.bashrc; do
+    if [[ -e "${path}" && ! -L "${path}" && ! -e "${path}.before-nix-darwin" ]]; then
+      log "Backing up ${path} to ${path}.before-nix-darwin"
+      sudo mv "${path}" "${path}.before-nix-darwin"
+    fi
+  done
 }
 
 #######################################
@@ -49,6 +63,7 @@ main() {
 
   load_nix
   sync_repo
+  prepare_etc_shell_files
   provision_system
 }
 

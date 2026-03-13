@@ -22,7 +22,7 @@ The bootstrap flow does this:
 
 1. install Xcode Command Line Tools if needed
 2. `install.sh`
-3. `provision-init.sh`
+3. `provision.sh`
 
 Useful variants:
 
@@ -30,7 +30,7 @@ Useful variants:
 bash bootstrap.sh --no-provision
 bash bootstrap.sh --no-install
 bash scripts/install.sh
-bash scripts/provision-init.sh --hostname watts
+bash scripts/provision.sh --hostname watts
 bash scripts/uninstall.sh
 ```
 
