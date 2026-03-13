@@ -44,7 +44,7 @@
       }
       {
         folder = {
-          arrangement = "date-added";
+          arrangement = "name";
           displayas = "folder";
           path = "/Applications";
           showas = "grid";
