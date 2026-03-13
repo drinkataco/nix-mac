@@ -5,7 +5,7 @@
   ];
 
   networking.hostName = hostname;
-  networking.computerName = "MacBook Pro";
+  networking.computerName = hostname;
   networking.localHostName = hostname;
 
   system.stateVersion = 6;
