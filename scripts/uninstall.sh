@@ -4,6 +4,7 @@ set -euo pipefail
 
 readonly COLOR_BLUE='\033[1;34m'
 readonly COLOR_RED='\033[1;31m'
+readonly COLOR_YELLOW='\033[1;33m'
 readonly COLOR_RESET='\033[0m'
 
 readonly DEFAULT_REPO_URL='https://github.com/drinkataco/nix-mac.git'
@@ -13,7 +14,8 @@ readonly DEFAULT_HOSTNAME='watts'
 REPO_URL="${DEFAULT_REPO_URL}"
 REPO_DIR="${DEFAULT_REPO_DIR}"
 HOSTNAME_VALUE="${DEFAULT_HOSTNAME}"
-INSTALL_NIX='1'
+REINSTALL_NIX='1'
+APPLY_CONFIG='1'
 readonly NIX_INSTALL_CONFIG=$'experimental-features = nix-command flakes'
 
 export NIX_CONFIG="${NIX_INSTALL_CONFIG}"
@@ -25,6 +27,15 @@ export NIX_CONFIG="${NIX_INSTALL_CONFIG}"
 #######################################
 log() {
   printf '\n%b==>%b %s\n' "${COLOR_BLUE}" "${COLOR_RESET}" "$1"
+}
+
+#######################################
+# Prints a formatted warning message.
+# Arguments:
+#   $1: Warning message to display.
+#######################################
+warn() {
+  printf '\n%bWarning:%b %s\n' "${COLOR_YELLOW}" "${COLOR_RESET}" "$1"
 }
 
 #######################################
@@ -43,32 +54,29 @@ err() {
 usage() {
   cat <<EOF
 Usage:
-  bash bootstrap.sh [options]
+  bash uninstall.sh [options]
 
 Description:
-  Installs Xcode Command Line Tools and upstream Nix if needed, clones or
-  updates this repo, and applies the nix-darwin configuration for the selected
-  host.
+  Removes an existing macOS Nix installation, reinstalls upstream Nix,
+  updates this repo, and reapplies the nix-darwin
+  configuration.
 
 Options:
   --hostname HOSTNAME   Flake host to build. Default: ${DEFAULT_HOSTNAME}
   --repo-dir PATH       Checkout path. Default: ${DEFAULT_REPO_DIR}
   --repo-url URL        Git URL for this repository. Default: ${DEFAULT_REPO_URL}
-  --no-install-nix      Skip Nix installation.
+  --no-reinstall-nix    Only remove the existing installation.
+  --no-apply-config     Reinstall Nix, but do not run nix-darwin.
   -h, --help            Show this help text.
-
-Examples:
-  bash bootstrap.sh
-  bash bootstrap.sh --hostname watts
-  bash bootstrap.sh --repo-url https://github.com/drinkataco/nix-mac.git
 EOF
 }
 
 #######################################
 # Parses command-line flags into script variables.
 # Globals:
+#   APPLY_CONFIG
 #   HOSTNAME_VALUE
-#   INSTALL_NIX
+#   REINSTALL_NIX
 #   REPO_DIR
 #   REPO_URL
 # Arguments:
@@ -92,8 +100,13 @@ parse_args() {
         REPO_URL="$2"
         shift 2
         ;;
-      --no-install-nix)
-        INSTALL_NIX='0'
+      --no-reinstall-nix)
+        REINSTALL_NIX='0'
+        APPLY_CONFIG='0'
+        shift
+        ;;
+      --no-apply-config)
+        APPLY_CONFIG='0'
         shift
         ;;
       -h|--help)
@@ -117,40 +130,58 @@ require_cmd() {
 }
 
 #######################################
-# Installs Xcode Command Line Tools if they are not already present.
+# Prompts for explicit confirmation before destructive steps.
 #######################################
-install_xcode_clt() {
-  if xcode-select -p >/dev/null 2>&1; then
-    log "Xcode Command Line Tools already installed"
-    return
-  fi
+confirm_reset() {
+  warn "This will remove the existing Nix installation from this Mac."
+  warn "That includes /etc/nix and the /nix APFS volume."
+  printf 'Type "uninstall-nix" to continue: '
 
-  log "Installing Xcode Command Line Tools"
-  xcode-select --install || true
-
-  printf 'Finish the Apple installer window, then press Enter to continue... '
-  read -r _
-
-  until xcode-select -p >/dev/null 2>&1; do
-    printf 'Waiting for Xcode Command Line Tools installation to complete...\n'
-    sleep 5
-  done
+  local response
+  read -r response
+  [[ "${response}" == "uninstall-nix" ]] || err "Confirmation failed"
 }
 
 #######################################
-# Installs upstream Nix unless it is already present or explicitly disabled.
-# Globals:
-#   INSTALL_NIX
+# Unloads the nix-daemon launch daemon if it exists.
+#######################################
+unload_nix_daemon() {
+  if [[ -f /Library/LaunchDaemons/org.nixos.nix-daemon.plist ]]; then
+    log "Unloading nix-daemon launch daemon"
+    sudo launchctl unload /Library/LaunchDaemons/org.nixos.nix-daemon.plist || true
+  fi
+}
+
+#######################################
+# Removes Nix profiles and configuration files.
+#######################################
+remove_nix_files() {
+  log "Removing Nix files"
+  sudo rm -rf \
+    /etc/nix \
+    /var/root/.nix-profile \
+    /var/root/.nix-defexpr \
+    /var/root/.nix-channels \
+    "${HOME}/.nix-profile" \
+    "${HOME}/.nix-defexpr" \
+    "${HOME}/.nix-channels"
+}
+
+#######################################
+# Deletes the /nix APFS volume if it exists.
+#######################################
+remove_nix_volume() {
+  if [[ -d /nix ]]; then
+    log "Deleting /nix APFS volume"
+    sudo diskutil apfs deleteVolume /nix || warn "Could not delete /nix automatically; a reboot may be required before retrying"
+  fi
+}
+
+#######################################
+# Installs upstream Nix.
 #######################################
 install_nix() {
-  if command -v nix >/dev/null 2>&1; then
-    log "Nix already installed"
-    return
-  fi
-
-  if [[ "$INSTALL_NIX" != "1" ]]; then
-    err "Nix is not installed and INSTALL_NIX is disabled"
-  fi
+  [[ "${REINSTALL_NIX}" == "1" ]] || return
 
   log "Installing upstream Nix"
   sh <(curl -L https://nixos.org/nix/install)
@@ -173,58 +204,58 @@ load_nix() {
 }
 
 #######################################
-# Verifies that Git is available for cloning the repo.
-#######################################
-ensure_git() {
-  require_cmd git
-}
-
-#######################################
 # Clones the repo or fast-forwards an existing checkout.
 # Globals:
 #   REPO_DIR
 #   REPO_URL
 #######################################
 sync_repo() {
-  if [[ -d "$REPO_DIR/.git" ]]; then
-    log "Updating existing repo at $REPO_DIR"
-    git -C "$REPO_DIR" fetch --all --prune
-    git -C "$REPO_DIR" pull --ff-only
+  require_cmd git
+
+  if [[ -d "${REPO_DIR}/.git" ]]; then
+    log "Updating existing repo at ${REPO_DIR}"
+    git -C "${REPO_DIR}" fetch --all --prune
+    git -C "${REPO_DIR}" pull --ff-only
     return
   fi
 
-  log "Cloning repo into $REPO_DIR"
-  mkdir -p "$(dirname "$REPO_DIR")"
-  git clone "$REPO_URL" "$REPO_DIR"
+  log "Cloning repo into ${REPO_DIR}"
+  mkdir -p "$(dirname "${REPO_DIR}")"
+  git clone "${REPO_URL}" "${REPO_DIR}"
 }
 
 #######################################
 # Applies the nix-darwin configuration for the selected host.
 # Globals:
+#   APPLY_CONFIG
 #   HOSTNAME_VALUE
 #   REPO_DIR
 #######################################
-first_switch() {
-  log "Applying nix-darwin configuration for host $HOSTNAME_VALUE"
-  cd "$REPO_DIR"
+apply_config() {
+  [[ "${APPLY_CONFIG}" == "1" ]] || return
+
+  log "Applying nix-darwin configuration for host ${HOSTNAME_VALUE}"
+  cd "${REPO_DIR}"
   nix flake update
   sudo -H env NIX_CONFIG="${NIX_CONFIG}" \
-    nix run nix-darwin/master#darwin-rebuild -- switch --flake ".#$HOSTNAME_VALUE"
+    nix run nix-darwin/master#darwin-rebuild -- switch --flake ".#${HOSTNAME_VALUE}"
 }
 
 #######################################
-# Runs the bootstrap workflow from argument parsing through first switch.
+# Runs the reset workflow from argument parsing through config apply.
 # Arguments:
 #   $@: CLI arguments passed to the script.
 #######################################
 main() {
   parse_args "$@"
-  install_xcode_clt
-  ensure_git
+  confirm_reset
+  unload_nix_daemon
+  remove_nix_files
+  remove_nix_volume
   install_nix
   load_nix
   sync_repo
-  first_switch
+  apply_config
 }
 
 main "$@"
