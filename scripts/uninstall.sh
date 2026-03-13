@@ -8,9 +8,6 @@ readonly SCRIPT_DIR
 # shellcheck disable=SC1091
 . "${SCRIPT_DIR}/_shared.sh"
 
-REINSTALL_NIX='1'
-APPLY_CONFIG='1'
-
 #######################################
 # Prints command usage and options.
 #######################################
@@ -20,57 +17,26 @@ Usage:
   bash uninstall.sh [options]
 
 Description:
-  Removes an existing macOS Nix installation, reinstalls upstream Nix,
-  updates this repo, and reapplies the nix-darwin
-  configuration.
+  Removes an existing macOS Nix installation and related installer leftovers.
 
 Options:
-  --hostname HOSTNAME   Flake host to build. Default: ${DEFAULT_HOSTNAME}
-  --repo-dir PATH       Checkout path. Default: ${DEFAULT_REPO_DIR}
-  --repo-url URL        Git URL for this repository. Default: ${DEFAULT_REPO_URL}
-  --no-reinstall-nix    Only remove the existing installation.
-  --no-apply-config     Reinstall Nix, but do not run nix-darwin.
   -h, --help            Show this help text.
 EOF
 }
 
 #######################################
-# Parses command-line flags into script variables after shared flags.
-# Globals:
-#   APPLY_CONFIG
-#   HOSTNAME_VALUE
-#   REINSTALL_NIX
+# Parses command-line flags.
 # Arguments:
 #   $@: CLI arguments passed to the script.
 #######################################
 parse_args() {
-  parse_shared_args "$@"
-  if [[ ${#SHARED_ARGS_REMAINDER[@]} -gt 0 ]]; then
-    set -- "${SHARED_ARGS_REMAINDER[@]}"
-  else
-    set --
-  fi
+  [[ $# -eq 0 ]] && return
+  [[ $# -eq 1 && ( "${1}" == "-h" || "${1}" == "--help" ) ]] && {
+    usage
+    exit 0
+  }
 
-  while [[ $# -gt 0 ]]; do
-    case "$1" in
-      --no-reinstall-nix)
-        REINSTALL_NIX='0'
-        APPLY_CONFIG='0'
-        shift
-        ;;
-      --no-apply-config)
-        APPLY_CONFIG='0'
-        shift
-        ;;
-      -h|--help)
-        usage
-        exit 0
-        ;;
-      *)
-        err "Unknown argument: $1"
-        ;;
-    esac
-  done
+  err "Unknown argument: $1"
 }
 
 #######################################
@@ -78,7 +44,7 @@ parse_args() {
 #######################################
 confirm_reset() {
   warn "This will remove the existing Nix installation from this Mac."
-  warn "That includes /etc/nix and the /nix APFS volume."
+  warn "That includes /etc/nix, /nix, and installer backup files in /etc."
   printf 'Type "uninstall-nix" to continue: '
 
   local response
@@ -103,6 +69,9 @@ remove_nix_files() {
   log "Removing Nix files"
   sudo rm -rf \
     /etc/nix \
+    /etc/bashrc.backup-before-nix \
+    /etc/zshrc.backup-before-nix \
+    /etc/bash.bashrc.backup-before-nix \
     /var/root/.nix-profile \
     /var/root/.nix-defexpr \
     /var/root/.nix-channels \
@@ -122,17 +91,7 @@ remove_nix_volume() {
 }
 
 #######################################
-# Installs upstream Nix.
-#######################################
-install_nix() {
-  [[ "${REINSTALL_NIX}" == "1" ]] || return
-
-  log "Installing upstream Nix"
-  curl -L https://nixos.org/nix/install | sh
-}
-
-#######################################
-# Runs the reset workflow from argument parsing through config apply.
+# Runs the uninstall workflow.
 # Arguments:
 #   $@: CLI arguments passed to the script.
 #######################################
@@ -142,11 +101,6 @@ main() {
   unload_nix_daemon
   remove_nix_files
   remove_nix_volume
-  install_nix
-  load_nix
-  sync_repo
-  [[ "${APPLY_CONFIG}" == "1" ]] || exit 0
-  provision_system
 }
 
 main "$@"
