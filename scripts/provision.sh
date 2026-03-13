@@ -32,12 +32,22 @@ EOF
 #######################################
 prepare_etc_shell_files() {
   local path
+  local backup_path
+  local backup_index
 
   for path in /etc/bashrc /etc/zshrc /etc/bash.bashrc; do
-    if [[ -e "${path}" && ! -L "${path}" && ! -e "${path}.before-nix-darwin" ]]; then
-      log "Backing up ${path} to ${path}.before-nix-darwin"
-      sudo mv "${path}" "${path}.before-nix-darwin"
-    fi
+    [[ -e "${path}" && ! -L "${path}" ]] || continue
+
+    backup_path="${path}.before-nix-darwin"
+    backup_index=2
+
+    while [[ -e "${backup_path}" ]]; do
+      backup_path="${path}.before-nix-darwin.${backup_index}"
+      backup_index=$((backup_index + 1))
+    done
+
+    log "Backing up ${path} to ${backup_path}"
+    sudo mv "${path}" "${backup_path}"
   done
 }
 
