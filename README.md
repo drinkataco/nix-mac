@@ -18,18 +18,20 @@ instructions from `nix.dev`.
 curl -fsSL https://raw.githubusercontent.com/drinkataco/nix-mac/main/bootstrap.sh | bash
 ```
 
-The bootstrap wrapper runs three explicit phases:
+The bootstrap flow does this:
 
-1. `prepare.sh`
+1. install Xcode Command Line Tools if needed
 2. `install.sh`
 3. `provision-init.sh`
 
-You can also run those phases individually:
+Useful variants:
 
 ```bash
-bash scripts/prepare.sh
+bash bootstrap.sh --no-provision
+bash bootstrap.sh --no-install
 bash scripts/install.sh
 bash scripts/provision-init.sh --hostname watts
+bash scripts/uninstall.sh
 ```
 
 ### Installing
@@ -43,10 +45,10 @@ sudo darwin-rebuild switch --flake .#watts
 ### Uninstalling Nix
 
 If a machine already has a different Nix installation and you want to reset it
-onto the repo's expected upstream Nix install, use:
+onto the repo's expected upstream Nix install, run:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/drinkataco/nix-mac/main/scripts/uninstall.sh | bash
+bash scripts/uninstall.sh
 ```
 
 ## Structure
