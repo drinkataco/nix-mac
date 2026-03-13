@@ -9,9 +9,11 @@
 
   outputs = { darwin, ... }: let
     mkDarwinSystem = import ./lib/mkDarwinSystem.nix;
+    username = "osh";
   in {
     darwinConfigurations.watts = mkDarwinSystem {
       inherit darwin;
+      inherit username;
       hostname = "watts";
       system = "aarch64-darwin";
     };

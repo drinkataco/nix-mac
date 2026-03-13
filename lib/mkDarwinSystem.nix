@@ -1,8 +1,8 @@
-{ darwin, hostname, system }:
+{ darwin, hostname, system, username }:
 darwin.lib.darwinSystem {
   inherit system;
   specialArgs = {
-    inherit hostname system;
+    inherit hostname system username;
   };
   modules = [
     ../hosts/${hostname}
