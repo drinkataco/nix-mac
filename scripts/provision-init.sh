@@ -34,7 +34,11 @@ EOF
 #######################################
 main() {
   parse_shared_args "$@"
-  set -- "${SHARED_ARGS_REMAINDER[@]}"
+  if [[ ${#SHARED_ARGS_REMAINDER[@]} -gt 0 ]]; then
+    set -- "${SHARED_ARGS_REMAINDER[@]}"
+  else
+    set --
+  fi
 
   if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
     usage
