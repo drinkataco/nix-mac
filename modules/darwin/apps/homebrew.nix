@@ -32,7 +32,7 @@
       "paragon-extfs"
       "protonvpn"
       "raspberry-pi-imager"
-      "rancher-desktop"
+      "rancher"
       "sequel-ace"
       "slack"
       "spotify"
