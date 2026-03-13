@@ -1,10 +1,11 @@
-{ darwin, hostname, system, username }:
+{ inputs, darwin, hostname, system, username }:
 darwin.lib.darwinSystem {
   inherit system;
   specialArgs = {
-    inherit hostname system username;
+    inherit inputs hostname system username;
   };
   modules = [
+    inputs.nix-homebrew.darwinModules.nix-homebrew
     ../hosts/${hostname}
   ];
 }
