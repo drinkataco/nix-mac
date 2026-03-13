@@ -7,9 +7,6 @@
     mru-spaces = false;
     persistent-apps = [
       {
-        app = "/System/Library/CoreServices/Finder.app";
-      }
-      {
         spacer = {
           small = false;
         };
