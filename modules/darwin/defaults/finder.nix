@@ -8,4 +8,8 @@
     ShowPathbar = true;
     ShowStatusBar = true;
   };
+
+  system.defaults.CustomUserPreferences."com.apple.finder" = {
+    ShowRecentTags = false;
+  };
 }
