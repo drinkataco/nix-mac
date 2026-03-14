@@ -33,7 +33,6 @@ set -g @copycat_prev 'g'
 unbind g
 
 # tmux-sessionx
-set -g @sessionx-bind 'S'
 set -g @sessionx-preview-enabled 'false'
 set -g @sessionx-tree-mode 'off'
 set -g @sessionx-preview-location 'right'
