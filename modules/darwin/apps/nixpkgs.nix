@@ -26,7 +26,6 @@
     ansible
     awscli2
     delta
-    duti
     fnm
     gcc
     gnupg
