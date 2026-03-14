@@ -6,6 +6,10 @@
 autoload -U +X bashcompinit && bashcompinit
 autoload -Uz compinit && compinit
 
+if [[ -r "${HOME}/.zim/modules/fzf-tab/fzf-tab.plugin.zsh" ]]; then
+  source "${HOME}/.zim/modules/fzf-tab/fzf-tab.plugin.zsh"
+fi
+
 # Kubernetes
 [[ $commands[kubectl] || $commands[k] ]] && source <(kubectl completion zsh)
 
@@ -42,6 +46,8 @@ export FZF_CTRL_R_OPTS="
 export FZF_ALT_C_OPTS="--preview 'eza -T -L 4 --group-directories-first {}'"
 
 # Completion Styles
+zstyle ':completion:*' menu no
+zstyle ':completion:*:descriptions' format '[%d]'
 zstyle ':completion:*' fzf-search-display true
 zstyle ':completion:*:git-checkout:*' sort false
 zstyle ':fzf-tab:complete:git-checkout:*' fzf-preview '
