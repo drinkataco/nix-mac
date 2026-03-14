@@ -1,7 +1,4 @@
 {
-  ...
-}:
-{
   imports = [
     ./dotfiles.nix
     ./ssh.nix

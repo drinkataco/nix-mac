@@ -13,12 +13,13 @@ darwin.lib.darwinSystem {
       home-manager.extraSpecialArgs = {
         inherit inputs hostname system username;
       };
-      home-manager.users.${username} = {
-        home.username = username;
-        home.homeDirectory = "/Users/${username}";
+      home-manager.users.${username} = { lib, ... }: {
         imports = [
           ../modules/home
         ];
+        # Home Manager on Darwin can otherwise leave homeDirectory as null.
+        home.username = lib.mkForce username;
+        home.homeDirectory = lib.mkForce "/Users/${username}";
       };
     }
     ../hosts/${hostname}
