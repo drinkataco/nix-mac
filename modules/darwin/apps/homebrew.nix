@@ -42,14 +42,14 @@
       # Desktop utilities
       "alacritty"
       "amethyst"
-      "flux"
+      "flux-app"
       "keepassxc"
       "little-snitch"
       "paragon-extfs"
       "protonvpn"
 
       # Media and hardware tools
-      "handbrake"
+      "handbrake-app"
       "raspberry-pi-imager"
       "steam"
       "utm"
