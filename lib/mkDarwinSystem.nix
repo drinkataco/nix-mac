@@ -14,6 +14,8 @@ darwin.lib.darwinSystem {
         inherit inputs hostname system username;
       };
       home-manager.users.${username} = {
+        home.username = username;
+        home.homeDirectory = "/Users/${username}";
         imports = [
           ../modules/home
         ];
