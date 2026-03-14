@@ -18,6 +18,7 @@ style = "Bold"
 blur = true
 opacity = 0.95
 option_as_alt = "Both"
+padding = { x = 3, y = 3 }
 
 [mouse]
 hide_when_typing = true
