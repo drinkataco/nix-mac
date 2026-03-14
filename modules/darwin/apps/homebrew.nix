@@ -17,30 +17,48 @@
       upgrade = false;
     };
 
-    # Keep Dock-pinned GUI apps in Homebrew so they have stable /Applications paths.
+    # Keep GUI apps in Homebrew so they have stable /Applications paths.
     casks = [
-      "alacritty"
-      "amethyst"
-      "chatgpt"
-      "flux"
+      # Fonts
+      "font-fira-code-nerd-font"
+      "font-hack-nerd-font"
+      "font-inconsolata-go-nerd-font"
+      "font-inconsolata-nerd-font"
+      "font-jetbrains-mono-nerd-font"
+      "font-meslo-lg-nerd-font"
+      "font-symbols-only-nerd-font"
+
+      # Browsers
       "firefox"
       "google-chrome"
+
+      # Productivity and communication
+      "chatgpt"
       "google-drive"
-      "handbrake"
-      "keepassxc"
-      "little-snitch"
       "notion"
-      "paragon-extfs"
-      "protonvpn"
-      "raspberry-pi-imager"
-      "rancher"
-      "sequel-ace"
       "slack"
       "spotify"
+
+      # Desktop utilities
+      "alacritty"
+      "amethyst"
+      "flux"
+      "keepassxc"
+      "little-snitch"
+      "paragon-extfs"
+      "protonvpn"
+
+      # Media and hardware tools
+      "handbrake"
+      "raspberry-pi-imager"
       "steam"
-      "sublime-text"
       "utm"
       "vlc"
+
+      # Developer tools
+      "rancher"
+      "sequel-ace"
+      "sublime-text"
     ];
   };
 }
