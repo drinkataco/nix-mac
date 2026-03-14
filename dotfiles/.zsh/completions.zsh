@@ -28,11 +28,6 @@ if command -v nerdctl > /dev/null 2>&1; then
   unset _nc_comp
 fi
 
-# OpenTofu
-if command -v tofu > /dev/null 2>&1; then
-  source <(tofu completion zsh)
-fi
-
 # FZF
 export FZF_DEFAULT_COMMAND='fd --type f --strip-cwd-prefix --hidden --follow --exclude .git --no-ignore'
 export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
