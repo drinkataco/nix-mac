@@ -16,7 +16,6 @@
     zsh
     zsh-completions
     zsh-syntax-highlighting
-    zimfw
 
     # Core Unix tools
     coreutils

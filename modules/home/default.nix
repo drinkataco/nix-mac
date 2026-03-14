@@ -3,7 +3,6 @@
   imports = [
     ./dotfiles.nix
     ./ssh.nix
-    ./zim.nix
   ];
 
   home.stateVersion = "25.05";
