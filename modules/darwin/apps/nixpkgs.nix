@@ -5,6 +5,9 @@
     bash
     bat
     cmatrix
+    eza
+    fd
+    fzf
     neovim
     tmux
     tree
@@ -13,9 +16,11 @@
     zsh
     zsh-completions
     zsh-syntax-highlighting
+    zimfw
 
     # Core Unix tools
     coreutils
+    findutils
     gawk
     gettext
     gnugrep

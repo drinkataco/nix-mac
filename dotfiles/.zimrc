@@ -1,0 +1,26 @@
+# theme
+zmodule git-info
+zmodule prompt-pwd
+zmodule gitster
+
+# Environment
+zmodule environment
+zmodule input
+zmodule utility
+
+# ohmyzsh
+zmodule ohmyzsh/ohmyzsh
+
+# TODO: Debug all of these. nvm doesn't work for example.
+# zmodule ohmyzsh/ohmyzsh --source themes/lukerandall.zsh-theme
+zmodule ohmyzsh/ohmyzsh --root plugins/vim-interaction
+zmodule ohmyzsh/ohmyzsh --root plugins/colored-man-pages
+zmodule ohmyzsh/ohmyzsh --root plugins/fzf
+zmodule ohmyzsh/ohmyzsh --root plugins/macos
+zmodule ohmyzsh/ohmyzsh --root plugins/git
+
+# plugins
+zmodule Aloxaf/fzf-tab
+zmodule zsh-users/zsh-completions
+zmodule zsh-users/zsh-syntax-highlighting
+#zmodule jeffreytse/zsh-vi-mode
