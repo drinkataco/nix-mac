@@ -1,3 +1,4 @@
+{ config, ... }:
 {
   home.activation.fixSshPermissions =
     config.lib.hm.dag.entryAfter [ "writeBoundary" ] ''
