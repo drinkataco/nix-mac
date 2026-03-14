@@ -1,0 +1,16 @@
+gui:
+  mouseEvents: true
+  nerdFontsVersion: "3"
+git:
+  paging:
+    colorArg: 'always'
+    pager: 'delta --dark --paging=never'
+  # branchLogCmd: 'glol {{branchName}} --'
+keybinding:
+  universal:
+    quit: '<C-c>'
+    quit-alt1: '<C-q>'
+    nextMatch: 'g'
+    prevMatch: 't'
+    redo: '<C-r>'
+    undo: 'u'
