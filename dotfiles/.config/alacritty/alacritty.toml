@@ -16,7 +16,6 @@ style = "Bold"
 
 [window]
 blur = true
-decorations = "Buttonless"
 opacity = 0.95
 option_as_alt = "Both"
 padding = { x = 6, y = 6 }
