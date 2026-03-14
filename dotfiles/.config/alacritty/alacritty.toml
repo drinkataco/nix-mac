@@ -18,7 +18,6 @@ style = "Bold"
 blur = true
 opacity = 0.95
 option_as_alt = "Both"
-padding = { x = 6, y = 6 }
 
 [mouse]
 hide_when_typing = true
@@ -29,6 +28,7 @@ save_to_clipboard = true
 [cursor]
 style = { shape = "Beam", blinking = "Off" }
 
+# Tomorrow Night palette, moved from the old shell-driven base16 setup.
 [colors.primary]
 background = "#1d1f21"
 foreground = "#c5c8c6"
