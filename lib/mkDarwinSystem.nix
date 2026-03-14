@@ -13,7 +13,11 @@ darwin.lib.darwinSystem {
       home-manager.extraSpecialArgs = {
         inherit inputs hostname system username;
       };
-      home-manager.users.${username} = import ../modules/home;
+      home-manager.users.${username} = {
+        imports = [
+          ../modules/home
+        ];
+      };
     }
     ../hosts/${hostname}
   ];
