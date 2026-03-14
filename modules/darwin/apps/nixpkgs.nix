@@ -32,6 +32,7 @@
     go
     jq
     k9s
+    kubectl
     lazygit
     nmap
     opentofu
