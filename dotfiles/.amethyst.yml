@@ -1,0 +1,31 @@
+layouts:
+  - 'tall'
+  - 'fullscreen'
+  - 'two-pane'
+  - 'column'
+
+mod1:
+  - option
+  - shift
+
+mod2:
+  - option
+  - shift
+  - control
+
+# Allow windows to float
+floating: []
+
+floating-is-blacklist: false
+
+# Mouse stuff
+mouse-resizes-windows: true
+mouse-swaps-windows: true
+mouse-follows-focus: true
+focus-follows-mouse: false
+
+# Layout
+enables-layout-hud: true
+
+# Windows
+restore-layouts-on-launch: false
