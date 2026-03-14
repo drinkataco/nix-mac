@@ -1,0 +1,14 @@
+{
+  "kubernetes": {
+    "enabled": true,
+    "k3s": {
+      "extraArgs": [
+        "--flannel-backend=none",
+        "--disable-network-policy",
+        "--disable=kube-proxy",
+        "--disable=servicelb",
+        "--disable=traefik"
+      ]
+    }
+  }
+}
