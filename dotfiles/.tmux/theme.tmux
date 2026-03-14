@@ -29,28 +29,28 @@ set -g mode-style bg=red,fg=default
 # ==============================================
 set-option -g status-position top
 
-set -g status-bg black
+set -g status-bg "#1d1f21"
 set -g status-fg cyan
 
 #
 # LEFT
 #
-set -g status-left-style bg=black,fg=green
+set -g status-left-style bg="#1d1f21",fg=green
 set -g status-left-length 40
-set -g status-left "#[fg=black,bg=green]  #S #[fg=green,bg=#3a3a3a]#[fg=yellow,bg=#3a3a3a] #I #[fg=cyan]#P #[fg=#3a3a3a,bg=black]"
+set -g status-left "#[fg=black,bg=green]  #S #[fg=green,bg=#3a3a3a]#[fg=yellow,bg=#3a3a3a] #I #[fg=cyan]#P #[fg=#3a3a3a,bg=#1d1f21]"
 
 #
 # WINDOWS
 #
 set -g window-status-format " #I:#W#F "
-set -g window-status-current-format "#[fg=black,bg=#3a3a3a]#[fg=green] #I:#W#F #[fg=#3a3a3a,bg=black]"
+set -g window-status-current-format "#[fg=black,bg=#3a3a3a]#[fg=green] #I:#W#F #[fg=#3a3a3a,bg=#1d1f21]"
 set -g window-status-separator ""
 set -g status-justify centre
-set-window-option -g window-status-current-style bg=black
+set-window-option -g window-status-current-style bg="#1d1f21"
 
 #
 # RIGHT
 #
-set -g status-right-style bg=black,fg=cyan
+set -g status-right-style bg="#1d1f21",fg=cyan
 set -g status-right-length 80
-set -g status-right "#[fg=#3a3a3a,bg=black]#[fg=cyan,bg=#3a3a3a] ⚡︎#{battery_percentage} #[fg=green,bg=#3a3a3a]#[fg=black,bg=green] %H:%M:%S #[fg=#3a3a3a]%d-%b-%y "
+set -g status-right "#[fg=#3a3a3a,bg=#1d1f21]#[fg=cyan,bg=#3a3a3a] ⚡︎#{battery_percentage} #[fg=green,bg=#3a3a3a]#[fg=black,bg=green] %H:%M:%S #[fg=#3a3a3a]%d-%b-%y "
