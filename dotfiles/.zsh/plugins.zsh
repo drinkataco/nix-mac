@@ -6,17 +6,7 @@
 
 # ZIMFW
 ZIM_HOME=~/.zim
-ZIMFW_SCRIPT=''
-for candidate in \
-  "${ZIM_NIX_PATH}/share/zimfw.zsh" \
-  "${ZIM_NIX_PATH}/share/zimfw/zimfw.zsh" \
-  "${ZIM_HOME}/zimfw.zsh"
-do
-  if [[ -r "${candidate}" ]]; then
-    ZIMFW_SCRIPT="${candidate}"
-    break
-  fi
-done
+ZIMFW_SCRIPT="${ZIM_HOME}/zimfw.zsh"
 # Install missing modules and update ${ZIM_HOME}/init.zsh if missing or outdated.
 if [[ -n "${ZIMFW_SCRIPT}" && ! ${ZIM_HOME}/init.zsh -nt ${ZIM_CONFIG_FILE:-${ZDOTDIR:-${HOME}}/.zimrc} ]]; then
   source "${ZIMFW_SCRIPT}" init
