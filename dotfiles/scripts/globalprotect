@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+#
+# This is require by SiriusXM, but creates a daemon that will always keep the service running in the background
+# I don't like that.
+# Here's a script to allow this launcher to be enabled / disabled
+#
+# Usage:
+#   globalprotect disable # stop + disable
+#   globalprotect enable # re-enable
+
+set -euo pipefail
+
+USER_ID=$(id -u)
+
+case "${1:-}" in
+  disable)
+    echo -e "\033[34mDisabling GlobalProtect services...\033[0m"
+    launchctl bootout gui/"${USER_ID}" /Library/LaunchAgents/com.paloaltonetworks.gp.pangpa.plist
+    launchctl disable gui/"${USER_ID}"/com.paloaltonetworks.gp.pangpa
+    echo -e "\033[32mGlobalProtect disabled."
+    ;;
+  enable)
+    echo -e "\033[34mEnabling GlobalProtect services...\033[0m"
+    launchctl enable gui/"${USER_ID}"/com.paloaltonetworks.gp.pangpa
+    launchctl bootstrap gui/"${USER_ID}" /Library/LaunchAgents/com.paloaltonetworks.gp.pangpa.plist
+    launchctl kickstart -k gui/"${USER_ID}"/com.paloaltonetworks.gp.pangpa
+    echo -e "\033[32mGlobalProtect enabled.\033[0m"
+    ;;
+  *)
+    echo "Usage: $0 {enable|disable}"
+    exit 1
+    ;;
+esac
