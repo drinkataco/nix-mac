@@ -4,9 +4,9 @@ A nix-based macOS setup for my machines.
 
 This repo uses:
 
-- [`nix-darwin`](https://github.com/nix-darwin/nix-darwin) for macOS system configuration
-- [`nix-homebrew`](https://github.com/zhaofengli/nix-homebrew) for Homebrew installation
-- [`Home Manager`](https://github.com/nix-community/home-manager) for symlinking file-based dotfiles from this repo into `$HOME`
+- [nix-darwin](https://github.com/nix-darwin/nix-darwin) for macOS system configuration
+- [nix-homebrew](https://github.com/zhaofengli/nix-homebrew) for Homebrew installation
+- [Home Manager](https://github.com/nix-community/home-manager) for symlinking file-based dotfiles from this repo into `$HOME`
 
 ## Getting started
 
@@ -16,7 +16,7 @@ For a fresh Mac, use this to prepare the machine, install Nix, clone this repo, 
 
 The bootstrap script installs upstream Nix, and this repo is set up so `nix-darwin` manages Nix itself.
 
-The installer path follows the official macOS instructions from [`nix.dev`](https://nix.dev/install-nix.html).
+The installer path follows the official macOS instructions from [nix.dev](https://nix.dev/install-nix.html).
 
 ```bash
 curl -fsSL
