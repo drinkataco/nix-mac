@@ -32,12 +32,13 @@ fi
 # CONFIG                 #
 ##########################
 
-# ZVM_LAZY_KEYBINDINGS=false
-# ZVM_INIT_MODE=sourcing
-# Disable the cursor style feature
-ZVM_CURSOR_STYLE_ENABLED=false
-
-function my_init() {
+function init_fzf() {
   source <(fzf --zsh)
 }
-my_init
+
+# Let zsh-vi-mode finish initialising before fzf installs its widgets.
+typeset -ga zvm_after_init_commands
+zvm_after_init_commands+=(init_fzf)
+
+# Disable the cursor style feature.
+ZVM_CURSOR_STYLE_ENABLED=false
