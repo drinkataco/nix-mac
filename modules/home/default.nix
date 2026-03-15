@@ -2,6 +2,7 @@
 {
   imports = [
     ./dotfiles.nix
+    ./gpg.nix
     ./ssh.nix
     ./tmux.nix
   ];
