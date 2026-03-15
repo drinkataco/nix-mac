@@ -29,10 +29,8 @@ set -g @continuum-restore 'on'
 set -g @copycat_next 't'
 set -g @copycat_prev 'g'
 
-# tmux-sessionist - unbind some keys
-unbind g
-
 # tmux-sessionx
+set -g @sessionx-bind 'O'
 set -g @sessionx-preview-enabled 'false'
 set -g @sessionx-tree-mode 'off'
 set -g @sessionx-preview-location 'right'
