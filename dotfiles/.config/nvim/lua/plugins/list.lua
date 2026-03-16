@@ -5,6 +5,7 @@ return {
   { "tpope/vim-fugitive" },
   { "tpope/vim-rhubarb" },
   { "christoomey/vim-tmux-navigator" },
+  { "tpope/vim-obsession" },
   { "tpope/vim-vinegar" },
   { "editorconfig/editorconfig-vim" },
 
