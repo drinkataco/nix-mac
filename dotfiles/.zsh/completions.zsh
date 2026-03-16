@@ -46,7 +46,7 @@ export FZF_CTRL_R_OPTS="
 export FZF_ALT_C_OPTS="--preview 'eza -T -L 4 --group-directories-first {}'"
 
 # Completion Styles
-zstyle ':completion:*' menu no
+zstyle ':completion:*' menu select
 zstyle ':completion:*:descriptions' format '[%d]'
 zstyle ':completion:*' fzf-search-display true
 zstyle ':completion:*:git-checkout:*' sort false
