@@ -22,6 +22,7 @@ return {
   -- Language support
   {
     "nvim-treesitter/nvim-treesitter",
+    lazy = false,
     build = ":TSUpdate",
     config = config.treesitter,
   },

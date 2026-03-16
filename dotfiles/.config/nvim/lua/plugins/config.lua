@@ -2,38 +2,43 @@ local M = {}
 
 M.treesitter = function()
   -- Docs: https://github.com/nvim-treesitter/nvim-treesitter
-  -- Treesitter carries most of the language-aware editing weight for config-heavy repos
-  require("nvim-treesitter.configs").setup({
-    ensure_installed = {
-      "bash",
-      "comment",
-      "diff",
-      "dockerfile",
-      "git_config",
-      "gitcommit",
-      "gitignore",
-      "go",
-      "gomod",
-      "gosum",
-      "helm",
-      "hcl",
-      "json",
-      "lua",
-      "markdown",
-      "markdown_inline",
-      "regex",
-      "toml",
-      "vim",
-      "vimdoc",
-      "yaml",
-    },
-    highlight = { enable = true },
-    indent = { enable = true },
+  -- Treesitter carries most of the language-aware editing weight for config-heavy repos.
+  local languages = {
+    "bash",
+    "comment",
+    "diff",
+    "dockerfile",
+    "git_config",
+    "gitcommit",
+    "gitignore",
+    "go",
+    "gomod",
+    "gosum",
+    "helm",
+    "hcl",
+    "json",
+    "lua",
+    "markdown",
+    "markdown_inline",
+    "regex",
+    "toml",
+    "vim",
+    "vimdoc",
+    "yaml",
+  }
+
+  require("nvim-treesitter").install(languages)
+
+  vim.api.nvim_create_autocmd("FileType", {
+    group = vim.api.nvim_create_augroup("settings_treesitter", { clear = true }),
+    pattern = languages,
+    callback = function()
+      vim.treesitter.start()
+    end,
   })
 end
 
 M.lsp = function()
-  local lspconfig = require("lspconfig")
   local capabilities = vim.lsp.protocol.make_client_capabilities()
   local map = vim.keymap.set
   local on_attach = function(_, bufnr)
@@ -53,13 +58,13 @@ M.lsp = function()
   --   https://github.com/neovim/nvim-lspconfig
   --   https://github.com/b0o/SchemaStore.nvim
   -- Bash is still worth wiring through LSP for scripts, shell glue, and completions
-  lspconfig.bashls.setup({
+  vim.lsp.config("bashls", {
     capabilities = capabilities,
     on_attach = on_attach,
   })
 
   -- YAML LSP plus SchemaStore is the main payoff here for Kubernetes and related config.
-  lspconfig.yamlls.setup({
+  vim.lsp.config("yamlls", {
     capabilities = capabilities,
     on_attach = on_attach,
     settings = {
@@ -78,6 +83,9 @@ M.lsp = function()
       },
     },
   })
+
+  vim.lsp.enable("bashls")
+  vim.lsp.enable("yamlls")
 end
 
 M.conform = function()
