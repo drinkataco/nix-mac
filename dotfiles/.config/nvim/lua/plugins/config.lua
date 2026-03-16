@@ -113,6 +113,20 @@ M.indent_blankline = function()
   })
 end
 
+M.bufferline = function()
+  -- Docs: https://github.com/akinsho/bufferline.nvim
+  -- Use tabs mode so the top line reflects actual tab pages, with file icons from nvim-web-devicons.
+  require("bufferline").setup({
+    options = {
+      mode = "tabs",
+      separator_style = "thin",
+      show_close_icon = false,
+      show_buffer_close_icons = false,
+      always_show_bufferline = true,
+    },
+  })
+end
+
 M.lazy = {
   install = {
     colorscheme = { "default" },

@@ -14,7 +14,16 @@ return {
   { "junegunn/fzf.vim" },
 
   -- Syntax and visual structure
-  { "folke/tokyonight.nvim" },
+  { "thesimonho/kanagawa-paper.nvim" },
+  { "nvim-tree/nvim-web-devicons" },
+  {
+    "akinsho/bufferline.nvim",
+    version = "*",
+    dependencies = {
+      "nvim-tree/nvim-web-devicons",
+    },
+    config = config.bufferline,
+  },
   {
     "lukas-reineke/indent-blankline.nvim",
     main = "ibl",

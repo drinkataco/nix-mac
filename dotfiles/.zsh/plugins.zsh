@@ -33,7 +33,8 @@ fi
 ##########################
 
 function init_fzf() {
-  source <(fzf --zsh)
+  # Load fzf keybindings but skip its completion script so Tab remains available for fzf-tab.
+  source <(fzf --zsh | sed '/^### completion.zsh ###/,$d')
 }
 
 # Let zsh-vi-mode finish initialising before fzf installs its widgets.
