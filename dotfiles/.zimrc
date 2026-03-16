@@ -12,7 +12,6 @@ zmodule utility
 zmodule ohmyzsh/ohmyzsh
 zmodule ohmyzsh/ohmyzsh --root plugins/vim-interaction
 zmodule ohmyzsh/ohmyzsh --root plugins/colored-man-pages
-zmodule ohmyzsh/ohmyzsh --root plugins/fzf
 zmodule ohmyzsh/ohmyzsh --root plugins/macos
 zmodule ohmyzsh/ohmyzsh --root plugins/git
 
