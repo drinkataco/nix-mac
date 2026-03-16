@@ -17,6 +17,7 @@ zmodule ohmyzsh/ohmyzsh --root plugins/macos
 zmodule ohmyzsh/ohmyzsh --root plugins/git
 
 # plugins
+zmodule Aloxaf/fzf-tab
 zmodule zsh-users/zsh-completions
 zmodule zsh-users/zsh-syntax-highlighting
 zmodule jeffreytse/zsh-vi-mode
