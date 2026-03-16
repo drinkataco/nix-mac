@@ -9,6 +9,7 @@
     fd
     fzf
     neovim
+    tree-sitter
     tmux
     tree
     watch
