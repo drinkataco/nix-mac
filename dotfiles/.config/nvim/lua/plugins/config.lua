@@ -22,6 +22,7 @@ M.treesitter = function()
     "markdown_inline",
     "regex",
     "toml",
+    "tmux",
     "vim",
     "vimdoc",
     "yaml",

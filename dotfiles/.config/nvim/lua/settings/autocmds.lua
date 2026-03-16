@@ -32,3 +32,12 @@ api.nvim_create_autocmd("CmdlineLeave", {
   pattern = { "/", "?" },
   command = "set nohlsearch",
 })
+
+local tmux = api.nvim_create_augroup("settings_tmux_filetype", { clear = true })
+api.nvim_create_autocmd({ "BufRead", "BufNewFile" }, {
+  group = tmux,
+  pattern = { ".tmux.conf", "*.tmux", "tmux.conf" },
+  callback = function()
+    vim.bo.filetype = "tmux"
+  end,
+})
