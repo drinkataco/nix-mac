@@ -13,6 +13,7 @@ return {
   { "junegunn/fzf.vim" },
 
   -- Syntax and visual structure
+  { "thesimonho/kanagawa-paper.nvim" },
   {
     "lukas-reineke/indent-blankline.nvim",
     main = "ibl",

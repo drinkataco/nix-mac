@@ -1,3 +1,6 @@
+-- Use an explicit Neovim-native colourscheme instead of deriving one from shell state.
+vim.cmd.colorscheme("kanagawa-paper")
+
 -- Highlight the current line to make the cursor easier to track
 vim.opt.cursorline = true
 
