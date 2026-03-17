@@ -17,6 +17,8 @@ opt.autoindent = true
 -- Interface
 opt.number = true
 opt.numberwidth = 2
+opt.mouse = "a"
+opt.mousemoveevent = true
 opt.signcolumn = "yes"
 opt.splitbelow = true
 opt.splitright = true

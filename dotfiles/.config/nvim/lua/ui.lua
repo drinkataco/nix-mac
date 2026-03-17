@@ -1,6 +1,3 @@
--- Use an explicit Neovim-native colourscheme instead of deriving one from shell state.
-vim.cmd.colorscheme("tokyonight")
-
 local function darken(hex, amount)
   local value = hex and hex:match("^#(%x%x)(%x%x)(%x%x)$")
   if not value then
@@ -37,6 +34,10 @@ vim.api.nvim_set_hl(0, "Error", {
 
 local normal = vim.api.nvim_get_hl(0, { name = "Normal", link = false })
 local cursorline_bg = normal.bg and string.format("#%06x", normal.bg) or "#1a1b26"
+local terminal_bg = "#1d1f21"
+local normal_fg = normal.fg and string.format("#%06x", normal.fg) or "#c0caf5"
+local comment = vim.api.nvim_get_hl(0, { name = "Comment", link = false })
+local comment_fg = comment.fg and string.format("#%06x", comment.fg) or normal_fg
 
 -- Derive the current-line highlight from the active colourscheme so it stays visually coherent.
 vim.api.nvim_set_hl(0, "CursorLine", {
@@ -46,4 +47,44 @@ vim.api.nvim_set_hl(0, "CursorLine", {
 -- Give the current line number a little more emphasis than surrounding numbers
 vim.api.nvim_set_hl(0, "CursorLineNr", {
   bold = true,
+})
+
+vim.api.nvim_set_hl(0, "BufferLineFill", {
+  bg = terminal_bg,
+})
+
+vim.api.nvim_set_hl(0, "BufferLineBackground", {
+  fg = comment_fg,
+  bg = terminal_bg,
+})
+
+vim.api.nvim_set_hl(0, "BufferLineBufferVisible", {
+  fg = comment_fg,
+  bg = terminal_bg,
+})
+
+vim.api.nvim_set_hl(0, "BufferLineTab", {
+  fg = comment_fg,
+  bg = terminal_bg,
+})
+
+vim.api.nvim_set_hl(0, "BufferLineTabSelected", {
+  fg = normal_fg,
+  bg = terminal_bg,
+  bold = true,
+})
+
+vim.api.nvim_set_hl(0, "BufferLineSeparator", {
+  fg = terminal_bg,
+  bg = terminal_bg,
+})
+
+vim.api.nvim_set_hl(0, "BufferLineSeparatorVisible", {
+  fg = terminal_bg,
+  bg = terminal_bg,
+})
+
+vim.api.nvim_set_hl(0, "BufferLineSeparatorSelected", {
+  fg = terminal_bg,
+  bg = terminal_bg,
 })

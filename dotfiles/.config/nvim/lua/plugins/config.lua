@@ -34,7 +34,10 @@ M.treesitter = function()
     group = vim.api.nvim_create_augroup("settings_treesitter", { clear = true }),
     pattern = languages,
     callback = function()
-      vim.treesitter.start()
+      local ok = pcall(vim.treesitter.start)
+      if not ok then
+        return
+      end
     end,
   })
 end
@@ -115,14 +118,15 @@ end
 
 M.bufferline = function()
   -- Docs: https://github.com/akinsho/bufferline.nvim
-  -- Use tabs mode so the top line reflects actual tab pages, with file icons from nvim-web-devicons.
   require("bufferline").setup({
     options = {
+      diagnostics = "nvim_lsp",
       mode = "tabs",
-      separator_style = "thin",
-      show_close_icon = false,
-      show_buffer_close_icons = false,
-      always_show_bufferline = true,
+      hover = {
+        enabled = true,
+        delay = 50,
+        reveal = { "close" },
+      },
     },
   })
 end

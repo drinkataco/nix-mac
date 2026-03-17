@@ -14,7 +14,16 @@ return {
   { "junegunn/fzf.vim" },
 
   -- Syntax and visual structure
-  { "thesimonho/kanagawa-paper.nvim" },
+  {
+    "folke/tokyonight.nvim",
+    lazy = false,
+    priority = 1000,
+    opts = {},
+    config = function(_, opts)
+      require("tokyonight").setup(opts)
+      vim.cmd.colorscheme("tokyonight")
+    end,
+  },
   { "nvim-tree/nvim-web-devicons" },
   {
     "akinsho/bufferline.nvim",
