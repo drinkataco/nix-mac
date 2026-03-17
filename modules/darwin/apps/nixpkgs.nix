@@ -1,4 +1,7 @@
 { pkgs, ... }:
+let
+  scarlettMixControl = pkgs.callPackage ./packages/scarlett-mixcontrol.nix { };
+in
 {
   environment.systemPackages = with pkgs; [
     # Shell and terminal
@@ -54,6 +57,7 @@
 
     # Media and data tools
     mkvtoolnix
+    scarlettMixControl
     xan
   ];
 }
