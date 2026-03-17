@@ -7,6 +7,8 @@ BREW_PREFIX='/opt/homebrew'
 
 # Default
 PATH="$HOME/scripts:$PATH"
+PNPM_HOME="$HOME/.local/share/pnpm"
+PATH="$PNPM_HOME:$PATH"
 
 #
 # Brew Binaries

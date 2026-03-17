@@ -43,6 +43,7 @@
     opentofu
     openvpn
     pinentry_mac
+    pnpm
     shellcheck
     shfmt
     silver-searcher
