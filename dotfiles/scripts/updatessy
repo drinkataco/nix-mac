@@ -1,0 +1,265 @@
+#!/usr/bin/env bash
+#########################################
+# Check for updates across package managers and optionally apply them
+#
+# Supported managers:
+#   - Homebrew
+#   - pnpm (global packages)
+#   - nix / nix-darwin flake inputs
+#
+# Usage:
+#   updatessy --all
+#   updatessy --brew --pnpm
+#   updatessy --nix --approve
+#########################################
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+YES_NO="${SCRIPT_DIR}/yes_no"
+REPO_ROOT="${HOME}/projects/nix-mac"
+
+RUN_BREW=false
+RUN_NIX=false
+RUN_PNPM=false
+APPROVE_ALL=false
+
+#########################################
+# Print script usage help
+#########################################
+usage() {
+  cat <<'EOF'
+Usage: updatessy [--all] [--brew] [--pnpm] [--nix] [--approve]
+
+Checks for updates and applies them per package unless --approve is set.
+
+Options:
+  --all       Check all supported managers (default)
+  --brew      Check Homebrew formulae and casks
+  --pnpm      Check global pnpm packages
+  --nix       Check flake input updates and rebuild nix-darwin
+  --approve   Skip prompts and approve every update
+  --help      Show this help
+EOF
+}
+
+#########################################
+# Prompt for approval unless --approve has been set globally
+#
+# Globals:
+#   APPROVE_ALL
+#   YES_NO
+# Arguments:
+#   1 - Prompt text
+# Returns:
+#   0 if approved, 1 if declined
+#########################################
+prompt_or_approve() {
+  local question="$1"
+
+  if [[ "${APPROVE_ALL}" == true ]]; then
+    return 0
+  fi
+
+  "${YES_NO}" "${question}" "n"
+}
+
+#########################################
+# Ensure the nix command is available in the current shell
+# Returns:
+#   0 if nix is available, 1 otherwise
+#########################################
+ensure_nix() {
+  if command -v nix >/dev/null 2>&1; then
+    return 0
+  fi
+
+  if [[ -r /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh ]]; then
+    # shellcheck disable=SC1091
+    . /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
+  fi
+
+  command -v nix >/dev/null 2>&1
+}
+
+#########################################
+# Check and optionally update Homebrew formulae and casks.
+# Returns:
+#   0 on success
+#########################################
+check_brew() {
+  if ! command -v brew >/dev/null 2>&1; then
+    echo 'brew not found; skipping Homebrew updates'
+    return 0
+  fi
+
+  echo 'Checking Homebrew formula updates...'
+  local formula
+  while IFS= read -r formula; do
+    [[ -z "${formula}" ]] && continue
+    if prompt_or_approve "Upgrade brew formula ${formula}? [y/N] "; then
+      brew upgrade "${formula}"
+    fi
+  done < <(brew outdated --formula)
+
+  echo 'Checking Homebrew cask updates...'
+  local cask
+  while IFS= read -r cask; do
+    [[ -z "${cask}" ]] && continue
+    if prompt_or_approve "Upgrade brew cask ${cask}? [y/N] "; then
+      brew upgrade --cask "${cask}"
+    fi
+  done < <(brew outdated --cask --greedy)
+}
+
+#########################################
+# Check and optionally update global pnpm packages
+# Returns:
+#   0 on success
+#########################################
+check_pnpm() {
+  if ! command -v pnpm >/dev/null 2>&1; then
+    echo 'pnpm not found; skipping pnpm updates'
+    return 0
+  fi
+
+  echo 'Checking global pnpm package updates...'
+  local outdated_json
+  outdated_json="$(pnpm outdated -g --format json 2>/dev/null || true)"
+
+  if [[ -z "${outdated_json}" || "${outdated_json}" == "[]" || "${outdated_json}" == "{}" ]]; then
+    echo 'No global pnpm updates found'
+    return 0
+  fi
+
+  local package
+  while IFS= read -r package; do
+    [[ -z "${package}" ]] && continue
+    if prompt_or_approve "Upgrade pnpm package ${package}? [y/N] "; then
+      pnpm add -g "${package}@latest"
+    fi
+  done < <(printf '%s' "${outdated_json}" | jq -r 'keys[]?')
+}
+
+#########################################
+# Check whether flake inputs have changed and optionally update and rebuild
+#
+# Globals:
+#   REPO_ROOT
+# Returns:
+#   0 on success
+#########################################
+check_nix() {
+  if ! ensure_nix; then
+    echo 'nix not found; skipping flake updates'
+    return 0
+  fi
+
+  if [[ ! -d "${REPO_ROOT}" || ! -f "${REPO_ROOT}/flake.nix" ]]; then
+    echo "flake repo not found at ${REPO_ROOT}; skipping nix updates"
+    return 0
+  fi
+
+  local tmp_lock
+  tmp_lock="$(mktemp)"
+  trap 'rm -f "${tmp_lock}"' RETURN
+
+  echo 'Checking flake input updates...'
+  nix flake update --flake "${REPO_ROOT}" --output-lock-file "${tmp_lock}" >/dev/null 2>&1 || true
+
+  if cmp -s "${REPO_ROOT}/flake.lock" "${tmp_lock}"; then
+    echo 'No flake input updates found'
+    return 0
+  fi
+
+  if prompt_or_approve "Update flake inputs and rebuild nix-darwin? [y/N] "; then
+    local host
+    host="$(hostname -s)"
+    (cd "${REPO_ROOT}" && nix flake update)
+    if command -v darwin-rebuild >/dev/null 2>&1; then
+      (cd "${REPO_ROOT}" && sudo darwin-rebuild switch --flake ".#${host}")
+    else
+      (cd "${REPO_ROOT}" && sudo nix run nix-darwin/master#darwin-rebuild -- switch --flake ".#${host}")
+    fi
+  fi
+}
+
+#########################################
+# Parse CLI arguments and decide which package managers to check
+#
+# Globals:
+#   RUN_BREW
+#   RUN_NIX
+#   RUN_PNPM
+#   APPROVE_ALL
+# Arguments:
+#   CLI arguments passed to the script
+# Returns:
+#   0 on success
+#########################################
+parse_args() {
+  local seen_manager=false
+
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      --all)
+        RUN_BREW=true
+        RUN_NIX=true
+        RUN_PNPM=true
+        seen_manager=true
+        ;;
+      --brew)
+        RUN_BREW=true
+        seen_manager=true
+        ;;
+      --nix)
+        RUN_NIX=true
+        seen_manager=true
+        ;;
+      --pnpm)
+        RUN_PNPM=true
+        seen_manager=true
+        ;;
+      --approve)
+        APPROVE_ALL=true
+        ;;
+      --help|-h)
+        usage
+        exit 0
+        ;;
+      *)
+        echo "Unknown option: $1"
+        usage
+        exit 1
+        ;;
+    esac
+    shift
+  done
+
+  if [[ "${seen_manager}" == false ]]; then
+    RUN_BREW=true
+    RUN_NIX=true
+    RUN_PNPM=true
+  fi
+}
+
+#########################################
+# Script entrypoint
+#
+# Globals:
+#   RUN_BREW
+#   RUN_NIX
+#   RUN_PNPM
+# Arguments:
+#   CLI arguments passed to the script
+# Returns:
+#   0 on success
+#########################################
+main() {
+  parse_args "$@"
+
+  [[ "${RUN_BREW}" == true ]] && check_brew
+  [[ "${RUN_PNPM}" == true ]] && check_pnpm
+  [[ "${RUN_NIX}" == true ]] && check_nix
+}
+
+main "$@"
