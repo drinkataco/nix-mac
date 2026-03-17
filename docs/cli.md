@@ -9,13 +9,7 @@
   * [Docs](#docs)
   * [Keys](#keys)
   * [Notes](#notes)
-* [zsh-vi-mode](#zsh-vi-mode)
-  * [Docs](#docs)
-  * [Keys I care about](#keys-i-care-about)
-* [zoxide](#zoxide)
-  * [Docs](#docs)
-  * [Commands](#commands)
-* [fnm](#fnm)
+* [oh-my-zsh git plugin](#oh-my-zsh-git-plugin)
   * [Docs](#docs)
   * [Commands](#commands)
 * [Config files in this setup](#config-files-in-this-setup)
@@ -62,6 +56,31 @@
 - uses `bat` for file previews
 - uses `eza` for directory previews
 - Git completion previews are configured in [`dotfiles/.zsh/completions.zsh`](/Users/osh/projects/mac/dotfiles/.zsh/completions.zsh)
+
+## oh-my-zsh git plugin
+
+### Docs
+
+- [github.com/ohmyzsh/ohmyzsh/tree/master/plugins/git](https://github.com/ohmyzsh/ohmyzsh/tree/master/plugins/git)
+
+### Commands
+
+- `gst`
+  - `git status`
+- `gp`
+  - `git push`
+- `gcam "message"`
+  - `git commit -a -m "message"`
+- `gcmsg "message"`
+  - `git commit -m "message"`
+- `gaa`
+  - `git add --all`
+- `gl`
+  - `git pull`
+- `gco <branch>`
+  - `git checkout <branch>`
+- `gcb <branch>`
+  - `git checkout -b <branch>`
 
 ## Config files in this setup
 
