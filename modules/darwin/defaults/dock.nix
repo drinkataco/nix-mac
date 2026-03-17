@@ -45,6 +45,14 @@
           showas = "grid";
         };
       }
+      {
+        folder = {
+          arrangement = "name";
+          displayas = "folder";
+          path = "/Users/${username}/Applications/Games";
+          showas = "grid";
+        };
+      }
     ];
     show-recents = true;
     tilesize = 48;

@@ -2,6 +2,7 @@
 {
   imports = [
     ./dotfiles.nix
+    ./games.nix
     ./gpg.nix
     ./node.nix
     ./ssh.nix
