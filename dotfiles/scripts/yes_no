@@ -15,7 +15,11 @@ yes_no() {
   question=$1
 
   printf "%s" "${question}"
-  read -r value
+  if [ -r /dev/tty ]; then
+    read -r value </dev/tty
+  else
+    read -r value
+  fi
 
   [ -z "$value" ] && value=$2 # Set as default if unset
 

@@ -60,7 +60,7 @@ prompt_or_approve() {
     return 0
   fi
 
-  "${YES_NO}" "${question}" "n"
+  "${YES_NO}" "${question}" "y"
 }
 
 #########################################
@@ -96,7 +96,7 @@ check_brew() {
   local formula
   while IFS= read -r formula; do
     [[ -z "${formula}" ]] && continue
-    if prompt_or_approve "Upgrade brew formula ${formula}? [y/N] "; then
+    if prompt_or_approve "Upgrade brew formula ${formula}? [Y/n] "; then
       brew upgrade "${formula}"
     fi
   done < <(brew outdated --formula)
@@ -105,7 +105,7 @@ check_brew() {
   local cask
   while IFS= read -r cask; do
     [[ -z "${cask}" ]] && continue
-    if prompt_or_approve "Upgrade brew cask ${cask}? [y/N] "; then
+    if prompt_or_approve "Upgrade brew cask ${cask}? [Y/n] "; then
       brew upgrade --cask "${cask}"
     fi
   done < <(brew outdated --cask --greedy)
@@ -122,22 +122,48 @@ check_pnpm() {
     return 0
   fi
 
+  local global_root
+  global_root="$(pnpm root -g 2>/dev/null || true)"
+  if [[ -z "${global_root}" || ! -d "${global_root}" ]]; then
+    echo 'pnpm global directory not found; skipping pnpm updates'
+    return 0
+  fi
+
+  if [[ ! -f "${global_root%/node_modules}/package.json" ]]; then
+    echo 'pnpm global manifest not found; skipping pnpm updates'
+    return 0
+  fi
+
   echo 'Checking global pnpm package updates...'
   local outdated_json
-  outdated_json="$(pnpm outdated -g --format json 2>/dev/null || true)"
+  outdated_json="$(pnpm outdated -g --format json 2>&1 || true)"
 
   if [[ -z "${outdated_json}" || "${outdated_json}" == "[]" || "${outdated_json}" == "{}" ]]; then
     echo 'No global pnpm updates found'
     return 0
   fi
 
+  if ! printf '%s' "${outdated_json}" | jq -e . >/dev/null 2>&1; then
+    echo 'Unable to parse pnpm outdated output; skipping pnpm updates'
+    printf '%s\n' "${outdated_json}"
+    return 0
+  fi
+
   local package
   while IFS= read -r package; do
     [[ -z "${package}" ]] && continue
-    if prompt_or_approve "Upgrade pnpm package ${package}? [y/N] "; then
+    if prompt_or_approve "Upgrade pnpm package ${package}? [Y/n] "; then
       pnpm add -g "${package}@latest"
     fi
-  done < <(printf '%s' "${outdated_json}" | jq -r 'keys[]?')
+  done < <(printf '%s' "${outdated_json}" | jq -r '
+    if type == "array" then
+      .[]? | .name? // empty
+    elif type == "object" then
+      keys[]?
+    else
+      empty
+    end
+  ')
 }
 
 #########################################
@@ -161,7 +187,7 @@ check_nix() {
 
   local tmp_lock
   tmp_lock="$(mktemp)"
-  trap 'rm -f "${tmp_lock}"' RETURN
+  trap 'rm -f "${tmp_lock:-}"' RETURN
 
   echo 'Checking flake input updates...'
   nix flake update --flake "${REPO_ROOT}" --output-lock-file "${tmp_lock}" >/dev/null 2>&1 || true
@@ -171,7 +197,7 @@ check_nix() {
     return 0
   fi
 
-  if prompt_or_approve "Update flake inputs and rebuild nix-darwin? [y/N] "; then
+  if prompt_or_approve "Update flake inputs and rebuild nix-darwin? [Y/n] "; then
     local host
     host="$(hostname -s)"
     (cd "${REPO_ROOT}" && nix flake update)
@@ -257,9 +283,19 @@ parse_args() {
 main() {
   parse_args "$@"
 
-  [[ "${RUN_BREW}" == true ]] && check_brew
-  [[ "${RUN_PNPM}" == true ]] && check_pnpm
-  [[ "${RUN_NIX}" == true ]] && check_nix
+  if [[ "${RUN_BREW}" == true ]]; then
+    check_brew
+  fi
+
+  if [[ "${RUN_PNPM}" == true ]]; then
+    check_pnpm
+  fi
+
+  if [[ "${RUN_NIX}" == true ]]; then
+    check_nix
+  fi
+
+  return 0
 }
 
 main "$@"
