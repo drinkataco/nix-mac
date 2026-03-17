@@ -27,6 +27,11 @@ if [[ -r ${ZIM_HOME}/init.zsh ]]; then
   source "${ZIM_HOME}/init.zsh"
 fi
 
+# Show the current vi mode in the right prompt without replacing git status.
+typeset -g INSERT_MODE_INDICATOR=''
+typeset -g MODE_INDICATOR='%F{yellow}[N]%f'
+typeset -g VI_MODE_RESET_PROMPT_ON_MODE_CHANGE=true
+RPROMPT='$(vi_mode_prompt_info)'"${RPROMPT:+ ${RPROMPT}}"
 
 ##########################
 # CONFIG                 #
