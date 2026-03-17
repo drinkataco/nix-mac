@@ -27,11 +27,18 @@ if [[ -r ${ZIM_HOME}/init.zsh ]]; then
   source "${ZIM_HOME}/init.zsh"
 fi
 
-# Show the current vi mode in the right prompt without replacing git status.
-typeset -g INSERT_MODE_INDICATOR=''
-typeset -g MODE_INDICATOR='%F{yellow}[N]%f'
-typeset -g VI_MODE_RESET_PROMPT_ON_MODE_CHANGE=true
-RPROMPT='$(vi_mode_prompt_info)'"${RPROMPT:+ ${RPROMPT}}"
+# Show normal mode in the right prompt without replacing the existing git status.
+typeset -g ZVM_RPROMPT_BASE="${RPROMPT}"
+
+function zvm_after_select_vi_mode() {
+  if [[ "${ZVM_MODE}" == "${ZVM_MODE_NORMAL}" ]]; then
+    RPROMPT='%F{yellow}[N]%f'"${ZVM_RPROMPT_BASE:+ ${ZVM_RPROMPT_BASE}}"
+  else
+    RPROMPT="${ZVM_RPROMPT_BASE}"
+  fi
+}
+
+zvm_after_select_vi_mode
 
 ##########################
 # CONFIG                 #
