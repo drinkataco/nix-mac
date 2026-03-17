@@ -6,12 +6,12 @@ usage() {
 Usage: service.sh <command>
 
 Commands:
-  status          Show /nix mount, daemon socket, and launchd status
-  daemon-enable   Enable the nix-daemon launchd service
+  status           Show /nix mount, daemon socket, and launchd status
+  daemon-enable    Enable the nix-daemon launchd service
   daemon-bootstrap Bootstrap the nix-daemon LaunchDaemon plist
-  daemon-restart  Restart the nix-daemon launchd service
-  repair          Enable, bootstrap, and restart the nix-daemon service
-  shell-env       Print the command to load Nix into the current shell
+  daemon-restart   Restart the nix-daemon launchd service
+  repair           Enable, bootstrap, and restart the nix-daemon service
+  shell-env        Print the command to load Nix into the current shell
 EOF
 }
 
