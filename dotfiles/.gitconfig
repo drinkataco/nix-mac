@@ -27,7 +27,7 @@
 
 [diff]
   colorMoved = default
-  tool       = vimdiff
+  tool       = nvimdiff
   keepBackup = false
 
 [gpg]
@@ -43,7 +43,7 @@
   decorate = auto
 
 [merge]
-  tool          = vimdiff
+  tool          = nvimdiff
   conflictstyle = zdiff3
   keepBackup    = false
 

@@ -3,6 +3,7 @@
 <!-- vim-md-toc format=bullets ignore=^TODO$ -->
 * [General docs](#general-docs)
 * [General usage](#general-usage)
+* [Git diffs and conflicts](#git-diffs-and-conflicts)
 * [Core plugins](#core-plugins)
   * [Git and workflow](#git-and-workflow)
   * [Search and navigation](#search-and-navigation)
@@ -36,6 +37,26 @@
   - `:verbose map <lhs>`
   - example: `:verbose map <leader>ff`
 
+## Git diffs and conflicts
+
+- Git is configured to use `nvimdiff` for both `git difftool` and `git mergetool`
+- Diff a file from the shell:
+  - `git difftool path/to/file`
+- Diff all changed files from the shell:
+  - `git difftool`
+- Resolve merge conflicts from the shell:
+  - `git mergetool`
+- In `nvimdiff`:
+  - 2-way diffs are for normal before/after comparisons
+  - 3-way diffs are for merge conflicts, usually `LOCAL`, `BASE`, `REMOTE`, plus the merged result
+  - use `]c` / `[c` to move between diff hunks
+  - use `<leader>g2` for `:diffget //2`, usually `ours`
+  - use `<leader>g3` for `:diffget //3`, usually `theirs`
+  - use `<leader>gp` for `:diffput`
+  - use `<leader>ga` for `:Git add %` once the file is resolved
+- Useful fallback inside Neovim:
+  - `:Gvdiffsplit` or `<leader>gd`
+
 ## Core plugins
 
 ### Git and workflow
@@ -46,11 +67,16 @@
     - [`:Git`](https://github.com/tpope/vim-fugitive?tab=readme-ov-file#:Git)
     - [`:Git blame`](https://github.com/tpope/vim-fugitive?tab=readme-ov-file#:Git_blame)
     - [`:Gvdiffsplit`](https://github.com/tpope/vim-fugitive?tab=readme-ov-file#:Gdiffsplit)
+    - [`:Git add %`](https://github.com/tpope/vim-fugitive?tab=readme-ov-file#:Git)
   - Custom Keymaps:
     - `<leader>gg`: runs `:Git` and opens Fugitive status
     - `<leader>gs`: runs `:Git` and opens Fugitive status
     - `<leader>gb`: runs `:Git blame` and opens blame for the current buffer
-    - `<leader>gd`: runs `:Gvdiffsplit` and opens a vertical Git diff split
+    - `<leader>gd`: runs `:Gvdiffsplit` and opens a vertical Git diff split inside Neovim
+    - `<leader>g2`: runs `:diffget //2` and takes the left side during a conflict
+    - `<leader>g3`: runs `:diffget //3` and takes the right side during a conflict
+    - `<leader>gp`: runs `:diffput` and pushes the current diff changes to the other pane
+    - `<leader>ga`: runs `:Git add %` and stages the current file
 
 ### Search and navigation
 
