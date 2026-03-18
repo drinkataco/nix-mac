@@ -5,6 +5,7 @@
     magnification = false;
     minimize-to-application = true;
     mru-spaces = false;
+    wvous-br-corner = 1;
     persistent-apps = [
       {
         app = "/Applications/Firefox.app";
