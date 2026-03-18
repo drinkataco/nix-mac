@@ -1,13 +1,12 @@
 #!/bin/zsh
+
 # Interactive History
 mkdir -p "${HOME}/.zsh_history"
 HISTFILE="${HOME}/.zsh_history/log"
 HISTSIZE='10000';
 
 # bellIsUrgent emulation to stop Alacritty jump
-if [[ "${TERM_PROGRAM}" == "Alacritty" ]]; then
-  printf "\e[?1042l"
-fi
+printf "\e[?1042l"
 
 # Source config
 source "${HOME}/.zsh/path.zsh"
