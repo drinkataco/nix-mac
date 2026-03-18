@@ -10,7 +10,9 @@ let
         let
           relativePath = if prefix == "" then name else "${prefix}/${name}";
         in
-        if type == "directory" then
+        if relativePath == ".config/karabiner" then
+          [ ]
+        else if type == "directory" then
           collectDotfileEntries relativePath (dir + "/${name}")
         else if type == "regular" || type == "symlink" then
           {
@@ -22,5 +24,12 @@ let
       ) (builtins.readDir dir)
     );
 in {
-  home.file = builtins.listToAttrs (collectDotfileEntries "" ../../dotfiles);
+  home.file =
+    (builtins.listToAttrs (collectDotfileEntries "" ../../dotfiles))
+    // {
+      ".config/karabiner" = {
+        source = config.lib.file.mkOutOfStoreSymlink "${repoDotfilesDir}/.config/karabiner";
+        force = true;
+      };
+    };
 }

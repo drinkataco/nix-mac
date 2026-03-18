@@ -43,6 +43,7 @@
       # Desktop utilities
       "alacritty"
       "amethyst"
+      "karabiner-elements"
       "flux-app"
       "keepassxc"
       "little-snitch"
