@@ -33,12 +33,8 @@ if command -v nerdctl > /dev/null 2>&1; then
 fi
 
 # FZF
-# Follow symlinks for local project files, but suppress stderr from unreadable targets
-# such as Nix store sources reached through generated links.
-export FZF_DEFAULT_COMMAND='fd --type f --strip-cwd-prefix --hidden --follow --exclude .git --exclude result --exclude result-* --no-ignore 2>/dev/null'
-export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
-export FZF_ALT_C_COMMAND='fd --type d --strip-cwd-prefix --hidden --follow --exclude .git --exclude result --exclude result-* --no-ignore 2>/dev/null'
 export FZF_CTRL_T_OPTS="
+  --walker-skip .git,result,result-*
   --preview 'bat {}'
   --bind 'ctrl-/:change-preview-window(down|hidden|)'"
 export FZF_CTRL_R_OPTS="
@@ -46,7 +42,9 @@ export FZF_CTRL_R_OPTS="
   --color header:italic
   --header 'Press CTRL-Y to copy command into clipboard'"
 # Print tree structure in the preview window
-export FZF_ALT_C_OPTS="--preview 'eza -T -L 4 --group-directories-first {}'"
+export FZF_ALT_C_OPTS="
+  --walker-skip .git,result,result-*
+  --preview 'eza -T -L 4 --group-directories-first {}'"
 
 # Completion Styles
 zstyle ':completion:*' menu no
