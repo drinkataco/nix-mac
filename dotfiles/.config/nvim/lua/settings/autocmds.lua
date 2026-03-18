@@ -1,5 +1,15 @@
 local api = vim.api
 
+-- Views only make sense for normal file buffers; skip prompts, terminals, and scratch buffers.
+local function can_persist_view(bufnr)
+  if vim.bo[bufnr].buftype ~= "" then
+    return false
+  end
+
+  local name = vim.api.nvim_buf_get_name(bufnr)
+  return name ~= ""
+end
+
 -- Autocmd groups let us replace and reload related event hooks cleanly.
 local autoread = api.nvim_create_augroup("settings_autoread", { clear = true })
 api.nvim_create_autocmd({ "FocusGained", "BufEnter" }, {
@@ -8,6 +18,7 @@ api.nvim_create_autocmd({ "FocusGained", "BufEnter" }, {
   command = "checktime",
 })
 
+-- Ensure writes to new nested paths do not fail because parent directories are missing.
 local mkdir = api.nvim_create_augroup("settings_mkdir", { clear = true })
 api.nvim_create_autocmd("BufWritePre", {
   group = mkdir,
@@ -20,6 +31,7 @@ api.nvim_create_autocmd("BufWritePre", {
   end,
 })
 
+-- Search highlighting should only stay on while actively using / or ?.
 local search = api.nvim_create_augroup("settings_search_highlight", { clear = true })
 api.nvim_create_autocmd("CmdlineEnter", {
   group = search,
@@ -30,14 +42,52 @@ api.nvim_create_autocmd("CmdlineEnter", {
 api.nvim_create_autocmd("CmdlineLeave", {
   group = search,
   pattern = { "/", "?" },
+  -- Drop search highlighting once the command-line search ends.
   command = "set nohlsearch",
 })
 
+-- tmux config filenames are not detected consistently enough without a manual filetype hint.
 local tmux = api.nvim_create_augroup("settings_tmux_filetype", { clear = true })
 api.nvim_create_autocmd({ "BufRead", "BufNewFile" }, {
   group = tmux,
   pattern = { ".tmux.conf", "*.tmux", "tmux.conf" },
   callback = function()
     vim.bo.filetype = "tmux"
+  end,
+})
+
+-- Treesitter folds can come back stale after session restore; refreshing them on
+-- open keeps structured files foldable without having to reset the whole window.
+local folds = api.nvim_create_augroup("settings_fold_refresh", { clear = true })
+api.nvim_create_autocmd({ "BufWinEnter", "FileType" }, {
+  group = folds,
+  pattern = { "json", "yaml", "javascript", "typescript", "typescriptreact", "rust", "sh", "bash" },
+  callback = function()
+    vim.schedule(function()
+      pcall(vim.cmd.normal, { args = { "zx" }, bang = true })
+    end)
+  end,
+})
+
+-- Persist per-file folds and cursor position across close/reopen using views.
+local views = api.nvim_create_augroup("settings_views", { clear = true })
+api.nvim_create_autocmd("BufWinLeave", {
+  group = views,
+  callback = function(args)
+    if not can_persist_view(args.buf) then
+      return
+    end
+
+    pcall(vim.cmd, "silent! mkview")
+  end,
+})
+api.nvim_create_autocmd("BufWinEnter", {
+  group = views,
+  callback = function(args)
+    if not can_persist_view(args.buf) then
+      return
+    end
+
+    pcall(vim.cmd, "silent! loadview")
   end,
 })

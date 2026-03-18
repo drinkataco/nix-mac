@@ -41,6 +41,10 @@ opt.foldexpr = "v:lua.vim.treesitter.foldexpr()"
 opt.foldenable = true
 opt.foldlevel = 99
 opt.foldlevelstart = 99
+-- Let Treesitter rebuild folds on open instead of restoring stale fold state from sessions.
+opt.sessionoptions:remove("folds")
+-- Keep folds and cursor/window state in per-file views when using :mkview/:loadview.
+opt.viewoptions = { "cursor", "folds", "slash", "unix" }
 
 -- Netrw
 g.netrw_banner = 0
