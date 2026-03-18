@@ -36,6 +36,11 @@ opt.wildignore:append({ "*.DS_Store", "*.pyc" })
 opt.ignorecase = true
 opt.smartcase = true
 opt.incsearch = true
+opt.foldmethod = "expr"
+opt.foldexpr = "v:lua.vim.treesitter.foldexpr()"
+opt.foldenable = true
+opt.foldlevel = 99
+opt.foldlevelstart = 99
 
 -- Netrw
 g.netrw_banner = 0
