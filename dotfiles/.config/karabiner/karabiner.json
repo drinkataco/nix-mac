@@ -8,64 +8,64 @@
         {
             "name": "Default profile",
             "selected": true,
-      "complex_modifications": {
-        "rules": [
-          {
-            "description": "Use F6 as Amethyst mod1+t",
-            "manipulators": [
-              {
-                "type": "basic",
-                "from": {
-                  "key_code": "f6",
-                  "modifiers": {
-                    "optional": [
-                      "any"
-                    ]
-                  }
+            "complex_modifications": {
+              "rules": [
+                {
+                  "description": "Use F6 as Amethyst mod1+t",
+                  "manipulators": [
+                    {
+                      "type": "basic",
+                      "from": {
+                        "key_code": "f6",
+                        "modifiers": {
+                          "optional": [
+                            "any"
+                          ]
+                        }
+                      },
+                      "to": [
+                        {
+                          "key_code": "t",
+                          "modifiers": [
+                            "left_option"
+                            ,
+                            "left_shift"
+                          ],
+                          "lazy": false
+                        }
+                      ]
+                    }
+                  ]
                 },
-                "to": [
-                  {
-                    "key_code": "t",
-                    "modifiers": [
-                      "left_option"
-                      ,
-                      "left_shift"
-                    ],
-                    "lazy": false
-                  }
-                ]
-              }
-            ]
-          },
-          {
-            "description": "Use F5 as Amethyst mod1+space",
-            "manipulators": [
-              {
-                "type": "basic",
-                "from": {
-                  "key_code": "f5",
-                  "modifiers": {
-                    "optional": [
-                      "any"
-                    ]
-                  }
-                },
-                "to": [
-                  {
-                    "key_code": "spacebar",
-                    "modifiers": [
-                      "left_option"
-                      ,
-                      "left_shift"
-                    ],
-                    "lazy": false
-                  }
-                ]
-              }
-            ]
-          }
-        ]
-      },
+                {
+                  "description": "Use F5 as Amethyst mod1+space",
+                  "manipulators": [
+                    {
+                      "type": "basic",
+                      "from": {
+                        "key_code": "f5",
+                        "modifiers": {
+                          "optional": [
+                            "any"
+                          ]
+                        }
+                      },
+                      "to": [
+                        {
+                          "key_code": "spacebar",
+                          "modifiers": [
+                            "left_option"
+                            ,
+                            "left_shift"
+                          ],
+                          "lazy": false
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
             "fn_function_keys": [],
             "simple_modifications": [],
             "virtual_hid_keyboard": {
