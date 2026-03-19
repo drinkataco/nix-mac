@@ -32,7 +32,21 @@ M.treesitter = function()
     "yaml",
   }
 
+  -- Markdown fenced code blocks often use short names or editor-specific labels.
+  -- Register the common ones we actually use so Treesitter can inject the right parser.
+  local fenced_language_aliases = {
+    bash = { "sh", "shell", "zsh" },
+    javascript = { "js" },
+    json = { "jsonc" },
+    typescript = { "ts" },
+    yaml = { "yml" },
+  }
+
   require("nvim-treesitter").install(languages)
+
+  for parser, aliases in pairs(fenced_language_aliases) do
+    vim.treesitter.language.register(parser, aliases)
+  end
 
   vim.api.nvim_create_autocmd("FileType", {
     group = vim.api.nvim_create_augroup("settings_treesitter", { clear = true }),
