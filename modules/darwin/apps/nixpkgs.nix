@@ -40,6 +40,7 @@ in
     go
     jq
     k9s
+    kubernetes-helm
     kubectl
     lazygit
     nmap
