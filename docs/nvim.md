@@ -3,8 +3,10 @@
 <!-- vim-md-toc format=bullets ignore=^TODO$ -->
 * [General docs](#general-docs)
 * [General usage](#general-usage)
+* [Markdown](#markdown)
 * [Git diffs and conflicts](#git-diffs-and-conflicts)
 * [Core plugins](#core-plugins)
+  * [Editing](#editing)
   * [Git and workflow](#git-and-workflow)
   * [Search and navigation](#search-and-navigation)
 * [Editor keymaps](#editor-keymaps)
@@ -58,6 +60,17 @@
   - `:Gvdiffsplit` or `<leader>gd`
 
 ## Core plugins
+
+### Editing
+
+- `Comment.nvim`
+  - docs: [github.com/numToStr/Comment.nvim](https://github.com/numToStr/Comment.nvim)
+  - Use this as the lightweight replacement for NerdCommenter.
+  - Common motions:
+    - `gcc` toggles the current line
+    - `gbc` toggles the current line with block comments
+    - `gc` plus a motion toggles a text object, for example `gcj` or `gc}`
+    - in visual mode, `gc` toggles the current selection
 
 ### Git and workflow
 
@@ -157,5 +170,5 @@
 
 ## Config files in this setup
 
-- config directory: [`dotfiles/.config/nvim`](/Users/osh/projects/mac/dotfiles/.config/nvim)
-- plugin list: [`dotfiles/.config/nvim/lua/plugins/list.lua`](/Users/osh/projects/mac/dotfiles/.config/nvim/lua/plugins/list.lua)
+- config directory: [`dotfiles/.config/nvim`](/Users/osh/projects/nix-mac/dotfiles/.config/nvim)
+- plugin list: [`dotfiles/.config/nvim/lua/plugins/list.lua`](/Users/osh/projects/nix-mac/dotfiles/.config/nvim/lua/plugins/list.lua)
