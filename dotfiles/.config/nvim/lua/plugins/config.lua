@@ -62,6 +62,10 @@ end
 
 M.lsp = function()
   local capabilities = vim.lsp.protocol.make_client_capabilities()
+  local ok_cmp_lsp, cmp_nvim_lsp = pcall(require, "cmp_nvim_lsp")
+  if ok_cmp_lsp then
+    capabilities = cmp_nvim_lsp.default_capabilities(capabilities)
+  end
   local map = vim.keymap.set
   local on_attach = function(_, bufnr)
     local opts = { buffer = bufnr }
@@ -106,8 +110,136 @@ M.lsp = function()
     },
   })
 
+  -- TypeScript completion depends on a language server; cmp only renders the results.
+  vim.lsp.config("ts_ls", {
+    capabilities = capabilities,
+    on_attach = on_attach,
+    cmd = { "typescript-language-server", "--stdio" },
+    filetypes = {
+      "javascript",
+      "javascriptreact",
+      "javascript.jsx",
+      "typescript",
+      "typescriptreact",
+      "typescript.tsx",
+    },
+    root_markers = { "tsconfig.json", "jsconfig.json", "package.json", ".git" },
+    single_file_support = true,
+  })
+
+  vim.lsp.config("jsonls", {
+    capabilities = capabilities,
+    on_attach = on_attach,
+    settings = {
+      json = {
+        schemas = require("schemastore").json.schemas(),
+        validate = {
+          enable = true,
+        },
+      },
+    },
+  })
+
+  vim.lsp.config("rust_analyzer", {
+    capabilities = capabilities,
+    on_attach = on_attach,
+    settings = {
+      ["rust-analyzer"] = {
+        cargo = {
+          allFeatures = true,
+        },
+        checkOnSave = true,
+      },
+    },
+  })
+
+  vim.lsp.config("pyright", {
+    capabilities = capabilities,
+    on_attach = on_attach,
+    settings = {
+      python = {
+        analysis = {
+          autoSearchPaths = true,
+          diagnosticMode = "openFilesOnly",
+          useLibraryCodeForTypes = true,
+        },
+      },
+    },
+  })
+
   vim.lsp.enable("bashls")
+  vim.lsp.enable("jsonls")
+  vim.lsp.enable("pyright")
+  vim.lsp.enable("rust_analyzer")
+  vim.lsp.enable("ts_ls")
   vim.lsp.enable("yamlls")
+end
+
+M.cmp = function()
+  -- Docs: https://github.com/hrsh7th/nvim-cmp
+  local cmp = require("cmp")
+  local luasnip = require("luasnip")
+
+  require("luasnip.loaders.from_vscode").lazy_load()
+
+  cmp.setup({
+    completion = {
+      completeopt = "menu,menuone,noselect",
+    },
+    snippet = {
+      expand = function(args)
+        luasnip.lsp_expand(args.body)
+      end,
+    },
+    mapping = cmp.mapping.preset.insert({
+      ["<C-Space>"] = cmp.mapping.complete(),
+      ["<C-n>"] = cmp.mapping.select_next_item(),
+      ["<C-p>"] = cmp.mapping.select_prev_item(),
+      ["<Tab>"] = cmp.mapping(function(fallback)
+        if cmp.visible() then
+          cmp.select_next_item()
+        elseif luasnip.expand_or_locally_jumpable() then
+          luasnip.expand_or_jump()
+        else
+          fallback()
+        end
+      end, { "i", "s" }),
+      ["<S-Tab>"] = cmp.mapping(function(fallback)
+        if cmp.visible() then
+          cmp.select_prev_item()
+        elseif luasnip.locally_jumpable(-1) then
+          luasnip.jump(-1)
+        else
+          fallback()
+        end
+      end, { "i", "s" }),
+      ["<CR>"] = cmp.mapping.confirm({ select = false }),
+      ["<C-e>"] = cmp.mapping.abort(),
+    }),
+    sources = cmp.config.sources({
+      { name = "nvim_lsp" },
+      { name = "luasnip", keyword_length = 2 },
+      { name = "path" },
+    }, {
+      { name = "buffer" },
+    }),
+  })
+
+  cmp.setup.cmdline({ "/", "?" }, {
+    mapping = cmp.mapping.preset.cmdline(),
+    sources = {
+      { name = "buffer" },
+    },
+  })
+
+  cmp.setup.cmdline(":", {
+    mapping = cmp.mapping.preset.cmdline(),
+    sources = cmp.config.sources({
+      { name = "path" },
+    }, {
+      { name = "cmdline" },
+    }),
+  })
 end
 
 M.conform = function()
@@ -145,6 +277,25 @@ M.bufferline = function()
         delay = 50,
         reveal = { "close" },
       },
+    },
+  })
+end
+
+M.gitsigns = function()
+  -- Docs: https://github.com/lewis6991/gitsigns.nvim
+  require("gitsigns").setup({
+    current_line_blame = false,
+    signcolumn = true,
+    numhl = false,
+    linehl = false,
+    word_diff = false,
+    signs = {
+      add = { text = "+" },
+      change = { text = "~" },
+      delete = { text = "-" },
+      topdelete = { text = "-" },
+      changedelete = { text = "~" },
+      untracked = { text = "+" },
     },
   })
 end

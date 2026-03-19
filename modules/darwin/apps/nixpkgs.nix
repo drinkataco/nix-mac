@@ -47,9 +47,14 @@ in
     openvpn
     pinentry_mac
     pnpm
+    pyright
+    rust-analyzer
     shellcheck
     shfmt
     silver-searcher
+    typescript
+    typescript-language-server
+    vscode-langservers-extracted
 
     # Monitoring and networking
     htop

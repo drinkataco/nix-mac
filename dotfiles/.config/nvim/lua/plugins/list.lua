@@ -4,6 +4,10 @@ return {
   -- Git and editor workflow
   { "tpope/vim-fugitive" },
   { "tpope/vim-rhubarb" },
+  {
+    "lewis6991/gitsigns.nvim",
+    config = config.gitsigns,
+  },
   { "christoomey/vim-tmux-navigator" },
   { "tpope/vim-obsession" },
   { "tpope/vim-vinegar" },
@@ -52,6 +56,19 @@ return {
       "b0o/SchemaStore.nvim",
     },
     config = config.lsp,
+  },
+  {
+    "hrsh7th/nvim-cmp",
+    dependencies = {
+      "L3MON4D3/LuaSnip",
+      "hrsh7th/cmp-buffer",
+      "hrsh7th/cmp-cmdline",
+      "saadparwaiz1/cmp_luasnip",
+      "hrsh7th/cmp-nvim-lsp",
+      "hrsh7th/cmp-path",
+      "rafamadriz/friendly-snippets",
+    },
+    config = config.cmp,
   },
   {
     "stevearc/conform.nvim",

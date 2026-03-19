@@ -3,7 +3,6 @@
 <!-- vim-md-toc format=bullets ignore=^TODO$ -->
 * [General docs](#general-docs)
 * [General usage](#general-usage)
-* [Markdown](#markdown)
 * [Git diffs and conflicts](#git-diffs-and-conflicts)
 * [Core plugins](#core-plugins)
   * [Editing](#editing)
@@ -71,6 +70,19 @@
     - `gbc` toggles the current line with block comments
     - `gc` plus a motion toggles a text object, for example `gcj` or `gc}`
     - in visual mode, `gc` toggles the current selection
+- `nvim-cmp`
+  - docs: [github.com/hrsh7th/nvim-cmp](https://github.com/hrsh7th/nvim-cmp)
+  - Completion is wired through LSP, buffer words, paths, and LuaSnip snippets.
+  - LSP-backed completion is configured for Bash, YAML, TypeScript, JavaScript, JSON, Rust, and Python.
+  - Common insert-mode keys:
+    - `<C-Space>` opens the completion menu
+    - `<C-n>` and `<C-p>` move through completion items
+    - `<Tab>` and `<S-Tab>` move through completion items or snippet placeholders
+    - `<CR>` confirms the selected item
+    - `<C-e>` closes the menu
+- `LuaSnip`
+  - docs: [github.com/L3MON4D3/LuaSnip](https://github.com/L3MON4D3/LuaSnip)
+  - `friendly-snippets` is loaded for common languages, including TypeScript, JavaScript, JSON, Rust, and Python.
 
 ### Git and workflow
 
@@ -90,6 +102,9 @@
     - `<leader>g3`: runs `:diffget //3` and takes the right side during a conflict
     - `<leader>gp`: runs `:diffput` and pushes the current diff changes to the other pane
     - `<leader>ga`: runs `:Git add %` and stages the current file
+- `gitsigns.nvim`
+  - docs: [github.com/lewis6991/gitsigns.nvim](https://github.com/lewis6991/gitsigns.nvim)
+  - Shows added, changed, deleted, and untracked lines in the sign column for tracked files.
 
 ### Search and navigation
 
