@@ -56,6 +56,7 @@ in
     typescript
     typescript-language-server
     vscode-langservers-extracted
+    yq-go
 
     # Monitoring and networking
     htop
