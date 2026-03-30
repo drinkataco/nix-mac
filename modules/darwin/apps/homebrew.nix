@@ -34,6 +34,7 @@
 
       # Productivity and communication
       "chatgpt"
+      "claude"
       "codex"
       "google-drive"
       "notion"

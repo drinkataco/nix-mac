@@ -5,6 +5,12 @@ let
     "22"
     "24"
   ];
+
+  globalNodePackages = [
+    "lighthouse"
+    "@anthropic-ai/claude-code"
+    "@openai/codex"
+  ];
 in
 {
   home.activation.installFnmNodeVersions =
@@ -25,8 +31,10 @@ in
 
       mkdir -p "$PNPM_HOME"
 
-      if ! "${pkgs.pnpm}/bin/pnpm" list -g --depth=0 2>/dev/null | grep -q ' lighthouse@'; then
-        "${pkgs.pnpm}/bin/pnpm" add -g lighthouse
-      fi
+      for package in ${lib.escapeShellArgs globalNodePackages}; do
+        if ! "${pkgs.pnpm}/bin/pnpm" list -g --depth=0 2>/dev/null | grep -Fq " ${package}@"; then
+          "${pkgs.pnpm}/bin/pnpm" add -g "$package"
+        fi
+      done
     '';
 }
