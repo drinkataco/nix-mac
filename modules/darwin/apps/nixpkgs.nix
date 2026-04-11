@@ -5,6 +5,7 @@ in
 {
   environment.systemPackages = with pkgs; [
     # Shell and terminal
+    alacritty.terminfo
     bash
     bat
     cmatrix
@@ -38,6 +39,7 @@ in
     gcc
     gnupg
     go
+    google-cloud-sdk
     jq
     k9s
     kubernetes-helm
