@@ -1,6 +1,10 @@
 [general]
 live_config_reload = true
 
+[terminal.shell]
+program = "/run/current-system/sw/bin/zsh"
+args = ["-l"]
+
 [font]
 size = 19
 
