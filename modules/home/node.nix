@@ -32,7 +32,7 @@ in
       mkdir -p "$PNPM_HOME"
 
       for package in ${lib.escapeShellArgs globalNodePackages}; do
-        if ! "${pkgs.pnpm}/bin/pnpm" list -g --depth=0 2>/dev/null | grep -Fq " ${package}@"; then
+        if ! "${pkgs.pnpm}/bin/pnpm" list -g --depth=0 2>/dev/null | grep -Fq " ''${package}@"; then
           "${pkgs.pnpm}/bin/pnpm" add -g "$package"
         fi
       done
