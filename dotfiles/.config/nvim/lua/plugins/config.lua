@@ -89,6 +89,41 @@ M.lsp = function()
     on_attach = on_attach,
   })
 
+  vim.lsp.config("gopls", {
+    capabilities = capabilities,
+    on_attach = on_attach,
+  })
+
+  vim.lsp.config("helm_ls", {
+    capabilities = capabilities,
+    on_attach = on_attach,
+  })
+
+  vim.lsp.config("lua_ls", {
+    capabilities = capabilities,
+    on_attach = on_attach,
+    settings = {
+      Lua = {
+        diagnostics = {
+          globals = { "vim" },
+        },
+        workspace = {
+          checkThirdParty = false,
+        },
+      },
+    },
+  })
+
+  vim.lsp.config("marksman", {
+    capabilities = capabilities,
+    on_attach = on_attach,
+  })
+
+  vim.lsp.config("nixd", {
+    capabilities = capabilities,
+    on_attach = on_attach,
+  })
+
   -- YAML LSP plus SchemaStore is the main payoff here for Kubernetes and related config.
   vim.lsp.config("yamlls", {
     capabilities = capabilities,
@@ -167,10 +202,27 @@ M.lsp = function()
     },
   })
 
+  vim.lsp.config("taplo", {
+    capabilities = capabilities,
+    on_attach = on_attach,
+  })
+
+  vim.lsp.config("terraformls", {
+    capabilities = capabilities,
+    on_attach = on_attach,
+  })
+
   vim.lsp.enable("bashls")
+  vim.lsp.enable("gopls")
+  vim.lsp.enable("helm_ls")
   vim.lsp.enable("jsonls")
+  vim.lsp.enable("lua_ls")
+  vim.lsp.enable("marksman")
+  vim.lsp.enable("nixd")
   vim.lsp.enable("pyright")
   vim.lsp.enable("rust_analyzer")
+  vim.lsp.enable("taplo")
+  vim.lsp.enable("terraformls")
   vim.lsp.enable("ts_ls")
   vim.lsp.enable("yamlls")
 end

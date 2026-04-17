@@ -58,12 +58,16 @@ in
     # Language servers and formatters used by Neovim's LSP/conform setup.
     bash-language-server # Bash language server
     gopls # Go language server
+    helm-ls # Helm language server
+    lua-language-server # Lua language server
     marksman # Markdown language server
+    nixd # Nix language server
     pyright # Python language server
     rust-analyzer # Rust language server
     shellcheck # Shell script diagnostics
     shfmt # Shell script formatter
     taplo # TOML language server
+    terraform-ls # Terraform/OpenTofu language server
     typescript-language-server # TypeScript and JavaScript language server
     vscode-langservers-extracted # JSON language server
     yaml-language-server # YAML language server
