@@ -8,10 +8,12 @@
   * [Editing](#editing)
   * [Git and workflow](#git-and-workflow)
   * [Search and navigation](#search-and-navigation)
+  * [Diagnostics](#diagnostics)
 * [Editor keymaps](#editor-keymaps)
   * [Core](#core)
   * [Files and tabs](#files-and-tabs)
   * [LSP](#lsp)
+  * [Diagnostics](#diagnostics-1)
 * [Config files in this setup](#config-files-in-this-setup)
 <!-- vim-md-toc END -->
 
@@ -134,6 +136,25 @@
     - `<leader>fc`: runs `:Commands` and searches available commands
     - `<leader>gc`: runs `:BCommits` and searches commits for the current buffer
 
+### Diagnostics
+
+- Diagnostic messages open automatically when the cursor rests on an errored span.
+  - delay is controlled by `updatetime` in the Neovim options
+- `trouble.nvim`
+  - docs: [github.com/folke/trouble.nvim](https://github.com/folke/trouble.nvim)
+  - Use this for browsing LSP diagnostics without manually creating location or quickfix lists.
+  - Example Commands:
+    - `:Trouble diagnostics toggle`
+    - `:Trouble diagnostics toggle filter.buf=0`
+    - `:Trouble diagnostics toggle filter.buf=0 filter.severity=vim.diagnostic.severity.ERROR`
+    - `:Trouble qflist toggle`
+    - `:Trouble loclist toggle`
+  - Custom Keymaps:
+    - `<leader>xx`: opens workspace diagnostics
+    - `<leader>xb`: opens diagnostics for the current buffer
+    - `<leader>xq`: opens the quickfix list in Trouble
+    - `<leader>xl`: opens the location list in Trouble
+
 ## Editor keymaps
 
 ### Core
@@ -182,6 +203,17 @@
   - previous diagnostic
 - `]d`
   - next diagnostic
+
+### Diagnostics
+
+- `<leader>xx`
+  - workspace diagnostics
+- `<leader>xb`
+  - current buffer diagnostics
+- `<leader>xq`
+  - quickfix list
+- `<leader>xl`
+  - location list
 
 ## Config files in this setup
 

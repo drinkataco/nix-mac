@@ -91,3 +91,27 @@ api.nvim_create_autocmd("BufWinEnter", {
     pcall(vim.cmd, "silent! loadview")
   end,
 })
+
+-- Show the diagnostic message when the cursor rests on an errored span.
+local diagnostics = api.nvim_create_augroup("settings_diagnostics", { clear = true })
+api.nvim_create_autocmd("CursorHold", {
+  group = diagnostics,
+  callback = function()
+    local row, col = unpack(vim.api.nvim_win_get_cursor(0))
+    local line = row - 1
+    local cursor_diagnostics = vim.diagnostic.get(0, { lnum = line })
+    local has_cursor_diagnostic = vim.iter(cursor_diagnostics):any(function(diagnostic)
+      local end_col = diagnostic.end_col or diagnostic.col
+      return col >= diagnostic.col and col <= end_col
+    end)
+
+    if not has_cursor_diagnostic then
+      return
+    end
+
+    vim.diagnostic.open_float(nil, {
+      focus = false,
+      scope = "cursor",
+    })
+  end,
+})

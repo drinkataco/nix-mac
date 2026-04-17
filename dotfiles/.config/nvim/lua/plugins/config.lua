@@ -66,6 +66,25 @@ M.lsp = function()
   if ok_cmp_lsp then
     capabilities = cmp_nvim_lsp.default_capabilities(capabilities)
   end
+
+  local diagnostic_signs = {
+    ERROR = "",
+    WARN = "",
+    INFO = "",
+    HINT = "",
+  }
+
+  vim.diagnostic.config({
+    signs = {
+      text = {
+        [vim.diagnostic.severity.ERROR] = diagnostic_signs.ERROR,
+        [vim.diagnostic.severity.WARN] = diagnostic_signs.WARN,
+        [vim.diagnostic.severity.INFO] = diagnostic_signs.INFO,
+        [vim.diagnostic.severity.HINT] = diagnostic_signs.HINT,
+      },
+    },
+  })
+
   local map = vim.keymap.set
   local on_attach = function(_, bufnr)
     local opts = { buffer = bufnr }

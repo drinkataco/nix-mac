@@ -9,7 +9,7 @@ args = ["-l"]
 size = 19
 
 [font.normal]
-family = "InconsolataGo Nerd Font Mono"
+family = "InconsolataGo Nerd Font"
 style = "Regular"
 
 [font.bold]

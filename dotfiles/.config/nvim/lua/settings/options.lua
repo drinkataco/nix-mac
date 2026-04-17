@@ -25,6 +25,7 @@ opt.splitright = true
 opt.scrolloff = 4
 opt.termguicolors = true
 opt.undofile = true
+opt.updatetime = 750
 opt.list = true
 opt.listchars = {
   tab = "|·",
