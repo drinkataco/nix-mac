@@ -50,15 +50,23 @@ in
     openvpn
     pinentry_mac
     pnpm
-    pyright
-    rust-analyzer
-    shellcheck
-    shfmt
     silver-searcher
     typescript
-    typescript-language-server
-    vscode-langservers-extracted
     yq-go
+
+    # Editor support
+    # Language servers and formatters used by Neovim's LSP/conform setup.
+    bash-language-server # Bash language server
+    gopls # Go language server
+    marksman # Markdown language server
+    pyright # Python language server
+    rust-analyzer # Rust language server
+    shellcheck # Shell script diagnostics
+    shfmt # Shell script formatter
+    taplo # TOML language server
+    typescript-language-server # TypeScript and JavaScript language server
+    vscode-langservers-extracted # JSON language server
+    yaml-language-server # YAML language server
 
     # Monitoring and networking
     htop
