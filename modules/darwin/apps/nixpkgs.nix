@@ -62,10 +62,15 @@ in
     lua-language-server # Lua language server
     marksman # Markdown language server
     nixd # Nix language server
+    nixfmt-rfc-style # Nix formatter
+    prettier # HTML, CSS, Markdown, JSONC, and JavaScript formatter
     pyright # Python language server
+    ruff # Python formatter and linter
     rust-analyzer # Rust language server
+    rustfmt # Rust formatter
     shellcheck # Shell script diagnostics
     shfmt # Shell script formatter
+    stylua # Lua formatter
     taplo # TOML language server
     terraform-ls # Terraform/OpenTofu language server
     typescript-language-server # TypeScript and JavaScript language server
