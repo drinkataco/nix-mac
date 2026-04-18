@@ -97,7 +97,8 @@ local diagnostics = api.nvim_create_augroup("settings_diagnostics", { clear = tr
 api.nvim_create_autocmd("CursorHold", {
   group = diagnostics,
   callback = function()
-    local row, col = unpack(vim.api.nvim_win_get_cursor(0))
+    local cursor = vim.api.nvim_win_get_cursor(0)
+    local row, col = cursor[1], cursor[2]
     local line = row - 1
     local cursor_diagnostics = vim.diagnostic.get(0, { lnum = line })
     local has_cursor_diagnostic = vim.iter(cursor_diagnostics):any(function(diagnostic)
