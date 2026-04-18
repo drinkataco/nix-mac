@@ -4,8 +4,7 @@ local skip = {
   icons = true,
 }
 
--- Resolve the config directory from Neovim's runtimepath so this works both
--- from the live linked config and from this repo during headless checks.
+-- Discover per-plugin config modules from Neovim's runtimepath.
 local config_dir
 for _, runtime_path in ipairs(vim.api.nvim_list_runtime_paths()) do
   local candidate = runtime_path .. "/lua/plugins/config"

@@ -37,10 +37,14 @@ return function()
     javascript = { "js" },
     json = { "jsonc" },
     typescript = { "ts" },
+    tsx = { "typescriptreact" },
     yaml = { "yml" },
   }
 
-  require("nvim-treesitter").install(languages)
+  local filetypes = vim.deepcopy(languages)
+  for _, aliases in pairs(fenced_language_aliases) do
+    vim.list_extend(filetypes, aliases)
+  end
 
   for parser, aliases in pairs(fenced_language_aliases) do
     vim.treesitter.language.register(parser, aliases)
@@ -48,12 +52,16 @@ return function()
 
   vim.api.nvim_create_autocmd("FileType", {
     group = vim.api.nvim_create_augroup("settings_treesitter", { clear = true }),
-    pattern = languages,
-    callback = function()
-      local ok = pcall(vim.treesitter.start)
-      if not ok then
+    pattern = filetypes,
+    callback = function(args)
+      local filetype = vim.bo[args.buf].filetype
+      local parser = vim.treesitter.language.get_lang(filetype) or filetype
+
+      if not pcall(vim.treesitter.language.add, parser) then
         return
       end
+
+      pcall(vim.treesitter.start, args.buf, parser)
     end,
   })
 end

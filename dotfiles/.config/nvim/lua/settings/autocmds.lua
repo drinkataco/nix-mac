@@ -61,7 +61,7 @@ api.nvim_create_autocmd({ "BufRead", "BufNewFile" }, {
 local folds = api.nvim_create_augroup("settings_fold_refresh", { clear = true })
 api.nvim_create_autocmd({ "BufWinEnter", "FileType" }, {
   group = folds,
-  pattern = { "json", "yaml", "javascript", "typescript", "typescriptreact", "rust", "sh", "bash" },
+  pattern = { "json", "yaml", "javascript", "typescript", "typescriptreact", "tsx", "rust", "sh", "bash" },
   callback = function()
     vim.schedule(function()
       pcall(vim.cmd.normal, { args = { "zx" }, bang = true })
