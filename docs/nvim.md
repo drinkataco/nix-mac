@@ -231,3 +231,6 @@
 
 - config directory: [`dotfiles/.config/nvim`](/Users/osh/projects/nix-mac/dotfiles/.config/nvim)
 - plugin list: [`dotfiles/.config/nvim/lua/plugins/list.lua`](/Users/osh/projects/nix-mac/dotfiles/.config/nvim/lua/plugins/list.lua)
+- plugin config index: [`dotfiles/.config/nvim/lua/plugins/config.lua`](/Users/osh/projects/nix-mac/dotfiles/.config/nvim/lua/plugins/config.lua)
+- per-plugin configs: [`dotfiles/.config/nvim/lua/plugins/config/`](/Users/osh/projects/nix-mac/dotfiles/.config/nvim/lua/plugins/config)
+  - files in this directory are loaded as `config.<filename>`, for example `lualine.lua` becomes `config.lualine`
