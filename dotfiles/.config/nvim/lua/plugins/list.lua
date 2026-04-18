@@ -38,6 +38,13 @@ return {
     config = config.bufferline,
   },
   {
+    "nvim-lualine/lualine.nvim",
+    dependencies = {
+      "nvim-tree/nvim-web-devicons",
+    },
+    config = config.lualine,
+  },
+  {
     "lukas-reineke/indent-blankline.nvim",
     main = "ibl",
     config = config.indent_blankline,

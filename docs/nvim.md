@@ -7,6 +7,7 @@
 * [Core plugins](#core-plugins)
   * [Editing](#editing)
   * [Git and workflow](#git-and-workflow)
+  * [Statusline](#statusline)
   * [Search and navigation](#search-and-navigation)
   * [Diagnostics](#diagnostics)
 * [Editor keymaps](#editor-keymaps)
@@ -107,6 +108,13 @@
 - `gitsigns.nvim`
   - docs: [github.com/lewis6991/gitsigns.nvim](https://github.com/lewis6991/gitsigns.nvim)
   - Shows added, changed, deleted, and untracked lines in the sign column for tracked files.
+
+### Statusline
+
+- `lualine.nvim`
+  - docs: [github.com/nvim-lualine/lualine.nvim](https://github.com/nvim-lualine/lualine.nvim)
+  - Layout is based on [github.com/hieulw/nvimrc](https://github.com/hieulw/nvimrc/blob/HEAD/lua/plugins/ui/statusline.lua).
+  - Shows mode, filename, LSP status, Git diff, diagnostics, and filetype icon.
 
 ### Search and navigation
 
