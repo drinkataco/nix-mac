@@ -206,6 +206,10 @@
 
 ### Diagnostics
 
+- `[d`
+  - previous diagnostic
+- `]d`
+  - next diagnostic
 - `<leader>xx`
   - workspace diagnostics
 - `<leader>xb`
