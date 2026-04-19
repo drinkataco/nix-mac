@@ -21,7 +21,6 @@ return function()
             },
             defaults = {
               auth_method = "chatgpt",
-              model = "gpt-5-codex",
               timeout = 60000,
             },
           })
