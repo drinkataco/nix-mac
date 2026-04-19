@@ -113,4 +113,45 @@ return {
     opts = {},
   },
   { "towolf/vim-helm" },
+
+  -- AI assistance
+  {
+    "olimorris/codecompanion.nvim",
+    version = "^18.0.0",
+    dependencies = {
+      "nvim-lua/plenary.nvim",
+      "nvim-treesitter/nvim-treesitter",
+    },
+    cmd = {
+      "CodeCompanion",
+      "CodeCompanionActions",
+      "CodeCompanionChat",
+      "CodeCompanionCLI",
+      "CodeCompanionCmd",
+    },
+    keys = {
+      {
+        "<leader>aa",
+        "<cmd>CodeCompanionActions<CR>",
+        desc = "AI actions",
+      },
+      {
+        "<leader>ac",
+        "<cmd>CodeCompanionChat Toggle<CR>",
+        desc = "AI chat",
+      },
+      {
+        "<leader>ai",
+        "<cmd>CodeCompanion<CR>",
+        desc = "AI inline",
+      },
+      {
+        "<leader>ai",
+        ":'<,'>CodeCompanion<CR>",
+        desc = "AI inline selection",
+        mode = "v",
+      },
+    },
+    config = config.codecompanion,
+  },
 }

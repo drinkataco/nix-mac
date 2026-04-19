@@ -86,6 +86,19 @@
 - `LuaSnip`
   - docs: [github.com/L3MON4D3/LuaSnip](https://github.com/L3MON4D3/LuaSnip)
   - `friendly-snippets` is loaded for common languages, including TypeScript, JavaScript, JSON, Rust, and Python.
+- `CodeCompanion.nvim`
+  - docs: [codecompanion.olimorris.dev](https://codecompanion.olimorris.dev/)
+  - AI chat, action palette, and inline editing live inside Neovim.
+  - Chat uses the Codex ACP adapter via `codex-acp`, with ChatGPT auth and `gpt-5-codex`.
+  - Inline prompts and command generation use the OpenAI Responses adapter with `gpt-5-codex`.
+  - If ChatGPT auth has expired, run `codex` in a terminal and sign in again.
+  - Inline prompts require `OPENAI_API_KEY` in Neovim's environment.
+  - Useful commands: `:CodeCompanion`, `:CodeCompanionChat`, `:CodeCompanionCLI`, `:CodeCompanionActions`.
+  - Run `:checkhealth codecompanion` if an adapter or credential is not working.
+  - Common keys:
+    - `<leader>aa` opens CodeCompanion actions
+    - `<leader>ac` toggles CodeCompanion chat
+    - `<leader>ai` starts an inline prompt, or applies one to a visual selection
 
 ### Git and workflow
 
