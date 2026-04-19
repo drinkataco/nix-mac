@@ -12,6 +12,13 @@ return {
   { "tpope/vim-obsession" },
   { "tpope/vim-vinegar" },
   { "editorconfig/editorconfig-vim" },
+  {
+    "NMAC427/guess-indent.nvim",
+    event = "BufReadPre",
+    config = function()
+      require("guess-indent").setup({})
+    end,
+  },
 
   -- Fuzzy finding
   { "junegunn/fzf", build = "./install --bin" },
@@ -98,6 +105,23 @@ return {
         "<leader>xb",
         "<cmd>Trouble diagnostics toggle filter.buf=0<CR>",
         desc = "Buffer diagnostics",
+      },
+      {
+        "<leader>xs",
+        function()
+          require("trouble").toggle({
+            mode = "symbols",
+            focus = false,
+            win = {
+              position = "right",
+              wo = {
+                wrap = true,
+                linebreak = true,
+              },
+            },
+          })
+        end,
+        desc = "Document symbols",
       },
       {
         "<leader>xq",

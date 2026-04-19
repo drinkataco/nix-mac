@@ -156,7 +156,6 @@
     - `<leader>/`: runs `:Ag` and searches project contents
     - `<leader>fc`: runs `:Commands` and searches available commands
     - `<leader>gc`: runs `:BCommits` and searches commits for the current buffer
-
 ### Diagnostics
 
 - Diagnostic messages open automatically when the cursor rests on an errored span.
@@ -173,8 +172,11 @@
   - Custom Keymaps:
     - `<leader>xx`: opens workspace diagnostics
     - `<leader>xb`: opens diagnostics for the current buffer
+    - `<leader>xs`: opens symbols for the current file
     - `<leader>xq`: opens the quickfix list in Trouble
     - `<leader>xl`: opens the location list in Trouble
+- `:InspectTree`
+  - opens Neovim's Tree-sitter parse tree inspector for the current buffer
 
 ## Editor keymaps
 
@@ -235,6 +237,8 @@
   - workspace diagnostics
 - `<leader>xb`
   - current buffer diagnostics
+- `<leader>xs`
+  - current file symbols
 - `<leader>xq`
   - quickfix list
 - `<leader>xl`
