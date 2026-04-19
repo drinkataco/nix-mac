@@ -145,6 +145,10 @@ return {
       "nvim-lua/plenary.nvim",
       "nvim-neotest/nvim-nio",
       "fredrikaverpil/neotest-golang",
+      "marilari88/neotest-vitest",
+      "nvim-neotest/neotest-jest",
+      "nvim-neotest/neotest-python",
+      "rouge8/neotest-rust",
     },
     keys = {
       {
@@ -190,13 +194,7 @@ return {
         desc = "Stop test run",
       },
     },
-    config = function()
-      require("neotest").setup({
-        adapters = {
-          require("neotest-golang"),
-        },
-      })
-    end,
+    config = config.neotest,
   },
 
   -- AI assistance

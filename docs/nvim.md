@@ -180,6 +180,10 @@
 - `neotest`
   - docs: [github.com/nvim-neotest/neotest](https://github.com/nvim-neotest/neotest)
   - Go adapter: [github.com/fredrikaverpil/neotest-golang](https://github.com/fredrikaverpil/neotest-golang)
+  - Vitest adapter: [github.com/marilari88/neotest-vitest](https://github.com/marilari88/neotest-vitest)
+  - Jest adapter: [github.com/nvim-neotest/neotest-jest](https://github.com/nvim-neotest/neotest-jest)
+  - Python adapter: [github.com/nvim-neotest/neotest-python](https://github.com/nvim-neotest/neotest-python)
+  - Rust adapter: [github.com/rouge8/neotest-rust](https://github.com/rouge8/neotest-rust)
   - Custom Keymaps:
     - `<leader>nr`: runs the nearest test
     - `<leader>nf`: runs tests in the current file

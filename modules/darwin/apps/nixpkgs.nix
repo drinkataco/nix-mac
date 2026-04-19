@@ -67,6 +67,7 @@ in
     pyright # Python language server
     ruff # Python formatter and linter
     rust-analyzer # Rust language server
+    cargo-nextest # Rust test runner used by neotest-rust
     rustfmt # Rust formatter
     shellcheck # Shell script diagnostics
     shfmt # Shell script formatter
