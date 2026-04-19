@@ -1,19 +1,36 @@
 return function()
   -- Docs: https://github.com/hrsh7th/nvim-cmp
   local cmp = require("cmp")
+  local lspkind = require("lspkind")
   local luasnip = require("luasnip")
 
   require("luasnip.loaders.from_vscode").lazy_load()
 
+  local insert_window = {
+    completion = cmp.config.window.bordered({
+      border = "rounded",
+    }),
+    documentation = cmp.config.window.bordered({
+      border = "rounded",
+    }),
+  }
+
   cmp.setup({
     completion = {
       completeopt = "menu,menuone,noselect",
+    },
+    formatting = {
+      format = lspkind.cmp_format({
+        mode = "symbol_text",
+        preset = "default",
+      }),
     },
     snippet = {
       expand = function(args)
         luasnip.lsp_expand(args.body)
       end,
     },
+    window = insert_window,
     mapping = cmp.mapping.preset.insert({
       ["<C-Space>"] = cmp.mapping.complete(),
       ["<C-n>"] = cmp.mapping.select_next_item(),
