@@ -56,7 +56,9 @@ return function()
         return {
           command = eslint,
           args = { "--fix", "$FILENAME" },
-          cwd = vim.fs.dirname(vim.fs.dirname(vim.fs.dirname(eslint))),
+          cwd = function()
+            return vim.fs.dirname(vim.fs.dirname(vim.fs.dirname(eslint)))
+          end,
           stdin = false,
         }
       end,
