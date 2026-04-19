@@ -2,6 +2,7 @@ return function()
   -- Docs: https://github.com/akinsho/bufferline.nvim
   require("bufferline").setup({
     options = {
+      always_show_bufferline = false,
       diagnostics = "nvim_lsp",
       mode = "tabs",
       hover = {
