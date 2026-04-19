@@ -177,6 +177,16 @@
     - `<leader>xl`: opens the location list in Trouble
 - `:InspectTree`
   - opens Neovim's Tree-sitter parse tree inspector for the current buffer
+- `neotest`
+  - docs: [github.com/nvim-neotest/neotest](https://github.com/nvim-neotest/neotest)
+  - Go adapter: [github.com/fredrikaverpil/neotest-golang](https://github.com/fredrikaverpil/neotest-golang)
+  - Custom Keymaps:
+    - `<leader>nr`: runs the nearest test
+    - `<leader>nf`: runs tests in the current file
+    - `<leader>ns`: toggles the test summary
+    - `<leader>no`: opens output for the selected test
+    - `<leader>np`: toggles the output panel
+    - `<leader>nx`: stops the current test run
 
 ## Editor keymaps
 
@@ -243,6 +253,21 @@
   - quickfix list
 - `<leader>xl`
   - location list
+
+### Tests
+
+- `<leader>nr`
+  - run nearest test
+- `<leader>nf`
+  - run current file tests
+- `<leader>ns`
+  - toggle test summary
+- `<leader>no`
+  - open test output
+- `<leader>np`
+  - toggle test output panel
+- `<leader>nx`
+  - stop current test run
 
 ## Config files in this setup
 

@@ -138,6 +138,67 @@ return {
   },
   { "towolf/vim-helm" },
 
+  -- Testing
+  {
+    "nvim-neotest/neotest",
+    dependencies = {
+      "nvim-lua/plenary.nvim",
+      "nvim-neotest/nvim-nio",
+      "fredrikaverpil/neotest-golang",
+    },
+    keys = {
+      {
+        "<leader>nr",
+        function()
+          require("neotest").run.run()
+        end,
+        desc = "Run nearest test",
+      },
+      {
+        "<leader>nf",
+        function()
+          require("neotest").run.run(vim.fn.expand("%"))
+        end,
+        desc = "Run test file",
+      },
+      {
+        "<leader>ns",
+        function()
+          require("neotest").summary.toggle()
+        end,
+        desc = "Toggle test summary",
+      },
+      {
+        "<leader>no",
+        function()
+          require("neotest").output.open({ enter = true })
+        end,
+        desc = "Open test output",
+      },
+      {
+        "<leader>np",
+        function()
+          require("neotest").output_panel.toggle()
+        end,
+        desc = "Toggle test output panel",
+      },
+      {
+        "<leader>nx",
+        function()
+          require("neotest").run.stop()
+        end,
+        desc = "Stop test run",
+      },
+    },
+    config = function()
+      require("neotest").setup({
+        adapters = {
+          require("neotest-golang"),
+        },
+      })
+    end,
+  },
+
   -- AI assistance
   {
     "olimorris/codecompanion.nvim",
