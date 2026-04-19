@@ -19,6 +19,8 @@ opt.number = true
 opt.numberwidth = 2
 opt.mouse = "a"
 opt.mousemoveevent = true
+-- Hide the command line until it is needed for :, /, ?, or messages.
+opt.cmdheight = 0
 opt.signcolumn = "yes"
 opt.splitbelow = true
 opt.splitright = true

@@ -46,6 +46,24 @@ api.nvim_create_autocmd("CmdlineLeave", {
   command = "set nohlsearch",
 })
 
+-- Keep the command line hidden in normal mode, but reserve a real command row
+-- while typing commands so the statusline remains visible above it.
+local command_line = api.nvim_create_augroup("settings_command_line", { clear = true })
+api.nvim_create_autocmd("CmdlineEnter", {
+  group = command_line,
+  callback = function()
+    vim.opt.cmdheight = 1
+  end,
+})
+api.nvim_create_autocmd("CmdlineLeave", {
+  group = command_line,
+  callback = function()
+    vim.schedule(function()
+      vim.opt.cmdheight = 0
+    end)
+  end,
+})
+
 -- tmux config filenames are not detected consistently enough without a manual filetype hint.
 local tmux = api.nvim_create_augroup("settings_tmux_filetype", { clear = true })
 api.nvim_create_autocmd({ "BufRead", "BufNewFile" }, {
