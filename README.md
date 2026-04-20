@@ -1,5 +1,7 @@
 # nix-mac
 
+[![Lint](https://github.com/drinkataco/nix-mac/actions/workflows/lint.yml/badge.svg)](https://github.com/drinkataco/nix-mac/actions/workflows/lint.yml)
+
 A nix-based macOS setup for my machines.
 
 This repo uses:
