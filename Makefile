@@ -1,7 +1,6 @@
-HOST ?= watts
+HOST ?= $(shell scutil --get LocalHostName 2>/dev/null || hostname -s)
 
 .PHONY: update
 
 update:
-	git pull --ff-only
 	sudo darwin-rebuild switch --flake .#$(HOST)
