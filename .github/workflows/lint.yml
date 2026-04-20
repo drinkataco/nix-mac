@@ -1,0 +1,100 @@
+name: Lint
+
+on:
+  pull_request:
+  push:
+
+jobs:
+  bash:
+    name: Bash
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Run ShellCheck
+        uses: ludeeus/action-shellcheck@2.0.0
+        with:
+          scandir: .
+
+  lua:
+    name: Lua
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Run StyLua
+        uses: JohnnyMorganz/stylua-action@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          version: latest
+          args: --check dotfiles/.config/nvim
+
+  zsh:
+    name: Zsh
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install Zsh
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes zsh
+
+      - name: Check Zsh syntax
+        run: |
+          git ls-files -z \
+            'dotfiles/.zsh*' \
+            'dotfiles/.zimrc' \
+            'dotfiles/**/*.zsh' \
+            | xargs -0 zsh -n
+
+  tmux:
+    name: tmux
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install tmux
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes tmux
+
+      - name: Check tmux config syntax
+        run: |
+          tmux -L lint -f /dev/null start-server
+
+          git ls-files -z 'dotfiles/.tmux.conf' 'dotfiles/**/*.tmux' \
+            | xargs -0 -I {} tmux -L lint source-file {}
+
+          tmux -L lint kill-server
+
+  nix:
+    name: Nix
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install Nix
+        uses: cachix/install-nix-action@v31
+        with:
+          extra_nix_config: |
+            experimental-features = nix-command flakes
+
+      - name: Run nixfmt
+        run: nix run 'nixpkgs#nixfmt-rfc-style' -- --check $(git ls-files '*.nix')
+
+      - name: Run statix
+        run: nix run 'nixpkgs#statix' -- check .
+
+      - name: Run deadnix
+        run: nix run 'nixpkgs#deadnix' -- --fail .
