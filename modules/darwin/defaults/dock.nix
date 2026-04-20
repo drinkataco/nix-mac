@@ -1,4 +1,4 @@
-{ username, ... }:
+{ featGamesDir, lib, username, ... }:
 {
   system.defaults.dock = {
     autohide = true;
@@ -46,6 +46,7 @@
           showas = "grid";
         };
       }
+    ] ++ lib.optionals featGamesDir [
       {
         folder = {
           arrangement = "name";
