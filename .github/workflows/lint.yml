@@ -17,6 +17,10 @@ jobs:
         uses: ludeeus/action-shellcheck@2.0.0
         with:
           scandir: .
+          additional_files: >-
+            .github/workflows/scripts/lint-nix.sh
+            .github/workflows/scripts/lint-tmux.sh
+            .github/workflows/scripts/lint-zsh.sh
 
   lua:
     name: Lua
@@ -47,12 +51,7 @@ jobs:
           sudo apt-get install --yes zsh
 
       - name: Check Zsh syntax
-        run: |
-          git ls-files -z \
-            'dotfiles/.zsh*' \
-            'dotfiles/.zimrc' \
-            'dotfiles/**/*.zsh' \
-            | xargs -0 zsh -n
+        run: bash .github/workflows/scripts/lint-zsh.sh
 
   tmux:
     name: tmux
@@ -68,13 +67,7 @@ jobs:
           sudo apt-get install --yes tmux
 
       - name: Check tmux config syntax
-        run: |
-          tmux -L lint -f /dev/null start-server
-
-          git ls-files -z 'dotfiles/.tmux.conf' 'dotfiles/**/*.tmux' \
-            | xargs -0 -I {} tmux -L lint source-file {}
-
-          tmux -L lint kill-server
+        run: bash .github/workflows/scripts/lint-tmux.sh
 
   nix:
     name: Nix
@@ -91,10 +84,4 @@ jobs:
             experimental-features = nix-command flakes
 
       - name: Run nixfmt
-        run: nix run 'nixpkgs#nixfmt-rfc-style' -- --check $(git ls-files '*.nix')
-
-      - name: Run statix
-        run: nix run 'nixpkgs#statix' -- check .
-
-      - name: Run deadnix
-        run: nix run 'nixpkgs#deadnix' -- --fail .
+        run: bash .github/workflows/scripts/lint-nix.sh
