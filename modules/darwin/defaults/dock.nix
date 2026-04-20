@@ -1,4 +1,4 @@
-{ features, lib, username, ... }:
+{ config, lib, username, ... }:
 {
   system.defaults.dock = {
     autohide = true;
@@ -46,7 +46,7 @@
           showas = "grid";
         };
       }
-    ] ++ lib.optionals features.gamesDir [
+    ] ++ lib.optionals config.features.gamesDir [
       {
         folder = {
           arrangement = "name";
