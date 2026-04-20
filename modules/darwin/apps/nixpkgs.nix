@@ -1,7 +1,7 @@
 { pkgs, ... }:
 {
   # These packages are installed on every host. For host-specific packages, add
-  # `environment.systemPackages = [ ... ];` in the relevant host module.
+  #  `environment.systemPackages = [ ... ];` in the relevant host module
   environment.systemPackages = with pkgs; [
     # Shell and terminal
     alacritty.terminfo

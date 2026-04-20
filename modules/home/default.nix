@@ -1,12 +1,13 @@
-{ ... }:
+{ featGamesDir, lib, ... }:
 {
   imports = [
     ./dotfiles.nix
-    ./games.nix
     ./gpg.nix
     ./node.nix
     ./ssh.nix
     ./tmux.nix
+  ] ++ lib.optionals featGamesDir [
+    ./games.nix
   ];
 
   home.stateVersion = "25.05";

@@ -7,11 +7,14 @@ darwin.lib.darwinSystem {
   modules = [
     inputs.nix-homebrew.darwinModules.nix-homebrew
     inputs.home-manager.darwinModules.home-manager
-    {
+    ({ config, lib, ... }: {
+      options.featGamesDir = lib.mkEnableOption "the user games application directory";
+
       home-manager.useGlobalPkgs = true;
       home-manager.useUserPackages = true;
       home-manager.extraSpecialArgs = {
         inherit inputs hostname system username;
+        inherit (config) featGamesDir;
       };
       home-manager.users.${username} = { lib, ... }: {
         imports = [
@@ -21,7 +24,7 @@ darwin.lib.darwinSystem {
         home.username = lib.mkForce username;
         home.homeDirectory = lib.mkForce "/Users/${username}";
       };
-    }
+    })
     ../hosts/${hostname}
   ];
 }
