@@ -87,7 +87,7 @@ Configured hosts live under `hosts/` and are wired into `darwinConfigurations`
 in `flake.nix`.
 
 - `watts`: user `osh`, Apple Silicon (`aarch64-darwin`)
-- `work`: user `aedd`, Apple Silicon (`aarch64-darwin`)
+- `work`: user `osh`, Apple Silicon (`aarch64-darwin`)
 
 ## Dotfiles
 

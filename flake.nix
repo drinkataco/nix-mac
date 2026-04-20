@@ -20,7 +20,7 @@
       };
 
       work = {
-        username = "aedd";
+        username = "osh";
         system = "aarch64-darwin";
       };
     };
