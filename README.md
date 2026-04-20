@@ -38,6 +38,7 @@ bash bootstrap.sh --no-provision
 bash bootstrap.sh --no-install
 bash scripts/install.sh
 bash scripts/provision.sh --hostname watts
+bash scripts/provision.sh --hostname work
 bash scripts/uninstall.sh
 ```
 
@@ -60,6 +61,13 @@ If `darwin-rebuild` is not on your `PATH`, the fallback is:
 sudo nix run nix-darwin/master#darwin-rebuild -- switch --flake .#watts
 ```
 
+For another configured host, pass its flake output:
+
+```bash
+sudo darwin-rebuild switch --flake .#work
+make update HOST=work
+```
+
 ### Uninstalling Nix
 
 If a machine already has a different Nix installation and I want to reset it back to the repo's expected upstream Nix install, run:
@@ -75,9 +83,11 @@ bash scripts/uninstall.sh
 - `modules/home/`: Home Manager bits for user-level file linking and hooks
 - `dotfiles/`: file-based dotfiles and config
 
-The initial host is `watts` and assumes Apple Silicon (`aarch64-darwin`).
-If you want a different hostname, rename the directory under `hosts/` and the
-matching entry in `flake.nix`.
+Configured hosts live under `hosts/` and are wired into `darwinConfigurations`
+in `flake.nix`.
+
+- `watts`: user `osh`, Apple Silicon (`aarch64-darwin`)
+- `work`: user `aedd`, Apple Silicon (`aarch64-darwin`)
 
 ## Dotfiles
 

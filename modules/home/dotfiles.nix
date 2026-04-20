@@ -1,6 +1,7 @@
 { config, lib, ... }:
 let
-  repoDotfilesDir = "${config.home.homeDirectory}/projects/nix-mac/dotfiles";
+  repoDir = "${config.home.homeDirectory}/projects/nix-mac";
+  repoDotfilesDir = "${repoDir}/dotfiles";
   mkSource = path: config.lib.file.mkOutOfStoreSymlink "${repoDotfilesDir}/${path}";
 
   # Exceptions are for paths that need behaviour beyond the default direct
@@ -53,5 +54,13 @@ let
   exceptionEntries = lib.mapAttrsToList (path: attrs: mkEntry path attrs) exceptions;
 in
 {
+  home.activation.ensureNixMacDotfilesCheckout = lib.hm.dag.entryBefore [ "checkLinkTargets" ] ''
+    if [ ! -d ${lib.escapeShellArg repoDotfilesDir} ]; then
+      echo "Expected dotfiles at ${repoDotfilesDir}" >&2
+      echo "Clone this repo to ${repoDir} or rerun scripts/provision.sh with --repo-dir ${repoDir}." >&2
+      exit 1
+    fi
+  '';
+
   home.file = builtins.listToAttrs (collectEntries "" ../../dotfiles ++ exceptionEntries);
 }
