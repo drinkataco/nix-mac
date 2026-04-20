@@ -17,6 +17,8 @@
       upgrade = false;
     };
 
+    # These apps are installed on every host. For host-specific apps, add
+    # `homebrew.casks = [ ... ];` in the relevant host module.
     # Keep GUI apps in Homebrew so they have stable /Applications paths.
     casks = [
       # Fonts
