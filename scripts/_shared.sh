@@ -140,5 +140,5 @@ provision_system() {
   cd "${REPO_DIR}"
   nix flake update
   sudo -H env NIX_CONFIG="${NIX_CONFIG}" \
-    nix run nix-darwin/master#darwin-rebuild -- switch --flake ".#${HOSTNAME_VALUE}"
+    nix run 'nix-darwin/master#darwin-rebuild' -- switch --flake ".#${HOSTNAME_VALUE}"
 }

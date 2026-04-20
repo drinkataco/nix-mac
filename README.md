@@ -52,19 +52,18 @@ make update
 
 This does:
 
-1. `git pull --ff-only` - ensures latest changes are pulled down
-2. `sudo darwin-rebuild switch --flake .#watts`
+1. `sudo darwin-rebuild switch --flake '.#watts'`
 
 If `darwin-rebuild` is not on your `PATH`, the fallback is:
 
 ```bash
-sudo nix run nix-darwin/master#darwin-rebuild -- switch --flake .#watts
+sudo nix run 'nix-darwin/master#darwin-rebuild' -- switch --flake '.#watts'
 ```
 
 For another configured host, pass its flake output:
 
 ```bash
-sudo darwin-rebuild switch --flake .#work
+sudo darwin-rebuild switch --flake '.#work'
 make update HOST=work
 ```
 
