@@ -10,7 +10,7 @@
   system.primaryUser = username;
 
   # Keep a generated ~/Applications/Games directory for games
-  featGamesDir = true;
+  features.gamesDir = true;
 
   # Host-specific Homebrew casks for watts
   homebrew.casks = [

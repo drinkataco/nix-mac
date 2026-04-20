@@ -1,4 +1,4 @@
-{ featGamesDir, lib, ... }:
+{ features, lib, ... }:
 {
   imports = [
     ./dotfiles.nix
@@ -6,7 +6,7 @@
     ./node.nix
     ./ssh.nix
     ./tmux.nix
-  ] ++ lib.optionals featGamesDir [
+  ] ++ lib.optionals features.gamesDir [
     ./games.nix
   ];
 
