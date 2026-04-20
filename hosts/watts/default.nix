@@ -9,5 +9,9 @@
   networking.localHostName = hostname;
   system.primaryUser = username;
 
+  homebrew.casks = [
+    "steam"
+  ];
+
   system.stateVersion = 6;
 }

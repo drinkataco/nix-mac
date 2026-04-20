@@ -54,7 +54,6 @@
       # Media and hardware tools
       "handbrake-app"
       "raspberry-pi-imager"
-      "steam"
       "utm"
       "vlc"
 
