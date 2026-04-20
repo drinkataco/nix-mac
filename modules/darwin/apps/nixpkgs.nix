@@ -1,8 +1,7 @@
 { pkgs, ... }:
-let
-  scarlettMixControl = pkgs.callPackage ./packages/scarlett-mixcontrol.nix { };
-in
 {
+  # These packages are installed on every host. For host-specific packages, add
+  # `environment.systemPackages = [ ... ];` in the relevant host module.
   environment.systemPackages = with pkgs; [
     # Shell and terminal
     alacritty.terminfo
@@ -84,7 +83,6 @@ in
 
     # Media and data tools
     mkvtoolnix
-    scarlettMixControl
     xan
   ];
 }
