@@ -80,6 +80,8 @@ parse_shared_args() {
     esac
   done
 
+  # Consumed by scripts after they source this file and call parse_shared_args.
+  # shellcheck disable=SC2034
   SHARED_ARGS_REMAINDER=("$@")
 }
 
