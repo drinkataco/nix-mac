@@ -6,11 +6,8 @@ return function()
   end
 
   local diagnostic_signs = require("plugins.config.icons").diagnostics
-  local diagnostic_float = {
-    border = "rounded",
-    focusable = false,
-    scope = "cursor",
-  }
+  local ui = require("settings.ui")
+  local diagnostic_float = ui.diagnostic_float()
 
   vim.diagnostic.config({
     signs = {

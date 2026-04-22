@@ -1,4 +1,5 @@
 local api = vim.api
+local ui = require("settings.ui")
 
 -- Only open the hover float when the cursor is actually resting on a diagnostic.
 -- This keeps CursorHold useful without spraying empty floats around the editor.
@@ -16,11 +17,7 @@ api.nvim_create_autocmd("CursorHold", {
     end)
 
     if has_cursor_diagnostic then
-      vim.diagnostic.open_float(nil, {
-        border = "rounded",
-        focus = false,
-        scope = "cursor",
-      })
+      vim.diagnostic.open_float(nil, ui.diagnostic_float({ focus = false }))
     end
   end,
 })

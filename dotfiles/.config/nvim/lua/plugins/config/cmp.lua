@@ -3,16 +3,13 @@ return function()
   local cmp = require("cmp")
   local lspkind = require("lspkind")
   local luasnip = require("luasnip")
+  local ui = require("settings.ui")
 
   require("luasnip.loaders.from_vscode").lazy_load()
 
   local insert_window = {
-    completion = cmp.config.window.bordered({
-      border = "rounded",
-    }),
-    documentation = cmp.config.window.bordered({
-      border = "rounded",
-    }),
+    completion = ui.cmp_window(cmp),
+    documentation = ui.cmp_window(cmp),
   }
 
   cmp.setup({
@@ -77,9 +74,7 @@ return function()
   cmp.setup.cmdline(":", {
     mapping = cmp.mapping.preset.cmdline(),
     window = {
-      completion = cmp.config.window.bordered({
-        border = "rounded",
-      }),
+      completion = ui.cmp_window(cmp),
     },
     sources = cmp.config.sources({
       { name = "path" },

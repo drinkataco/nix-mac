@@ -1,10 +1,10 @@
 return function()
+  local ui = require("settings.ui")
+
   require("lazy").load({ plugins = { "nvim-nio" } })
 
   require("neotest").setup({
-    floating = {
-      border = "rounded",
-    },
+    floating = ui.float(),
     adapters = {
       require("neotest-golang"),
       require("neotest-vitest")({
