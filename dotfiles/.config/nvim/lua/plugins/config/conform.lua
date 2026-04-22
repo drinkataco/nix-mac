@@ -47,8 +47,8 @@ return function()
       terraform = { "tofu_fmt" },
       ["terraform-vars"] = { "tofu_fmt" },
       tsx = { "project_eslint", "prettier" },
-      typescript = { "project_eslint", "prettier" },
-      typescriptreact = { "project_eslint", "prettier" },
+      typescript = { "prettier", "project_eslint" },
+      typescriptreact = { "prettier", "project_eslint" },
       yaml = { "prettier" },
     },
     formatters = {
