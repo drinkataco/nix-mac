@@ -42,20 +42,32 @@ api.nvim_create_autocmd("CmdlineLeave", {
   command = "set nohlsearch",
 })
 
--- Hide the command line in normal editing, but bring it back while entering a
--- command so the statusline can stay visible on its own row.
+local command_line_view
+
+-- Keep a dedicated command row while entering commands so the global statusline
+-- stays visible, but restore the current view after resizing so the buffer does
+-- not jump by a line when the window is already scrolled.
 local command_line = api.nvim_create_augroup("settings_command_line", { clear = true })
 api.nvim_create_autocmd("CmdlineEnter", {
   group = command_line,
   callback = function()
+    command_line_view = vim.fn.winsaveview()
     vim.opt.cmdheight = 1
+    vim.schedule(function()
+      if command_line_view ~= nil then
+        pcall(vim.fn.winrestview, command_line_view)
+      end
+    end)
   end,
 })
 api.nvim_create_autocmd("CmdlineLeave", {
   group = command_line,
   callback = function()
+    local view = command_line_view or vim.fn.winsaveview()
     vim.schedule(function()
       vim.opt.cmdheight = 0
+      pcall(vim.fn.winrestview, view)
+      command_line_view = nil
     end)
   end,
 })

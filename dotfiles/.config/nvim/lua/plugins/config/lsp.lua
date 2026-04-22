@@ -6,6 +6,11 @@ return function()
   end
 
   local diagnostic_signs = require("plugins.config.icons").diagnostics
+  local diagnostic_float = {
+    border = "rounded",
+    focusable = false,
+    scope = "cursor",
+  }
 
   vim.diagnostic.config({
     signs = {
@@ -16,6 +21,7 @@ return function()
         [vim.diagnostic.severity.HINT] = diagnostic_signs.HINT,
       },
     },
+    float = diagnostic_float,
   })
 
   local map = vim.keymap.set
@@ -28,8 +34,14 @@ return function()
     map("n", "K", vim.lsp.buf.hover, vim.tbl_extend("force", opts, { desc = "Hover documentation" }))
     map("n", "<leader>rn", vim.lsp.buf.rename, vim.tbl_extend("force", opts, { desc = "Rename symbol" }))
     map("n", "<leader>ca", vim.lsp.buf.code_action, vim.tbl_extend("force", opts, { desc = "Code action" }))
-    map("n", "[d", vim.diagnostic.goto_prev, vim.tbl_extend("force", opts, { desc = "Previous diagnostic" }))
-    map("n", "]d", vim.diagnostic.goto_next, vim.tbl_extend("force", opts, { desc = "Next diagnostic" }))
+    -- Open the same bordered float immediately after moving so diagnostic
+    -- navigation and CursorHold use one consistent presentation.
+    map("n", "[d", function()
+      vim.diagnostic.goto_prev({ float = diagnostic_float })
+    end, vim.tbl_extend("force", opts, { desc = "Previous diagnostic" }))
+    map("n", "]d", function()
+      vim.diagnostic.goto_next({ float = diagnostic_float })
+    end, vim.tbl_extend("force", opts, { desc = "Next diagnostic" }))
   end
 
   -- Docs:

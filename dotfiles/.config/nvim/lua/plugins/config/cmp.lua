@@ -72,8 +72,15 @@ return function()
     },
   })
 
+  -- Use the same floating completion window in command mode so opening command
+  -- suggestions does not reflow the main buffer area.
   cmp.setup.cmdline(":", {
     mapping = cmp.mapping.preset.cmdline(),
+    window = {
+      completion = cmp.config.window.bordered({
+        border = "rounded",
+      }),
+    },
     sources = cmp.config.sources({
       { name = "path" },
     }, {
