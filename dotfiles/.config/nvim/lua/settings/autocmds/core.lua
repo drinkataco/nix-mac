@@ -1,29 +1,27 @@
 local api = vim.api
 
--- Views only make sense for normal file buffers; skip prompts, terminals, and scratch buffers.
+-- Views only make sense for normal file buffers; prompts, terminals, and scratch
+-- buffers either cannot be restored sanely or create noisy view files.
 local function can_persist_view(bufnr)
   if vim.bo[bufnr].buftype ~= "" then
     return false
   end
 
-  local name = vim.api.nvim_buf_get_name(bufnr)
-  return name ~= ""
+  return api.nvim_buf_get_name(bufnr) ~= ""
 end
 
--- Autocmd groups let us replace and reload related event hooks cleanly.
+-- Re-check files when Neovim regains focus so external edits show up promptly.
 local autoread = api.nvim_create_augroup("settings_autoread", { clear = true })
 api.nvim_create_autocmd({ "FocusGained", "BufEnter" }, {
   group = autoread,
-  -- Check whether files changed on disk when returning to Neovim or entering a buffer.
   command = "checktime",
 })
 
--- Ensure writes to new nested paths do not fail because parent directories are missing.
+-- Allow writing new nested files without creating each parent directory by hand.
 local mkdir = api.nvim_create_augroup("settings_mkdir", { clear = true })
 api.nvim_create_autocmd("BufWritePre", {
   group = mkdir,
   callback = function(args)
-    -- Create missing parent directories before saving a new file.
     local dir = vim.fn.fnamemodify(args.match, ":p:h")
     if vim.fn.isdirectory(dir) == 0 then
       vim.fn.mkdir(dir, "p")
@@ -31,23 +29,21 @@ api.nvim_create_autocmd("BufWritePre", {
   end,
 })
 
--- Search highlighting should only stay on while actively using / or ?.
+-- Search highlighting should only remain active while a / or ? search is in flight.
 local search = api.nvim_create_augroup("settings_search_highlight", { clear = true })
 api.nvim_create_autocmd("CmdlineEnter", {
   group = search,
   pattern = { "/", "?" },
-  -- Only highlight matches while actively searching.
   command = "set hlsearch",
 })
 api.nvim_create_autocmd("CmdlineLeave", {
   group = search,
   pattern = { "/", "?" },
-  -- Drop search highlighting once the command-line search ends.
   command = "set nohlsearch",
 })
 
--- Keep the command line hidden in normal mode, but reserve a real command row
--- while typing commands so the statusline remains visible above it.
+-- Hide the command line in normal editing, but bring it back while entering a
+-- command so the statusline can stay visible on its own row.
 local command_line = api.nvim_create_augroup("settings_command_line", { clear = true })
 api.nvim_create_autocmd("CmdlineEnter", {
   group = command_line,
@@ -64,7 +60,8 @@ api.nvim_create_autocmd("CmdlineLeave", {
   end,
 })
 
--- tmux config filenames are not detected consistently enough without a manual filetype hint.
+-- tmux filenames are inconsistent enough that an explicit hint is more reliable
+-- than relying on filetype detection to guess correctly every time.
 local tmux = api.nvim_create_augroup("settings_tmux_filetype", { clear = true })
 api.nvim_create_autocmd({ "BufRead", "BufNewFile" }, {
   group = tmux,
@@ -74,8 +71,8 @@ api.nvim_create_autocmd({ "BufRead", "BufNewFile" }, {
   end,
 })
 
--- Treesitter folds can come back stale after session restore; refreshing them on
--- open keeps structured files foldable without having to reset the whole window.
+-- Treesitter-backed folds can come back stale after session restore; `zx`
+-- refreshes them without resetting the rest of the window state.
 local folds = api.nvim_create_augroup("settings_fold_refresh", { clear = true })
 api.nvim_create_autocmd({ "BufWinEnter", "FileType" }, {
   group = folds,
@@ -87,51 +84,21 @@ api.nvim_create_autocmd({ "BufWinEnter", "FileType" }, {
   end,
 })
 
--- Persist per-file folds and cursor position across close/reopen using views.
+-- Persist folds and cursor position across reopen for real file buffers only.
 local views = api.nvim_create_augroup("settings_views", { clear = true })
 api.nvim_create_autocmd("BufWinLeave", {
   group = views,
   callback = function(args)
-    if not can_persist_view(args.buf) then
-      return
+    if can_persist_view(args.buf) then
+      pcall(vim.cmd, "silent! mkview")
     end
-
-    pcall(vim.cmd, "silent! mkview")
   end,
 })
 api.nvim_create_autocmd("BufWinEnter", {
   group = views,
   callback = function(args)
-    if not can_persist_view(args.buf) then
-      return
+    if can_persist_view(args.buf) then
+      pcall(vim.cmd, "silent! loadview")
     end
-
-    pcall(vim.cmd, "silent! loadview")
-  end,
-})
-
--- Show the diagnostic message when the cursor rests on an errored span.
-local diagnostics = api.nvim_create_augroup("settings_diagnostics", { clear = true })
-api.nvim_create_autocmd("CursorHold", {
-  group = diagnostics,
-  callback = function()
-    local cursor = vim.api.nvim_win_get_cursor(0)
-    local row, col = cursor[1], cursor[2]
-    local line = row - 1
-    local cursor_diagnostics = vim.diagnostic.get(0, { lnum = line })
-    local has_cursor_diagnostic = vim.iter(cursor_diagnostics):any(function(diagnostic)
-      local end_col = diagnostic.end_col or diagnostic.col
-      return col >= diagnostic.col and col <= end_col
-    end)
-
-    if not has_cursor_diagnostic then
-      return
-    end
-
-    vim.diagnostic.open_float(nil, {
-      border = "rounded",
-      focus = false,
-      scope = "cursor",
-    })
   end,
 })
