@@ -26,6 +26,31 @@ return function()
     return vim.fs.dirname(vim.fs.dirname(vim.fs.dirname(eslint)))
   end
 
+  local function prettier_root(prettier)
+    return vim.fs.dirname(vim.fs.dirname(vim.fs.dirname(prettier)))
+  end
+
+  -- JS/TS projects often rely on ESLint as the source of truth. When a repo has
+  -- ESLint but no local Prettier, skip the global Prettier fallback so machine-
+  -- wide defaults do not fight project formatting rules.
+  local function js_formatters(bufnr)
+    local filename = vim.api.nvim_buf_get_name(bufnr)
+    local ctx = { filename = filename }
+    local eslint = find_project_file(ctx, { "node_modules/.bin/eslint" })
+    local prettier = find_project_file(ctx, { "node_modules/.bin/prettier" })
+    local has_eslint = eslint ~= nil and eslint_config(ctx) ~= nil
+
+    if has_eslint then
+      if prettier ~= nil then
+        return { "project_eslint", "project_prettier" }
+      end
+
+      return { "project_eslint" }
+    end
+
+    return { "prettier" }
+  end
+
   require("conform").setup({
     formatters_by_ft = {
       bash = { "shfmt" },
@@ -33,8 +58,8 @@ return function()
       go = { "gofmt" },
       hcl = { "tofu_fmt" },
       html = { "prettier" },
-      javascript = { "project_eslint", "prettier" },
-      javascriptreact = { "project_eslint", "prettier" },
+      javascript = js_formatters,
+      javascriptreact = js_formatters,
       json = { "prettier" },
       jsonc = { "prettier" },
       lua = { "stylua" },
@@ -46,9 +71,9 @@ return function()
       toml = { "taplo" },
       terraform = { "tofu_fmt" },
       ["terraform-vars"] = { "tofu_fmt" },
-      tsx = { "project_eslint", "prettier" },
-      typescript = { "prettier", "project_eslint" },
-      typescriptreact = { "prettier", "project_eslint" },
+      tsx = js_formatters,
+      typescript = js_formatters,
+      typescriptreact = js_formatters,
       yaml = { "prettier" },
     },
     formatters = {
@@ -104,6 +129,22 @@ return function()
               end)
             )
           end,
+        }
+      end,
+      project_prettier = function(bufnr)
+        local filename = vim.api.nvim_buf_get_name(bufnr)
+        local ctx = { filename = filename }
+        local prettier = find_project_file(ctx, { "node_modules/.bin/prettier" })
+
+        if prettier == nil then
+          return nil
+        end
+
+        return {
+          command = prettier,
+          args = { "--stdin-filepath", "$FILENAME" },
+          cwd = prettier_root(prettier),
+          stdin = true,
         }
       end,
       tofu_fmt = {
