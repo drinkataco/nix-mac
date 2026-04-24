@@ -1,7 +1,13 @@
 local map = vim.keymap.set
+local function project_root()
+  return vim.fs.root(0, { ".git" }) or vim.fn.getcwd()
+end
 
 -- Netrw/Vinegar remains useful for quick split/tab file browsing.
 map("n", "<leader>e", "<cmd>Explore<CR>", { desc = "Explore files" })
+map("n", "<leader>er", function()
+  vim.cmd("Explore " .. vim.fn.fnameescape(project_root()))
+end, { desc = "Explore project root" })
 map("n", "<leader>ev", "<cmd>Vexplore<CR>", { desc = "Explore files in vsplit" })
 map("n", "<leader>eh", "<cmd>Sexplore<CR>", { desc = "Explore files in split" })
 map("n", "<leader>et", "<cmd>Texplore<CR>", { desc = "Explore files in new tab" })

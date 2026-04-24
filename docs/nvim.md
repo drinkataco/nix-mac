@@ -218,12 +218,15 @@
   - close it with `:q`
 - `<CR>` in Markdown
   - when the cursor is on a local anchor link like `(#diagnostics)`, jump to that heading
+  - when the cursor is on a normal link, open that URL or file target
   - otherwise behaves like normal Enter
 
 ### Files and tabs
 
 - `<leader>e`
   - explore files
+- `<leader>er`
+  - explore the current project's root directory
 - `<leader>ev`
   - explore files in vsplit
 - `<leader>eh`

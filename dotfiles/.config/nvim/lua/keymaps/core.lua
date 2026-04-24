@@ -14,10 +14,10 @@ vim.api.nvim_create_autocmd("FileType", {
   pattern = "markdown",
   callback = function(args)
     vim.keymap.set("n", "<CR>", function()
-      if not nvim_docs.jump_anchor(args.buf) then
+      if not nvim_docs.jump_anchor(args.buf) and not nvim_docs.open_link(args.buf) then
         vim.cmd("normal! <CR>")
       end
-    end, { buffer = args.buf, silent = true, desc = "Open markdown anchor" })
+    end, { buffer = args.buf, silent = true, desc = "Open markdown link" })
   end,
 })
 

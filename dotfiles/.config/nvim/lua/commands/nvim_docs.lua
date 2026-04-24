@@ -16,14 +16,77 @@ local function markdown_anchor(text)
   return anchor
 end
 
+---Extract the markdown link target from the current line when the cursor is on
+---or near a standard `[label](target)` style link.
+---@return string|nil
+local function current_link_target()
+  local line = vim.api.nvim_get_current_line()
+  local col = vim.api.nvim_win_get_cursor(0)[2] + 1
+
+  for start_col, target in line:gmatch("()!%[[^%]]-%]%(([^)]+)%)") do
+    local full = line:match("!%[[^%]]-%]%(" .. vim.pesc(target) .. "%)", start_col)
+    if full ~= nil then
+      local finish_col = start_col + #full - 1
+      if col >= start_col and col <= finish_col then
+        return target
+      end
+    end
+  end
+
+  for start_col, target in line:gmatch("()%[[^%]]-%]%(([^)]+)%)") do
+    local full = line:match("%[[^%]]-%]%(" .. vim.pesc(target) .. "%)", start_col)
+    if full ~= nil then
+      local finish_col = start_col + #full - 1
+      if col >= start_col and col <= finish_col then
+        return target
+      end
+    end
+  end
+end
+
+---Normalize a markdown link target into a concrete file path candidate.
+---@param target string
+---@return string
+local function file_target(target)
+  local path = target:gsub("#.*$", "")
+  path = vim.trim(path)
+
+  -- Handle markdown's `<path with spaces>` form before stripping optional title
+  -- text from the common `path "title"` form.
+  local bracketed = path:match("^<(.+)>$")
+  if bracketed ~= nil then
+    path = bracketed
+  else
+    path = path:match('^([^%s]+)%s+".-"$') or path
+    path = path:match("^([^%s]+)%s+'.-'$") or path
+  end
+
+  -- Support file references like `/path/to/file.lua:12` or `/path/to/file#L12`
+  -- by stripping the position suffix before resolving the filesystem path.
+  path = path:gsub("#L%d+[Cc]?%d*$", "")
+  path = path:gsub(":%d+:%d+$", "")
+  path = path:gsub(":%d+$", "")
+  path = path:gsub("%%20", " ")
+  return vim.fn.expand(path)
+end
+
+---@param path string
+---@return boolean
+local function is_absolute_path(path)
+  return path:sub(1, 1) == "/" or path:match("^%a:[/\\]") ~= nil
+end
+
 ---Jump from the local markdown anchor link under the cursor to the matching
 ---heading in the provided buffer.
 ---@param buf integer
 ---@return boolean
 function M.jump_anchor(buf)
-  local line = vim.api.nvim_get_current_line()
-  local anchor = line:match("%[[^%]]-%]%((#.-)%)")
+  local anchor = current_link_target()
   if anchor == nil then
+    return false
+  end
+
+  if not vim.startswith(anchor, "#") then
     return false
   end
 
@@ -40,6 +103,40 @@ function M.jump_anchor(buf)
 
   vim.notify("No heading found for #" .. anchor, vim.log.levels.WARN)
   return false
+end
+
+---Open the markdown link under the cursor. URLs are handed to the system
+---opener, while relative file links are opened inside Neovim.
+---@param buf integer
+---@return boolean
+function M.open_link(buf)
+  local target = current_link_target()
+  if target == nil or vim.startswith(target, "#") then
+    return false
+  end
+
+  if target:match("^[a-zA-Z][a-zA-Z0-9+.-]*://") then
+    return vim.ui.open(target, {}, function(err)
+      if err ~= nil then
+        vim.notify("Failed to open link: " .. err, vim.log.levels.ERROR)
+      end
+    end)
+  end
+
+  local path = file_target(target)
+  if path == "" then
+    return false
+  end
+
+  local base = vim.fs.dirname(vim.api.nvim_buf_get_name(buf))
+  local resolved = vim.fs.normalize(is_absolute_path(path) and path or (base .. "/" .. path))
+  if vim.fn.filereadable(resolved) == 0 and vim.fn.isdirectory(resolved) == 0 then
+    vim.notify("Link target not found: " .. target, vim.log.levels.WARN)
+    return true
+  end
+
+  vim.cmd("edit " .. vim.fn.fnameescape(resolved))
+  return true
 end
 
 ---Open `docs/nvim.md` in a centered, read-only floating window that still uses
@@ -96,7 +193,9 @@ function M.toggle()
   vim.wo[win].cursorline = false
 
   vim.keymap.set("n", "<CR>", function()
-    M.jump_anchor(buf)
+    if not M.jump_anchor(buf) then
+      M.open_link(buf)
+    end
   end, { buffer = buf, silent = true, desc = "Jump to heading" })
 end
 
