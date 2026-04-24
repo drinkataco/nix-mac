@@ -74,7 +74,10 @@ return function()
     options = {
       theme = "auto",
       globalstatus = true,
-      section_separators = "",
+      section_separators = {
+        left = "",
+        right = "",
+      },
       component_separators = "",
       disabled_filetypes = { "lazy" },
     },
