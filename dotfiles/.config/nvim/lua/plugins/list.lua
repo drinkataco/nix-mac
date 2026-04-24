@@ -137,6 +137,15 @@ return {
     opts = {},
   },
   { "towolf/vim-helm" },
+  {
+    "MeanderingProgrammer/render-markdown.nvim",
+    ft = { "markdown" },
+    dependencies = {
+      "nvim-treesitter/nvim-treesitter",
+      "nvim-tree/nvim-web-devicons",
+    },
+    config = config.render_markdown,
+  },
 
   -- Testing
   {
