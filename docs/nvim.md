@@ -36,12 +36,17 @@
   - `:Helptags`
 - Open this repo's Neovim notes in a float:
   - `:NvimDocs`
-  - or `<leader>fn`
-  - opens `docs/nvim.md` in a centered read-only floating window
+  - or `<leader>h`
+  - toggles `docs/nvim.md` in a centered read-only floating window
   - search with `/` or `?`
   - jump through matches with `n` / `N`
+  - press `<CR>` on a table-of-contents link like `(#diagnostics)` to jump to that section
+  - the float uses the real Markdown file buffer, so syntax, folds, marks, and search behave normally
   - close with `:q`
   - useful for checking keymaps, plugin links, or commands without leaving the current editing context
+- In any Markdown buffer:
+  - press `<CR>` on a local link like `(#diagnostics)` to jump to the matching heading
+  - if the cursor is not on a local anchor link, `<CR>` keeps its normal behavior
 - View keymaps:
   - `:map`
   - `:nmap`
@@ -206,9 +211,14 @@
 
 - `<leader>p`
   - format current buffer
-- `<leader>fn`
-  - open `docs/nvim.md` in a read-only floating window
-  - search inside it with `/` and close it with `:q`
+- `<leader>h`
+  - toggle `docs/nvim.md` in a read-only floating window
+  - search inside it with `/`
+  - press `<CR>` on table-of-contents links to jump to the section
+  - close it with `:q`
+- `<CR>` in Markdown
+  - when the cursor is on a local anchor link like `(#diagnostics)`, jump to that heading
+  - otherwise behaves like normal Enter
 
 ### Files and tabs
 
@@ -291,3 +301,5 @@
 - plugin config index: [`dotfiles/.config/nvim/lua/plugins/config.lua`](/Users/osh/projects/nix-mac/dotfiles/.config/nvim/lua/plugins/config.lua)
 - per-plugin configs: [`dotfiles/.config/nvim/lua/plugins/config/`](/Users/osh/projects/nix-mac/dotfiles/.config/nvim/lua/plugins/config)
   - files in this directory are loaded as `config.<filename>`, for example `lualine.lua` becomes `config.lualine`
+- docs helper: [`dotfiles/.config/nvim/lua/commands/nvim_docs.lua`](/Users/osh/projects/nix-mac/dotfiles/.config/nvim/lua/commands/nvim_docs.lua)
+  - toggles `docs/nvim.md` in a read-only float and handles `<CR>` jumps on local Markdown TOC links

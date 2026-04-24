@@ -13,6 +13,10 @@ darwin.lib.darwinSystem {
       config = {
         home-manager.useGlobalPkgs = true;
         home-manager.useUserPackages = true;
+        # When a managed path drifted into a real file, move it aside instead of
+        # aborting the whole switch. This keeps Home Manager recoverable after
+        # direct edits under $HOME.
+        home-manager.backupFileExtension = "hm-bak";
         home-manager.extraSpecialArgs = {
           inherit inputs hostname system username;
           inherit (config) features;
