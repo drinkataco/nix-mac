@@ -55,7 +55,7 @@
 - loaded after `compinit`
 - uses `bat` for file previews
 - uses `eza` for directory previews
-- Git completion previews are configured in [`dotfiles/.zsh/completions.zsh`](/Users/osh/projects/mac/dotfiles/.zsh/completions.zsh)
+- Git completion previews are configured in [`dotfiles/.zsh/completions.zsh`](../dotfiles/.zsh/completions.zsh)
 
 ## oh-my-zsh git plugin
 
@@ -84,7 +84,7 @@
 
 ## Config files in this setup
 
-- shell entrypoint: [`dotfiles/.zshrc`](/Users/osh/projects/mac/dotfiles/.zshrc)
-- completions: [`dotfiles/.zsh/completions.zsh`](/Users/osh/projects/mac/dotfiles/.zsh/completions.zsh)
-- plugins: [`dotfiles/.zsh/plugins.zsh`](/Users/osh/projects/mac/dotfiles/.zsh/plugins.zsh)
-- CLI init: [`dotfiles/.zsh/cli.zsh`](/Users/osh/projects/mac/dotfiles/.zsh/cli.zsh)
+- shell entrypoint: [`dotfiles/.zshrc`](../dotfiles/.zshrc)
+- completions: [`dotfiles/.zsh/completions.zsh`](../dotfiles/.zsh/completions.zsh)
+- plugins: [`dotfiles/.zsh/plugins.zsh`](../dotfiles/.zsh/plugins.zsh)
+- CLI init: [`dotfiles/.zsh/cli.zsh`](../dotfiles/.zsh/cli.zsh)

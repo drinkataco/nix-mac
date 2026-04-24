@@ -76,7 +76,7 @@ These are the built-in ones I actually use a lot:
 
 - Docs: [github.com/tmux-plugins/tpm](https://github.com/tmux-plugins/tpm)
 - What it does:
-  - installs and updates the plugins declared in [`dotfiles/.tmux/plugins.tmux`](/Users/osh/projects/mac/dotfiles/.tmux/plugins.tmux)
+  - installs and updates the plugins declared in [`dotfiles/.tmux/plugins.tmux`](../dotfiles/.tmux/plugins.tmux)
 - Keys:
   - `prefix + I` install plugins
   - `prefix + U` update plugins
@@ -163,5 +163,5 @@ These are the built-in ones I actually use a lot:
 
 ## Config files in this setup
 
-- main config: [`dotfiles/.tmux.conf`](/Users/osh/projects/mac/dotfiles/.tmux.conf)
-- supporting config: [`dotfiles/.tmux`](/Users/osh/projects/mac/dotfiles/.tmux)
+- main config: [`dotfiles/.tmux.conf`](../dotfiles/.tmux.conf)
+- supporting config: [`dotfiles/.tmux`](../dotfiles/.tmux)

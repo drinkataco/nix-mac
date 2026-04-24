@@ -299,10 +299,10 @@
 
 ## Config files in this setup
 
-- config directory: [`dotfiles/.config/nvim`](/Users/osh/projects/nix-mac/dotfiles/.config/nvim)
-- plugin list: [`dotfiles/.config/nvim/lua/plugins/list.lua`](/Users/osh/projects/nix-mac/dotfiles/.config/nvim/lua/plugins/list.lua)
-- plugin config index: [`dotfiles/.config/nvim/lua/plugins/config.lua`](/Users/osh/projects/nix-mac/dotfiles/.config/nvim/lua/plugins/config.lua)
-- per-plugin configs: [`dotfiles/.config/nvim/lua/plugins/config/`](/Users/osh/projects/nix-mac/dotfiles/.config/nvim/lua/plugins/config)
+- config directory: [`dotfiles/.config/nvim`](../dotfiles/.config/nvim)
+- plugin list: [`dotfiles/.config/nvim/lua/plugins/list.lua`](../dotfiles/.config/nvim/lua/plugins/list.lua)
+- plugin config index: [`dotfiles/.config/nvim/lua/plugins/config.lua`](../dotfiles/.config/nvim/lua/plugins/config.lua)
+- per-plugin configs: [`dotfiles/.config/nvim/lua/plugins/config/`](../dotfiles/.config/nvim/lua/plugins/config)
   - files in this directory are loaded as `config.<filename>`, for example `lualine.lua` becomes `config.lualine`
-- docs helper: [`dotfiles/.config/nvim/lua/commands/nvim_docs.lua`](/Users/osh/projects/nix-mac/dotfiles/.config/nvim/lua/commands/nvim_docs.lua)
+- docs helper: [`dotfiles/.config/nvim/lua/commands/nvim_docs.lua`](../dotfiles/.config/nvim/lua/commands/nvim_docs.lua)
   - toggles `docs/nvim.md` in a read-only float and handles `<CR>` jumps on local Markdown TOC links
