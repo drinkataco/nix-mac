@@ -88,3 +88,8 @@ vim.api.nvim_set_hl(0, "BufferLineSeparatorSelected", {
   fg = terminal_bg,
   bg = terminal_bg,
 })
+
+-- Trim the built-in right-click popup menu a little; the help entry is useful
+-- once, but noisy as a permanent action in normal editing.
+vim.cmd([[silent! aunmenu PopUp.-2-]])
+vim.cmd([[silent! aunmenu PopUp.How-to\ disable\ mouse]])
