@@ -1,6 +1,5 @@
 # nvim
 
-<!-- vim-md-toc format=bullets ignore=^TODO$ -->
 * [General docs](#general-docs)
 * [General usage](#general-usage)
 * [Git diffs and conflicts](#git-diffs-and-conflicts)
@@ -16,7 +15,6 @@
   * [LSP](#lsp)
   * [Diagnostics](#diagnostics-1)
 * [Config files in this setup](#config-files-in-this-setup)
-<!-- vim-md-toc END -->
 
 ## General docs
 
