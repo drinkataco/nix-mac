@@ -43,14 +43,18 @@ api.nvim_create_autocmd("CmdlineLeave", {
 })
 
 local command_line_view
+local hide_command_line = false
 
 -- Keep a dedicated command row while entering commands so the global statusline
 -- stays visible, but restore the current view after resizing so the buffer does
--- not jump by a line when the window is already scrolled.
+-- not jump by a line when the window is already scrolled. We only hide the
+-- command row again after the next real editor action, which leaves `:echo`
+-- and similar command output visible instead of collapsing it immediately.
 local command_line = api.nvim_create_augroup("settings_command_line", { clear = true })
 api.nvim_create_autocmd("CmdlineEnter", {
   group = command_line,
   callback = function()
+    hide_command_line = false
     command_line_view = vim.fn.winsaveview()
     vim.opt.cmdheight = 1
     vim.schedule(function()
@@ -63,7 +67,18 @@ api.nvim_create_autocmd("CmdlineEnter", {
 api.nvim_create_autocmd("CmdlineLeave", {
   group = command_line,
   callback = function()
+    hide_command_line = true
+  end,
+})
+api.nvim_create_autocmd({ "CursorMoved", "InsertEnter", "BufEnter" }, {
+  group = command_line,
+  callback = function()
+    if not hide_command_line then
+      return
+    end
+
     local view = command_line_view or vim.fn.winsaveview()
+    hide_command_line = false
     vim.schedule(function()
       vim.opt.cmdheight = 0
       pcall(vim.fn.winrestview, view)
