@@ -34,6 +34,14 @@
   - `:help`
   - `:help <topic>`
   - `:Helptags`
+- Open this repo's Neovim notes in a float:
+  - `:NvimDocs`
+  - or `<leader>fn`
+  - opens `docs/nvim.md` in a centered read-only floating window
+  - search with `/` or `?`
+  - jump through matches with `n` / `N`
+  - close with `:q`
+  - useful for checking keymaps, plugin links, or commands without leaving the current editing context
 - View keymaps:
   - `:map`
   - `:nmap`
@@ -198,6 +206,9 @@
 
 - `<leader>p`
   - format current buffer
+- `<leader>fn`
+  - open `docs/nvim.md` in a read-only floating window
+  - search inside it with `/` and close it with `:q`
 
 ### Files and tabs
 
