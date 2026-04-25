@@ -43,6 +43,7 @@ api.nvim_create_autocmd("CmdlineLeave", {
 })
 
 local command_line_view
+local command_line_win
 local hide_command_line = false
 
 -- Show a real command row while entering commands, then hide it again after
@@ -55,12 +56,15 @@ api.nvim_create_autocmd("CmdlineEnter", {
   callback = function()
     local cmdtype = vim.fn.getcmdtype()
     hide_command_line = false
+    command_line_win = (cmdtype == ":") and api.nvim_get_current_win() or nil
     command_line_view = (cmdtype == ":") and vim.fn.winsaveview() or nil
     vim.opt.cmdheight = 1
     if command_line_view ~= nil then
       vim.schedule(function()
-        if command_line_view ~= nil then
-          pcall(vim.fn.winrestview, command_line_view)
+        if command_line_view ~= nil and command_line_win ~= nil and api.nvim_win_is_valid(command_line_win) then
+          pcall(vim.api.nvim_win_call, command_line_win, function()
+            vim.fn.winrestview(command_line_view)
+          end)
         end
       end)
     end
@@ -79,12 +83,18 @@ api.nvim_create_autocmd({ "CursorMoved", "InsertEnter", "BufEnter", "WinLeave", 
       return
     end
 
-    local view = command_line_view or vim.fn.winsaveview()
+    local view = command_line_view
+    local win = command_line_win
     hide_command_line = false
     vim.schedule(function()
       vim.opt.cmdheight = 0
-      pcall(vim.fn.winrestview, view)
+      if view ~= nil and win ~= nil and api.nvim_win_is_valid(win) then
+        pcall(vim.api.nvim_win_call, win, function()
+          vim.fn.winrestview(view)
+        end)
+      end
       command_line_view = nil
+      command_line_win = nil
     end)
   end,
 })
