@@ -23,6 +23,11 @@ return {
   -- Fuzzy finding
   { "junegunn/fzf", build = "./install --bin" },
   { "junegunn/fzf.vim" },
+  {
+    "chentoast/marks.nvim",
+    event = "VeryLazy",
+    config = config.marks,
+  },
 
   -- Syntax and visual structure
   {

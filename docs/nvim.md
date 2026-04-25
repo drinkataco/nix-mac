@@ -167,6 +167,19 @@
     - `<leader>/`: runs `:Ag` and searches project contents
     - `<leader>fc`: runs `:Commands` and searches available commands
     - `<leader>gc`: runs `:BCommits` and searches commits for the current buffer
+- `marks.nvim`
+  - docs: [github.com/chentoast/marks.nvim](https://github.com/chentoast/marks.nvim)
+  - Use this for lightweight line bookmarks and mark navigation without leaving the buffer.
+  - Common keys:
+    - `m;` toggles a mark on the current line
+    - `m,` sets the next available lowercase mark
+    - `m]` jumps to the next mark in the current buffer
+    - `m[` jumps to the previous mark in the current buffer
+    - `m0` to `m9` set bookmark groups for cross-buffer jumping
+    - `m}` and `m{` jump between bookmarks of the same group across buffers
+    - `dm-` clears marks on the current line
+    - `dm=` deletes the bookmark under the cursor
+  - Marks persist via Neovim `shada`, not via the session file itself.
 ### Diagnostics
 
 - Diagnostic messages open automatically when the cursor rests on an errored span.
