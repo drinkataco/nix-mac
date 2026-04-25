@@ -1,4 +1,5 @@
 local M = {}
+local last_docs_view
 
 ---Convert markdown heading text into the anchor format used by the table of
 ---contents links in `docs/nvim.md`.
@@ -41,6 +42,18 @@ local function current_link_target()
         return target
       end
     end
+  end
+end
+
+---@param win integer
+local function save_view(win)
+  if not vim.api.nvim_win_is_valid(win) then
+    return
+  end
+
+  local ok, view = pcall(vim.api.nvim_win_call, win, vim.fn.winsaveview)
+  if ok then
+    last_docs_view = view
   end
 end
 
@@ -156,6 +169,7 @@ end
 function M.toggle()
   local existing = find_open_window()
   if existing ~= nil and vim.api.nvim_win_is_valid(existing) then
+    save_view(existing)
     vim.api.nvim_win_close(existing, true)
     return
   end
@@ -192,12 +206,23 @@ function M.toggle()
   vim.wo[win].linebreak = true
   vim.wo[win].cursorline = false
 
+  if last_docs_view ~= nil then
+    vim.schedule(function()
+      if vim.api.nvim_win_is_valid(win) then
+        pcall(vim.api.nvim_win_call, win, function()
+          vim.fn.winrestview(last_docs_view)
+        end)
+      end
+    end)
+  end
+
   local close_group = vim.api.nvim_create_augroup("commands_nvim_docs_" .. buf, { clear = true })
   vim.api.nvim_create_autocmd({ "WinLeave", "BufLeave" }, {
     group = close_group,
     buffer = buf,
     once = true,
     callback = function()
+      save_view(win)
       vim.schedule(function()
         if vim.api.nvim_win_is_valid(win) then
           vim.api.nvim_win_close(win, true)
@@ -207,8 +232,8 @@ function M.toggle()
   })
 
   vim.keymap.set("n", "<CR>", function()
-    if not M.jump_anchor(buf) then
-      M.open_link(buf)
+    if M.jump_anchor(buf) or M.open_link(buf) then
+      return
     end
   end, { buffer = buf, silent = true, desc = "Jump to heading" })
 end

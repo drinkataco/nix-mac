@@ -53,14 +53,17 @@ local command_line = api.nvim_create_augroup("settings_command_line", { clear = 
 api.nvim_create_autocmd("CmdlineEnter", {
   group = command_line,
   callback = function()
+    local cmdtype = vim.fn.getcmdtype()
     hide_command_line = false
-    command_line_view = vim.fn.winsaveview()
+    command_line_view = (cmdtype == ":") and vim.fn.winsaveview() or nil
     vim.opt.cmdheight = 1
-    vim.schedule(function()
-      if command_line_view ~= nil then
-        pcall(vim.fn.winrestview, command_line_view)
-      end
-    end)
+    if command_line_view ~= nil then
+      vim.schedule(function()
+        if command_line_view ~= nil then
+          pcall(vim.fn.winrestview, command_line_view)
+        end
+      end)
+    end
   end,
 })
 api.nvim_create_autocmd("CmdlineLeave", {
