@@ -34,7 +34,8 @@ Checks for updates and applies them per package unless --approve is set.
 
 Options:
   --all       Check all supported managers (default)
-  --brew      Check Homebrew formulae and casks
+  --brew      Update Homebrew packages; when nix-homebrew manages taps and apps,
+              this is handled through the flake rebuild path instead
   --pnpm      Check global pnpm packages
   --nix       Check flake input updates and rebuild nix-darwin
   --approve   Skip prompts and approve every update
@@ -82,7 +83,51 @@ ensure_nix() {
 }
 
 #########################################
-# Check and optionally update Homebrew formulae and casks.
+# Return whether this repo manages Homebrew declaratively through nix-homebrew.
+#
+# Globals:
+#   REPO_ROOT
+# Returns:
+#   0 if Homebrew is Nix-managed, 1 otherwise
+#########################################
+homebrew_is_nix_managed() {
+  [[ -f "${REPO_ROOT}/modules/darwin/apps/homebrew.nix" ]] || return 1
+  grep -q "nix-homebrew" "${REPO_ROOT}/modules/darwin/apps/homebrew.nix"
+}
+
+#########################################
+# Build the flake-lock update arguments for this repo.
+#
+# On nix-homebrew-managed machines we intentionally do not auto-update the
+# Homebrew-related inputs, because they can drift into an upstream DSL/runtime
+# mismatch and break cask activation during rebuild.
+#
+# Returns:
+#   Writes one argument per line to stdout
+#########################################
+flake_update_args() {
+  if homebrew_is_nix_managed; then
+    cat <<'EOF'
+update
+--update-input
+darwin
+--update-input
+home-manager
+--update-input
+nixpkgs
+EOF
+    return 0
+  fi
+
+  printf '%s\n' "update"
+}
+
+#########################################
+# Check and optionally update Homebrew formulae and casks imperatively.
+#
+# This is kept as a fallback for machines where Homebrew is not managed through
+# the flake. On this repo's main host, Homebrew updates should flow through the
+# flake lock and nix-darwin rebuild instead.
 # Returns:
 #   0 on success
 #########################################
@@ -186,11 +231,13 @@ check_nix() {
   fi
 
   local tmp_lock
+  local -a update_args
   tmp_lock="$(mktemp)"
   trap 'rm -f "${tmp_lock:-}"' RETURN
+  mapfile -t update_args < <(flake_update_args)
 
   echo 'Checking flake input updates...'
-  nix flake update --flake "${REPO_ROOT}" --output-lock-file "${tmp_lock}" >/dev/null 2>&1 || true
+  nix flake "${update_args[@]}" --flake "${REPO_ROOT}" --output-lock-file "${tmp_lock}" >/dev/null 2>&1 || true
 
   if cmp -s "${REPO_ROOT}/flake.lock" "${tmp_lock}"; then
     echo 'No flake input updates found'
@@ -200,7 +247,7 @@ check_nix() {
   if prompt_or_approve "Update flake inputs and rebuild nix-darwin? [Y/n] "; then
     local host
     host="$(hostname -s)"
-    (cd "${REPO_ROOT}" && nix flake update)
+    (cd "${REPO_ROOT}" && nix flake "${update_args[@]}")
     if command -v darwin-rebuild >/dev/null 2>&1; then
       (cd "${REPO_ROOT}" && sudo darwin-rebuild switch --flake ".#${host}")
     else
@@ -282,6 +329,12 @@ parse_args() {
 #########################################
 main() {
   parse_args "$@"
+
+  if [[ "${RUN_BREW}" == true && homebrew_is_nix_managed ]]; then
+    echo 'Homebrew is managed by nix-homebrew; routing Homebrew updates through the flake rebuild path.'
+    RUN_NIX=true
+    RUN_BREW=false
+  fi
 
   if [[ "${RUN_BREW}" == true ]]; then
     check_brew
