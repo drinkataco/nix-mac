@@ -51,6 +51,22 @@
   - `:imap`
   - `:verbose map <lhs>`
   - example: `:verbose map <leader>ff`
+- Registers:
+  - `:registers` shows the current registers
+  - normal deletes and changes like `d`, `c`, `x`, `s` write into the unnamed register, so they can replace what you last yanked
+  - if you want to delete without clobbering your last yank, use the black-hole register:
+    - `"_d`
+    - `"_c`
+    - `"_x`
+  - if a delete replaced your unnamed register, the last yank is usually still in register `0`:
+    - `"0p` pastes the last yanked text
+  - use named registers when you want something stable:
+    - `"ay` yanks into register `a`
+    - `"ap` pastes from register `a`
+  - practical rule:
+    - use normal `y` for copy
+    - use `"_d` / `"_c` when you are trimming text and want to preserve your last yank
+    - use `"0p` when you want the last thing you explicitly yanked
 
 ## Git diffs and conflicts
 
@@ -179,6 +195,9 @@
     - `m}` and `m{` jump between bookmarks of the same group across buffers
     - `dm-` clears marks on the current line
     - `dm=` deletes the bookmark under the cursor
+    - `` `a `` jumps to mark `a` exactly
+    - `'a` jumps to the line for mark `a`
+    - `:marks` lists active marks
   - Marks persist via Neovim `shada`, not via the session file itself.
 ### Diagnostics
 
