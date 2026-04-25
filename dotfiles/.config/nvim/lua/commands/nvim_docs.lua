@@ -192,6 +192,20 @@ function M.toggle()
   vim.wo[win].linebreak = true
   vim.wo[win].cursorline = false
 
+  local close_group = vim.api.nvim_create_augroup("commands_nvim_docs_" .. buf, { clear = true })
+  vim.api.nvim_create_autocmd({ "WinLeave", "BufLeave" }, {
+    group = close_group,
+    buffer = buf,
+    once = true,
+    callback = function()
+      vim.schedule(function()
+        if vim.api.nvim_win_is_valid(win) then
+          vim.api.nvim_win_close(win, true)
+        end
+      end)
+    end,
+  })
+
   vim.keymap.set("n", "<CR>", function()
     if not M.jump_anchor(buf) then
       M.open_link(buf)
