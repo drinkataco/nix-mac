@@ -24,6 +24,15 @@ curl -fsSL
     | bash
 ```
 
+To target a specific flake host during bootstrap, set `BUILD_HOST` before
+running the script:
+
+```bash
+BUILD_HOST=watts bash <(
+  curl -fsSL https://raw.githubusercontent.com/drinkataco/nix-mac/main/bootstrap.sh
+)
+```
+
 The bootstrap flow does this:
 
 1. install Xcode Command Line Tools if needed

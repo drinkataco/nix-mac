@@ -19,6 +19,9 @@ Usage:
 Description:
   Clones or updates this repo and applies the nix-darwin configuration.
 
+Environment:
+  BUILD_HOST          Flake host to build. Default: ${DEFAULT_HOSTNAME}
+
 Options:
   --hostname HOSTNAME   Flake host to build. Default: ${DEFAULT_HOSTNAME}
   --repo-dir PATH       Checkout path. Default: ${DEFAULT_REPO_DIR}

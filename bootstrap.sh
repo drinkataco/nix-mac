@@ -35,6 +35,9 @@ Description:
   needed, clones or updates this repo, and optionally runs the local install
   and initial provisioning scripts.
 
+Environment:
+  BUILD_HOST          Flake host to build. Default: ${DEFAULT_HOSTNAME}
+
 Options:
   --hostname HOSTNAME   Flake host to build. Default: ${DEFAULT_HOSTNAME}
   --repo-dir PATH       Checkout path. Default: ${DEFAULT_REPO_DIR}
@@ -54,7 +57,7 @@ EOF
 #   REPO_DIR
 #   REPO_URL
 # Arguments:
-#   $@: CLI arguments passed to the script.
+#   $@: CLI arguments passed to the script. --hostname overrides BUILD_HOST.
 #######################################
 parse_args() {
   parse_shared_args "$@"
