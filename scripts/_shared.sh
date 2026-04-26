@@ -140,7 +140,11 @@ sync_repo() {
 provision_system() {
   log "Applying nix-darwin configuration for host ${HOSTNAME_VALUE}"
   cd "${REPO_DIR}"
-  nix flake update
-  sudo -H env NIX_CONFIG="${NIX_CONFIG}" \
-    nix run 'nix-darwin/master#darwin-rebuild' -- switch --flake ".#${HOSTNAME_VALUE}"
+  if command -v darwin-rebuild >/dev/null 2>&1; then
+    sudo -H env NIX_CONFIG="${NIX_CONFIG}" \
+      darwin-rebuild switch --flake ".#${HOSTNAME_VALUE}"
+  else
+    sudo -H env NIX_CONFIG="${NIX_CONFIG}" \
+      nix run 'nix-darwin/master#darwin-rebuild' -- switch --flake ".#${HOSTNAME_VALUE}"
+  fi
 }

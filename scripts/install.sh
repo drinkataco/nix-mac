@@ -39,7 +39,7 @@ install_nix() {
   fi
 
   log "Installing upstream Nix"
-  curl -L https://nixos.org/nix/install | sh
+  curl -L https://nixos.org/nix/install | sh -s -- --daemon
 }
 
 #######################################
