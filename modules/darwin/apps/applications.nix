@@ -3,7 +3,7 @@ let
   systemApplications = pkgs.buildEnv {
     name = "system-applications";
     paths = config.environment.systemPackages;
-    pathsToLink = "/Applications";
+    pathsToLink = [ "/Applications" ];
   };
 in
 {
