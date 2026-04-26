@@ -73,7 +73,7 @@
       # Developer tools
       "rancher"
       "sequel-ace"
-      "sublime-text"
+      #"sublime-text"
     ];
   };
 }
