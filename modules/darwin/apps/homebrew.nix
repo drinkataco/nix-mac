@@ -50,7 +50,6 @@
       "spotify"
 
       # Desktop utilities
-      "alacritty"
       #"amethyst"
       #"karabiner-elements"
       #"flux-app"

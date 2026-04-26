@@ -14,7 +14,7 @@
         app = "/Applications/Spotify.app";
       }
       {
-        app = "/Applications/Alacritty.app";
+        app = "/Applications/Nix Apps/Alacritty.app";
       }
       {
         app = "/Applications/ChatGPT.app";

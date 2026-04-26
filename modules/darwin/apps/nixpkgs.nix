@@ -4,6 +4,7 @@
   #  `environment.systemPackages = [ ... ];` in the relevant host module
   environment.systemPackages = with pkgs; [
     # Shell and terminal
+    alacritty
     alacritty.terminfo
     bash
     bat
