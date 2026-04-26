@@ -3,13 +3,14 @@
   imports = [
     (lib.mkAliasOptionModule [ "homebrew" "cleanUp" ] [ "homebrew" "onActivation" "cleanup" ])
     (lib.mkAliasOptionModule [ "homebrew" "upgrade" ] [ "homebrew" "onActivation" "upgrade" ])
+    (lib.mkAliasOptionModule [ "homebrew" "mutableTaps" ] [ "nix-homebrew" "mutableTaps" ])
   ];
 
   nix-homebrew = {
     autoMigrate = true;
     enable = true;
     enableRosetta = false;
-    mutableTaps = false;
+    mutableTaps = lib.mkDefault false;
     taps = {
       "homebrew/homebrew-core" = inputs.homebrew-core;
       "homebrew/homebrew-cask" = inputs.homebrew-cask;
@@ -42,7 +43,7 @@
       "font-symbols-only-nerd-font"
 
       # Browsers
-      #"firefox"
+      "firefox"
       "google-chrome"
 
       # Productivity and communication
@@ -72,7 +73,7 @@
       # Developer tools
       "rancher"
       "sequel-ace"
-      #"sublime-text"
+      "sublime-text"
     ];
   };
 }
