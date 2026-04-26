@@ -14,7 +14,7 @@
 
   # Host-specific Homebrew casks for watts
   homebrew.casks = [
-    #"steam"
+    "steam"
   ];
 
   # Remove old Homebrew downloads, caches, and unneeded app bundles on rebuild
