@@ -14,7 +14,7 @@
 
   # Host-specific Homebrew casks for watts
   homebrew.casks = [
-    "steam"
+    #"steam"
   ];
 
   # Host-specific Nix packages for watts

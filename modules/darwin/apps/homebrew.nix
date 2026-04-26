@@ -37,7 +37,7 @@
       "font-symbols-only-nerd-font"
 
       # Browsers
-      "firefox"
+      #"firefox"
       "google-chrome"
 
       # Productivity and communication
@@ -51,24 +51,24 @@
 
       # Desktop utilities
       "alacritty"
-      "amethyst"
-      "karabiner-elements"
-      "flux-app"
-      "keepassxc"
+      #"amethyst"
+      #"karabiner-elements"
+      #"flux-app"
+      #"keepassxc"
       "little-snitch"
-      "paragon-extfs"
+      #"paragon-extfs"
       "protonvpn"
 
       # Media and hardware tools
-      "handbrake-app"
+      #"handbrake-app"
       "raspberry-pi-imager"
       "utm"
-      "vlc"
+      #"vlc"
 
       # Developer tools
       "rancher"
       "sequel-ace"
-      "sublime-text"
+      #"sublime-text"
     ];
   };
 }

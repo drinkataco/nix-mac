@@ -2,8 +2,11 @@
 live_config_reload = true
 
 [terminal.shell]
-program = "/run/current-system/sw/bin/zsh"
+program = "/bin/zsh"
 args = ["-l"]
+
+[env]
+TERM = "alacritty"
 
 [font]
 size = 19

@@ -19,5 +19,7 @@
     ];
   };
 
-  programs.zsh.enable = true;
+  # Keep the login shell on macOS's built-in /bin/zsh rather than a
+  # nix-darwin-managed Zsh package.
+  programs.zsh.enable = false;
 }

@@ -22,6 +22,7 @@ fi
 if [[ -r "${ZIMFW_SCRIPT}" && ! ${ZIM_HOME}/init.zsh -nt ${ZIM_CONFIG_FILE:-${ZDOTDIR:-${HOME}}/.zimrc} ]]; then
   source "${ZIMFW_SCRIPT}" init
 fi
+
 # Initialize modules.
 if [[ -r ${ZIM_HOME}/init.zsh ]]; then
   source "${ZIM_HOME}/init.zsh"
@@ -46,7 +47,11 @@ zvm_after_select_vi_mode
 
 function init_fzf() {
   # Load fzf keybindings but skip its completion script so Tab remains available for fzf-tab.
-  source <(fzf --zsh | sed '/^### completion.zsh ###/,$d')
+  if command -v fzf > /dev/null 2>&1; then
+    source <(fzf --zsh | sed '/^### completion.zsh ###/,$d')
+    bindkey '\ec' fzf-cd-widget
+    bindkey 'ç' fzf-cd-widget
+  fi
 }
 
 # Let zsh-vi-mode finish initialising before fzf installs its widgets.

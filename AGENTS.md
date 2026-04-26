@@ -51,7 +51,7 @@ The repo is intentionally file-based.
 
 Examples:
 
-- shell: `dotfiles/.zshrc`, `dotfiles/.zsh/`
+- shell: macOS `/bin/zsh` with config from `dotfiles/.zshrc`, `dotfiles/.zsh/`
 - terminal: `dotfiles/.config/alacritty/`
 - editor: `dotfiles/.config/nvim/`
 - multiplexer: `dotfiles/.tmux.conf`, `dotfiles/.tmux/`

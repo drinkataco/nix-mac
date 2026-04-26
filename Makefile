@@ -7,7 +7,11 @@ SYSTEM_PROFILE ?= /nix/var/nix/profiles/system
 .PHONY: update dry-run compare
 
 update:
-	sudo darwin-rebuild switch --flake '.#$(HOST)'
+	@if command -v darwin-rebuild >/dev/null 2>&1; then \
+		sudo darwin-rebuild switch --flake '.#$(HOST)'; \
+	else \
+		sudo nix run 'nix-darwin/master#darwin-rebuild' -- switch --flake '.#$(HOST)'; \
+	fi
 
 dry-run:
 	nix build --dry-run '.#darwinConfigurations.$(HOST).system'

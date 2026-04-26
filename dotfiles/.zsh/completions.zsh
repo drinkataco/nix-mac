@@ -4,11 +4,6 @@
 # AUTOCOMPLETE           #
 ##########################
 autoload -U +X bashcompinit && bashcompinit
-autoload -Uz compinit && compinit
-
-if [[ -r "${HOME}/.zim/modules/fzf-tab/fzf-tab.plugin.zsh" ]]; then
-  source "${HOME}/.zim/modules/fzf-tab/fzf-tab.plugin.zsh"
-fi
 
 # Kubernetes
 [[ $commands[kubectl] || $commands[k] ]] && source <(kubectl completion zsh)
@@ -72,5 +67,3 @@ zstyle ':fzf-tab:complete:git-(add|restore|rm):*' fzf-preview '
   fi'
 zstyle ':fzf-tab:complete:git-*:*' fzf-preview 'git help $word 2>/dev/null | head -n 80'
 zstyle ':completion:*:*:nerdctl:*' option-stacking yes
-
-bindkey "ç" fzf-cd-widget
