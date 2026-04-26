@@ -5,8 +5,8 @@ live_config_reload = true
 program = "/bin/zsh"
 args = ["-l"]
 
-[env]
-TERM = "alacritty"
+#[env]
+#TERM = "alacritty"
 
 [font]
 size = 19
