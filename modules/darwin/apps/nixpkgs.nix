@@ -62,7 +62,7 @@
     lua-language-server # Lua language server
     marksman # Markdown language server
     nixd # Nix language server
-    nixfmt-rfc-style # Nix formatter
+    nixfmt # Nix formatter
     prettier # HTML, CSS, Markdown, JSONC, and JavaScript formatter
     pyright # Python language server
     ruff # Python formatter and linter
