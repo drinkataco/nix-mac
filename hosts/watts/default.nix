@@ -17,6 +17,12 @@
     #"steam"
   ];
 
+  # Remove old Homebrew downloads, caches, and unneeded app bundles on rebuild
+  homebrew.cleanUp = "zap";
+
+  # Upgrade already-installed Homebrew formulae and casks during activation
+  homebrew.Upgrade = true;
+
   # Host-specific Nix packages for watts
   environment.systemPackages = [
     # Scarlett MixControl

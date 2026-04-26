@@ -1,5 +1,10 @@
-{ config, inputs, username, ... }:
+{ config, inputs, lib, username, ... }:
 {
+  imports = [
+    (lib.mkAliasOptionModule [ "homebrew" "cleanUp" ] [ "homebrew" "onActivation" "cleanup" ])
+    (lib.mkAliasOptionModule [ "homebrew" "Upgrade" ] [ "homebrew" "onActivation" "upgrade" ])
+  ];
+
   nix-homebrew = {
     autoMigrate = true;
     enable = true;
@@ -18,9 +23,9 @@
     taps = builtins.attrNames config.nix-homebrew.taps;
 
     onActivation = {
-      autoUpdate = false;
-      cleanup = "none";
-      upgrade = false;
+      autoUpdate = lib.mkDefault false;
+      cleanup = lib.mkDefault "none";
+      upgrade = lib.mkDefault false;
     };
 
     # These apps are installed on every host. For host-specific apps, add
