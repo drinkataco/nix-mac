@@ -2,7 +2,7 @@
 {
   imports = [
     (lib.mkAliasOptionModule [ "homebrew" "cleanUp" ] [ "homebrew" "onActivation" "cleanup" ])
-    (lib.mkAliasOptionModule [ "homebrew" "Upgrade" ] [ "homebrew" "onActivation" "upgrade" ])
+    (lib.mkAliasOptionModule [ "homebrew" "upgrade" ] [ "homebrew" "onActivation" "upgrade" ])
   ];
 
   nix-homebrew = {

@@ -21,7 +21,7 @@
   homebrew.cleanUp = "zap";
 
   # Upgrade already-installed Homebrew formulae and casks during activation
-  homebrew.Upgrade = true;
+  homebrew.upgrade = true;
 
   # Host-specific Nix packages for watts
   environment.systemPackages = [
