@@ -23,6 +23,9 @@
   # Upgrade already-installed Homebrew formulae and casks during activation
   homebrew.upgrade = true;
 
+  # Allow Homebrew taps to update outside the pinned Nix-managed revisions
+  homebrew.mutableTaps = true;
+
   # Host-specific Nix packages for watts
   environment.systemPackages = [
     # Scarlett MixControl
