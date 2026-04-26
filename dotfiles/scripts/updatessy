@@ -1,59 +1,32 @@
 #!/usr/bin/env bash
-#########################################
-# Check for updates across package managers and optionally apply them
-#
-# Supported managers:
-#   - Homebrew
-#   - pnpm (global packages)
-#   - nix / nix-darwin flake inputs
-#
-# Usage:
-#   updatessy --all
-#   updatessy --brew --pnpm
-#   updatessy --nix --approve
-#########################################
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 YES_NO="${SCRIPT_DIR}/yes_no"
 REPO_ROOT="${HOME}/projects/nix-mac"
 
-RUN_BREW=false
-RUN_NIX=false
-RUN_PNPM=false
 APPROVE_ALL=false
+RUN_UPDATE=true
 
-#########################################
-# Print script usage help
-#########################################
 usage() {
   cat <<'EOF'
-Usage: updatessy [--all] [--brew] [--pnpm] [--nix] [--approve]
+Usage: updatessy [--approve] [--rebuild-only]
 
-Checks for updates and applies them per package unless --approve is set.
+Update this nix-darwin repo and rebuild the current host.
+
+Notes:
+  - This repo manages Homebrew through nix-homebrew.
+  - This repo manages pnpm itself through nixpkgs.
+  - Global pnpm tools are refreshed by Home Manager activation during rebuild.
+  - So brew/pnpm updates flow through flake updates and darwin-rebuild.
 
 Options:
-  --all       Check all supported managers (default)
-  --brew      Update Homebrew packages; when nix-homebrew manages taps and apps,
-              this is handled through the flake rebuild path instead
-  --pnpm      Check global pnpm packages
-  --nix       Check flake input updates and rebuild nix-darwin
-  --approve   Skip prompts and approve every update
-  --help      Show this help
+  --approve       Skip prompts and approve actions
+  --rebuild-only  Rebuild without running `nix flake update`
+  --help          Show this help
 EOF
 }
 
-#########################################
-# Prompt for approval unless --approve has been set globally
-#
-# Globals:
-#   APPROVE_ALL
-#   YES_NO
-# Arguments:
-#   1 - Prompt text
-# Returns:
-#   0 if approved, 1 if declined
-#########################################
 prompt_or_approve() {
   local question="$1"
 
@@ -64,11 +37,6 @@ prompt_or_approve() {
   "${YES_NO}" "${question}" "y"
 }
 
-#########################################
-# Ensure the nix command is available in the current shell
-# Returns:
-#   0 if nix is available, 1 otherwise
-#########################################
 ensure_nix() {
   if command -v nix >/dev/null 2>&1; then
     return 0
@@ -82,218 +50,14 @@ ensure_nix() {
   command -v nix >/dev/null 2>&1
 }
 
-#########################################
-# Return whether this repo manages Homebrew declaratively through nix-homebrew.
-#
-# Globals:
-#   REPO_ROOT
-# Returns:
-#   0 if Homebrew is Nix-managed, 1 otherwise
-#########################################
-homebrew_is_nix_managed() {
-  [[ -f "${REPO_ROOT}/modules/darwin/apps/homebrew.nix" ]] || return 1
-  grep -q "nix-homebrew" "${REPO_ROOT}/modules/darwin/apps/homebrew.nix"
-}
-
-#########################################
-# Build the flake-lock update arguments for this repo.
-#
-# On nix-homebrew-managed machines we intentionally do not auto-update the
-# Homebrew-related inputs, because they can drift into an upstream DSL/runtime
-# mismatch and break cask activation during rebuild.
-#
-# Returns:
-#   Writes one argument per line to stdout
-#########################################
-flake_update_args() {
-  if homebrew_is_nix_managed; then
-    cat <<'EOF'
-update
---update-input
-darwin
---update-input
-home-manager
---update-input
-nixpkgs
-EOF
-    return 0
-  fi
-
-  printf '%s\n' "update"
-}
-
-#########################################
-# Check and optionally update Homebrew formulae and casks imperatively.
-#
-# This is kept as a fallback for machines where Homebrew is not managed through
-# the flake. On this repo's main host, Homebrew updates should flow through the
-# flake lock and nix-darwin rebuild instead.
-# Returns:
-#   0 on success
-#########################################
-check_brew() {
-  if ! command -v brew >/dev/null 2>&1; then
-    echo 'brew not found; skipping Homebrew updates'
-    return 0
-  fi
-
-  echo 'Checking Homebrew formula updates...'
-  local formula
-  while IFS= read -r formula; do
-    [[ -z "${formula}" ]] && continue
-    if prompt_or_approve "Upgrade brew formula ${formula}? [Y/n] "; then
-      brew upgrade "${formula}"
-    fi
-  done < <(brew outdated --formula)
-
-  echo 'Checking Homebrew cask updates...'
-  local cask
-  while IFS= read -r cask; do
-    [[ -z "${cask}" ]] && continue
-    if prompt_or_approve "Upgrade brew cask ${cask}? [Y/n] "; then
-      brew upgrade --cask "${cask}"
-    fi
-  done < <(brew outdated --cask --greedy)
-}
-
-#########################################
-# Check and optionally update global pnpm packages
-# Returns:
-#   0 on success
-#########################################
-check_pnpm() {
-  if ! command -v pnpm >/dev/null 2>&1; then
-    echo 'pnpm not found; skipping pnpm updates'
-    return 0
-  fi
-
-  local global_root
-  global_root="$(pnpm root -g 2>/dev/null || true)"
-  if [[ -z "${global_root}" || ! -d "${global_root}" ]]; then
-    echo 'pnpm global directory not found; skipping pnpm updates'
-    return 0
-  fi
-
-  if [[ ! -f "${global_root%/node_modules}/package.json" ]]; then
-    echo 'pnpm global manifest not found; skipping pnpm updates'
-    return 0
-  fi
-
-  echo 'Checking global pnpm package updates...'
-  local outdated_json
-  outdated_json="$(pnpm outdated -g --format json 2>&1 || true)"
-
-  if [[ -z "${outdated_json}" || "${outdated_json}" == "[]" || "${outdated_json}" == "{}" ]]; then
-    echo 'No global pnpm updates found'
-    return 0
-  fi
-
-  if ! printf '%s' "${outdated_json}" | jq -e . >/dev/null 2>&1; then
-    echo 'Unable to parse pnpm outdated output; skipping pnpm updates'
-    printf '%s\n' "${outdated_json}"
-    return 0
-  fi
-
-  local package
-  while IFS= read -r package; do
-    [[ -z "${package}" ]] && continue
-    if prompt_or_approve "Upgrade pnpm package ${package}? [Y/n] "; then
-      pnpm add -g "${package}@latest"
-    fi
-  done < <(printf '%s' "${outdated_json}" | jq -r '
-    if type == "array" then
-      .[]? | .name? // empty
-    elif type == "object" then
-      keys[]?
-    else
-      empty
-    end
-  ')
-}
-
-#########################################
-# Check whether flake inputs have changed and optionally update and rebuild
-#
-# Globals:
-#   REPO_ROOT
-# Returns:
-#   0 on success
-#########################################
-check_nix() {
-  if ! ensure_nix; then
-    echo 'nix not found; skipping flake updates'
-    return 0
-  fi
-
-  if [[ ! -d "${REPO_ROOT}" || ! -f "${REPO_ROOT}/flake.nix" ]]; then
-    echo "flake repo not found at ${REPO_ROOT}; skipping nix updates"
-    return 0
-  fi
-
-  local tmp_lock
-  local -a update_args
-  tmp_lock="$(mktemp)"
-  trap 'rm -f "${tmp_lock:-}"' RETURN
-  mapfile -t update_args < <(flake_update_args)
-
-  echo 'Checking flake input updates...'
-  nix flake "${update_args[@]}" --flake "${REPO_ROOT}" --output-lock-file "${tmp_lock}" >/dev/null 2>&1 || true
-
-  if cmp -s "${REPO_ROOT}/flake.lock" "${tmp_lock}"; then
-    echo 'No flake input updates found'
-    return 0
-  fi
-
-  if prompt_or_approve "Update flake inputs and rebuild nix-darwin? [Y/n] "; then
-    local host
-    host="$(hostname -s)"
-    (cd "${REPO_ROOT}" && nix flake "${update_args[@]}")
-    if command -v darwin-rebuild >/dev/null 2>&1; then
-      (cd "${REPO_ROOT}" && sudo darwin-rebuild switch --flake ".#${host}")
-    else
-      (cd "${REPO_ROOT}" && sudo nix run nix-darwin/master#darwin-rebuild -- switch --flake ".#${host}")
-    fi
-  fi
-}
-
-#########################################
-# Parse CLI arguments and decide which package managers to check
-#
-# Globals:
-#   RUN_BREW
-#   RUN_NIX
-#   RUN_PNPM
-#   APPROVE_ALL
-# Arguments:
-#   CLI arguments passed to the script
-# Returns:
-#   0 on success
-#########################################
 parse_args() {
-  local seen_manager=false
-
   while [[ $# -gt 0 ]]; do
     case "$1" in
-      --all)
-        RUN_BREW=true
-        RUN_NIX=true
-        RUN_PNPM=true
-        seen_manager=true
-        ;;
-      --brew)
-        RUN_BREW=true
-        seen_manager=true
-        ;;
-      --nix)
-        RUN_NIX=true
-        seen_manager=true
-        ;;
-      --pnpm)
-        RUN_PNPM=true
-        seen_manager=true
-        ;;
       --approve)
         APPROVE_ALL=true
+        ;;
+      --rebuild-only)
+        RUN_UPDATE=false
         ;;
       --help|-h)
         usage
@@ -307,48 +71,41 @@ parse_args() {
     esac
     shift
   done
-
-  if [[ "${seen_manager}" == false ]]; then
-    RUN_BREW=true
-    RUN_NIX=true
-    RUN_PNPM=true
-  fi
 }
 
-#########################################
-# Script entrypoint
-#
-# Globals:
-#   RUN_BREW
-#   RUN_NIX
-#   RUN_PNPM
-# Arguments:
-#   CLI arguments passed to the script
-# Returns:
-#   0 on success
-#########################################
 main() {
   parse_args "$@"
 
-  if [[ "${RUN_BREW}" == true && homebrew_is_nix_managed ]]; then
-    echo 'Homebrew is managed by nix-homebrew; routing Homebrew updates through the flake rebuild path.'
-    RUN_NIX=true
-    RUN_BREW=false
+  if ! ensure_nix; then
+    echo 'nix not found'
+    exit 1
   fi
 
-  if [[ "${RUN_BREW}" == true ]]; then
-    check_brew
+  if [[ ! -d "${REPO_ROOT}" || ! -f "${REPO_ROOT}/flake.nix" ]]; then
+    echo "flake repo not found at ${REPO_ROOT}"
+    exit 1
   fi
 
-  if [[ "${RUN_PNPM}" == true ]]; then
-    check_pnpm
+  local host
+  host="$(hostname -s)"
+
+  cd "${REPO_ROOT}"
+
+  if [[ "${RUN_UPDATE}" == true ]]; then
+    if prompt_or_approve "Run nix flake update? [Y/n] "; then
+      nix flake update
+    else
+      echo 'Skipping flake update'
+    fi
   fi
 
-  if [[ "${RUN_NIX}" == true ]]; then
-    check_nix
+  if prompt_or_approve "Rebuild nix-darwin for ${host}? [Y/n] "; then
+    if command -v darwin-rebuild >/dev/null 2>&1; then
+      sudo darwin-rebuild switch --flake ".#${host}"
+    else
+      sudo nix run nix-darwin/master#darwin-rebuild -- switch --flake ".#${host}"
+    fi
   fi
-
-  return 0
 }
 
 main "$@"

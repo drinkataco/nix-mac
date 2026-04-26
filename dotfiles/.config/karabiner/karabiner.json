@@ -63,6 +63,27 @@
                       ]
                     }
                   ]
+                },
+                {
+                  "description": "Use F8 as media play/pause",
+                  "manipulators": [
+                    {
+                      "type": "basic",
+                      "from": {
+                        "key_code": "f8",
+                        "modifiers": {
+                          "optional": [
+                            "any"
+                          ]
+                        }
+                      },
+                      "to": [
+                        {
+                          "consumer_key_code": "play_or_pause"
+                        }
+                      ]
+                    }
+                  ]
                 }
               ]
             },

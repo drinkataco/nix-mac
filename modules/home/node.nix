@@ -30,9 +30,21 @@ in
 
     mkdir -p "$PNPM_HOME"
 
+    outdated_json="$("${pkgs.pnpm}/bin/pnpm" outdated -g --format json 2>/dev/null || true)"
+
     for package in ${lib.escapeShellArgs globalNodePackages}; do
       if ! "${pkgs.pnpm}/bin/pnpm" list -g --depth=0 2>/dev/null | grep -Fq " ''${package}@"; then
         "${pkgs.pnpm}/bin/pnpm" add -g "$package"
+      elif printf '%s' "$outdated_json" | "${pkgs.jq}/bin/jq" -e --arg package "$package" '
+        if type == "array" then
+          any(.[]?; .name? == $package)
+        elif type == "object" then
+          has($package)
+        else
+          false
+        end
+      ' >/dev/null 2>&1; then
+        "${pkgs.pnpm}/bin/pnpm" add -g "$package@latest"
       fi
     done
   '';
