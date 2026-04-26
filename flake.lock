@@ -91,7 +91,9 @@
     },
     "nix-homebrew": {
       "inputs": {
-        "brew-src": "brew-src"
+        "brew-src": [
+          "brew-src"
+        ]
       },
       "locked": {
         "lastModified": 1777250621,
@@ -125,6 +127,7 @@
     },
     "root": {
       "inputs": {
+        "brew-src": "brew-src",
         "darwin": "darwin",
         "home-manager": "home-manager",
         "homebrew-cask": "homebrew-cask",

@@ -24,7 +24,7 @@
   homebrew.upgrade = true;
 
   # Allow Homebrew taps to update outside the pinned Nix-managed revisions
-  homebrew.mutableTaps = true;
+  homebrew.mutableTaps = false;
 
   # Host-specific Nix packages for watts
   environment.systemPackages = [
