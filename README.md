@@ -41,7 +41,7 @@ bash bootstrap.sh --no-install
 bash scripts/install.sh
 bash scripts/provision.sh --hostname watts
 bash scripts/provision.sh --hostname work
-bash scripts/uninstall.sh
+bash scripts/force-remove.sh
 ```
 
 ### Updating
@@ -74,7 +74,7 @@ make update HOST=work
 If a machine already has a different Nix installation and I want to reset it back to the repo's expected upstream Nix install, run:
 
 ```bash
-bash scripts/uninstall.sh
+bash scripts/force-remove.sh
 ```
 
 ## Structure

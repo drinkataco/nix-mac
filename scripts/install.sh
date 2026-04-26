@@ -21,7 +21,7 @@ Description:
 
 Notes:
   If a previous or partial Nix install exists, remove it first with
-  uninstall.sh. This script is only for a clean install path.
+  force-remove.sh. This script is only for a clean install path.
 EOF
 }
 
@@ -35,7 +35,7 @@ install_nix() {
   fi
 
   if [[ -e /etc/nix/nix.conf || -e /etc/bashrc.backup-before-nix || -e /etc/zshrc.backup-before-nix || -d /nix ]]; then
-    err "Existing Nix install state detected. Use scripts/uninstall.sh before reinstalling."
+    err "Existing Nix install state detected. Use scripts/force-remove.sh before reinstalling."
   fi
 
   log "Installing upstream Nix"
