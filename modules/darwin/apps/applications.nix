@@ -16,7 +16,7 @@ in
     find "${systemApplications}/Applications" -maxdepth 1 -type l | while read -r app_link; do
       app_target="$(readlink "$app_link")"
       app_name="$(basename "$app_target")"
-      ${pkgs.mkalias}/bin/mkalias "$app_target" "/Applications/Nix Apps/$app_name"
+      cp -RL "$app_target" "/Applications/Nix Apps/$app_name"
     done
   '';
 }

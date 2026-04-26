@@ -20,7 +20,6 @@
 
   homebrew = {
     enable = true;
-    caskArgs.no_quarantine = true;
     taps = builtins.attrNames config.nix-homebrew.taps;
 
     onActivation = {
@@ -43,7 +42,7 @@
       "font-symbols-only-nerd-font"
 
       # Browsers
-      # "firefox"
+      "firefox"
       "google-chrome"
 
       # Productivity and communication
@@ -59,7 +58,7 @@
       "amethyst"
       "karabiner-elements"
       "flux-app"
-      # "keepassxc"
+      "keepassxc"
       "little-snitch"
       #"paragon-extfs"
       "protonvpn"
@@ -73,7 +72,7 @@
       # Developer tools
       "rancher"
       "sequel-ace"
-      #"sublime-text"
+      "sublime-text"
     ];
   };
 }
