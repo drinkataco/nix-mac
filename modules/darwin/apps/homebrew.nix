@@ -48,7 +48,8 @@
       # Productivity and communication
       "chatgpt"
       "claude"
-      "codex"
+      "claude-code"
+      "codex-app"
       "google-drive"
       "notion"
       "slack"
