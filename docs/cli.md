@@ -48,7 +48,7 @@
 ### Keys
 
 - `<TAB>`
-  - enhanced completion for commands like `cd`, `git checkout`, `git add`
+  - enhanced completion for commands like `cd`, `git switch`, `git checkout`, and `git add`
 
 ### Notes
 
@@ -62,11 +62,14 @@
 ### Docs
 
 - [github.com/ohmyzsh/ohmyzsh/tree/master/plugins/git](https://github.com/ohmyzsh/ohmyzsh/tree/master/plugins/git)
+- detailed notes for the aliases used in this setup: [git](./git.md)
 
 ### Commands
 
 - `gst`
   - `git status`
+- `gss`
+  - `git status --short`
 - `gp`
   - `git push`
 - `gcam "message"`
@@ -77,10 +80,18 @@
   - `git add --all`
 - `gl`
   - `git pull`
+- `gsw <branch>`
+  - `git switch <branch>`
+- `gswc <branch>`
+  - `git switch --create <branch>`
 - `gco <branch>`
   - `git checkout <branch>`
 - `gcb <branch>`
   - `git checkout -b <branch>`
+- `grs <path>`
+  - `git restore <path>`
+- `grst <path>`
+  - `git restore --staged <path>`
 
 ## Config files in this setup
 
