@@ -2,10 +2,10 @@ gui:
   mouseEvents: true
   nerdFontsVersion: "3"
 git:
-  paging:
-    colorArg: 'always'
-    pager: 'delta --dark --paging=never'
-  # branchLogCmd: 'glol {{branchName}} --'
+  pagers:
+    - colorArg: 'always'
+      pager: 'delta --dark --paging=never'
+      # branchLogCmd: 'glol {{branchName}} --'
 keybinding:
   universal:
     quit: '<C-c>'
