@@ -53,6 +53,8 @@
   - example: `:verbose map <leader>ff`
 - Registers:
   - `:registers` shows the current registers
+  - `:registers a d 0 +` shows a smaller set when you only want a few
+  - this config sets `clipboard=unnamedplus`, so the default yank/paste path uses the macOS clipboard
   - normal deletes and changes like `d`, `c`, `x`, `s` write into the unnamed register, so they can replace what you last yanked
   - if you want to delete without clobbering your last yank, use the black-hole register:
     - `"_d`
@@ -63,10 +65,33 @@
   - use named registers when you want something stable:
     - `"ay` yanks into register `a`
     - `"ap` pastes from register `a`
+    - `"add` deletes a line into register `a`
+    - `"Ayy` appends a yank to register `a` instead of replacing it
+    - `:let @a` shows the contents of register `a`
   - practical rule:
-    - use normal `y` for copy
+    - use normal `y` / `p` for copy and paste with the macOS clipboard
     - use `"_d` / `"_c` when you are trimming text and want to preserve your last yank
     - use `"0p` when you want the last thing you explicitly yanked
+    - use named registers when you want to keep more than one thing around on purpose
+  - explicit macOS clipboard forms:
+    - `"+y`
+    - `"+p`
+  - if you are in tmux copy mode, use the tmux-yank bindings to send text into the same macOS clipboard
+  - optional remap if you want deletes to go into named register `d` by default:
+    - this is possible, but it is usually a bad default because every delete will overwrite register `d`
+    - example:
+
+```lua
+vim.keymap.set({ "n", "x" }, "d", '"dd')
+vim.keymap.set("n", "dd", '"ddd')
+vim.keymap.set({ "n", "x" }, "c", '"dc')
+vim.keymap.set({ "n", "x" }, "x", '"dx')
+```
+
+  - the safer pattern is:
+    - keep normal delete behavior
+    - use `"ddd`, `"ddw`, or `"dx` when you explicitly want register `d`
+    - use uppercase to append, for example `"Ddd` appends a deleted line to register `d`
 
 ## Git diffs and conflicts
 
