@@ -35,10 +35,12 @@
     ansible
     awscli2
     delta
+    dockerfile-language-server-nodejs
     fnm
     gcc
     gnupg
     go
+    hadolint
     google-cloud-sdk
     jq
     k9s

@@ -110,12 +110,23 @@ api.nvim_create_autocmd({ "BufRead", "BufNewFile" }, {
   end,
 })
 
+-- Dockerfiles with suffixes like `Dockerfile_prod` still want Dockerfile
+-- highlighting, indentation, and language tooling.
+local dockerfile = api.nvim_create_augroup("settings_dockerfile_filetype", { clear = true })
+api.nvim_create_autocmd({ "BufRead", "BufNewFile" }, {
+  group = dockerfile,
+  pattern = { "Dockerfile_*" },
+  callback = function()
+    vim.bo.filetype = "dockerfile"
+  end,
+})
+
 -- Treesitter-backed folds can come back stale after session restore; `zx`
 -- refreshes them without resetting the rest of the window state.
 local folds = api.nvim_create_augroup("settings_fold_refresh", { clear = true })
 api.nvim_create_autocmd({ "BufWinEnter", "FileType" }, {
   group = folds,
-  pattern = { "json", "yaml", "javascript", "typescript", "typescriptreact", "tsx", "rust", "sh", "bash" },
+  pattern = { "dockerfile", "json", "yaml", "javascript", "typescript", "typescriptreact", "tsx", "rust", "sh", "bash" },
   callback = function()
     vim.schedule(function()
       pcall(vim.cmd.normal, { args = { "zx" }, bang = true })

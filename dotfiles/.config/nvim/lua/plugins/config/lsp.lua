@@ -50,6 +50,11 @@ return function()
     on_attach = on_attach,
   })
 
+  vim.lsp.config("dockerls", {
+    capabilities = capabilities,
+    on_attach = on_attach,
+  })
+
   vim.lsp.config("gopls", {
     capabilities = capabilities,
     on_attach = on_attach,
@@ -174,6 +179,7 @@ return function()
   })
 
   vim.lsp.enable("bashls")
+  vim.lsp.enable("dockerls")
   vim.lsp.enable("gopls")
   vim.lsp.enable("helm_ls")
   vim.lsp.enable("jsonls")
