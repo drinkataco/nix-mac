@@ -23,27 +23,30 @@
     };
   };
 
-  outputs = inputs@{ darwin, ... }: let
-    mkDarwinSystem = import ./lib/mkDarwinSystem.nix;
+  outputs =
+    inputs@{ darwin, ... }:
+    let
+      mkDarwinSystem = import ./lib/mkDarwinSystem.nix;
 
-    hosts = {
-      watts = {
-        username = "osh";
-        system = "aarch64-darwin";
-      };
+      hosts = {
+        watts = {
+          username = "osh";
+          system = "aarch64-darwin";
+        };
 
-      work = {
-        username = "osh";
-        system = "aarch64-darwin";
+        work = {
+          username = "osh";
+          system = "aarch64-darwin";
+        };
       };
-    };
-  in {
-    darwinConfigurations = builtins.mapAttrs
-      (hostname: host:
+    in
+    {
+      darwinConfigurations = builtins.mapAttrs (
+        hostname: host:
         mkDarwinSystem {
           inherit inputs darwin hostname;
           inherit (host) username system;
-        })
-      hosts;
-  };
+        }
+      ) hosts;
+    };
 }

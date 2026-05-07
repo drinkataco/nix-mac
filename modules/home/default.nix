@@ -6,7 +6,8 @@
     ./node.nix
     ./ssh.nix
     ./tmux.nix
-  ] ++ lib.optionals features.gamesDir [
+  ]
+  ++ lib.optionals features.gamesDir [
     ./games.nix
   ];
 

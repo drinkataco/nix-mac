@@ -1,4 +1,10 @@
-{ config, inputs, lib, username, ... }:
+{
+  config,
+  inputs,
+  lib,
+  username,
+  ...
+}:
 {
   imports = [
     (lib.mkAliasOptionModule [ "homebrew" "cleanUp" ] [ "homebrew" "onActivation" "cleanup" ])

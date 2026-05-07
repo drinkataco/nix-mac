@@ -1,4 +1,9 @@
-{ fetchurl, lib, stdenvNoCC, undmg }:
+{
+  fetchurl,
+  lib,
+  stdenvNoCC,
+  undmg,
+}:
 
 stdenvNoCC.mkDerivation rec {
   pname = "scarlett-mixcontrol";
