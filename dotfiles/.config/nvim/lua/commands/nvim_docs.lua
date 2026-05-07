@@ -188,14 +188,18 @@ function M.toggle()
   local row = math.floor((vim.o.lines - height) / 2) - 1
   local col = math.floor((vim.o.columns - width) / 2)
 
-  local win = vim.api.nvim_open_win(buf, true, require("settings.ui").float({
-    relative = "editor",
-    width = width,
-    height = height,
-    row = math.max(row, 0),
-    col = math.max(col, 0),
-    style = "minimal",
-  }))
+  local win = vim.api.nvim_open_win(
+    buf,
+    true,
+    require("settings.ui").float({
+      relative = "editor",
+      width = width,
+      height = height,
+      row = math.max(row, 0),
+      col = math.max(col, 0),
+      style = "minimal",
+    })
+  )
 
   vim.bo[buf].bufhidden = "wipe"
   vim.bo[buf].buflisted = false
