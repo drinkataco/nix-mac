@@ -19,9 +19,7 @@ opt.number = true
 opt.numberwidth = 2
 opt.mouse = "a"
 opt.mousemoveevent = true
--- Collapse the command line until Neovim needs it, while still allowing
--- command output to stay visible until the next editor action.
-opt.cmdheight = 0
+opt.cmdheight = 1
 opt.signcolumn = "yes"
 opt.splitbelow = true
 opt.splitright = true
