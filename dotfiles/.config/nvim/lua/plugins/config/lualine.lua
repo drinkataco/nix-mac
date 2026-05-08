@@ -92,7 +92,7 @@ return function()
         return ""
       end
 
-      return string.format(" recording @%s", register)
+      return string.format("󰻂 recording @%s", register)
     end,
   }
 
