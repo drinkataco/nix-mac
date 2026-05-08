@@ -8,10 +8,11 @@ let
 
   globalNodePackages = [
     "lighthouse"
-    "@anthropic-ai/claude-code"
     "@openai/codex"
     "@zed-industries/codex-acp"
   ];
+
+  pnpm = "${pkgs.pnpm}/bin/pnpm";
 in
 {
   home.activation.installFnmNodeVersions = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
@@ -30,11 +31,11 @@ in
 
     mkdir -p "$PNPM_HOME"
 
-    outdated_json="$("${pkgs.pnpm}/bin/pnpm" outdated -g --format json 2>/dev/null || true)"
+    outdated_json="$("${pnpm}" outdated -g --format json 2>/dev/null || true)"
 
     for package in ${lib.escapeShellArgs globalNodePackages}; do
-      if ! "${pkgs.pnpm}/bin/pnpm" list -g --depth=0 2>/dev/null | grep -Fq " ''${package}@"; then
-        "${pkgs.pnpm}/bin/pnpm" add -g "$package"
+      if ! "${pnpm}" list -g --depth=0 2>/dev/null | grep -Fq " ''${package}@"; then
+        "${pnpm}" add -g --config.ignore-scripts=false --config.optional=true "$package"
       elif printf '%s' "$outdated_json" | "${pkgs.jq}/bin/jq" -e --arg package "$package" '
         if type == "array" then
           any(.[]?; .name? == $package)
@@ -44,7 +45,7 @@ in
           false
         end
       ' >/dev/null 2>&1; then
-        "${pkgs.pnpm}/bin/pnpm" add -g "$package@latest"
+        "${pnpm}" add -g --config.ignore-scripts=false --config.optional=true "$package@latest"
       fi
     done
   '';

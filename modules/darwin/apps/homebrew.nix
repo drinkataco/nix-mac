@@ -31,7 +31,7 @@
     onActivation = {
       autoUpdate = lib.mkDefault false;
       cleanup = lib.mkDefault "none";
-      upgrade = lib.mkDefault false;
+      upgrade = lib.mkDefault true;
     };
 
     # These apps are installed on every host. For host-specific apps, add
