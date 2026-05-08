@@ -13,6 +13,9 @@ update:
 		sudo nix run 'nix-darwin/master#darwin-rebuild' -- switch --flake '.#$(HOST)'; \
 	fi
 
+upgrade:
+	sudo nix flake update
+
 dry-run:
 	nix build --dry-run '.#darwinConfigurations.$(HOST).system'
 
