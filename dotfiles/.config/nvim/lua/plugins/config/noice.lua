@@ -12,13 +12,13 @@ return function()
   require("noice").setup({
     cmdline = {
       enabled = true,
-      view = "cmdline_popup",
+      view = "cmdline",
     },
     messages = {
       enabled = true,
-      view = "messages",
-      view_error = "messages",
-      view_warn = "messages",
+      view = "mini",
+      view_error = "mini",
+      view_warn = "mini",
       view_history = "messages",
     },
     popupmenu = {
@@ -36,7 +36,7 @@ return function()
       bottom_search = true,
       command_palette = true,
       long_message_to_split = true,
-      cmdline_output_to_split = true,
+      cmdline_output_to_split = false,
       inc_rename = false,
       lsp_doc_border = false,
     },
@@ -94,6 +94,17 @@ return function()
         win_options = {
           winhighlight = { Normal = "NoiceSplit", FloatBorder = "NoiceSplitBorder" },
           wrap = true,
+        },
+      },
+      mini = {
+        align = "message-left",
+        timeout = 5000,
+        position = {
+          row = -1,
+          col = 0,
+        },
+        win_options = {
+          winblend = 0,
         },
       },
     },
