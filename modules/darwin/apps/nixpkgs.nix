@@ -35,7 +35,7 @@
     ansible
     awscli2
     delta
-    dockerfile-language-server-nodejs
+    dockerfile-language-server
     fnm
     gcc
     gnupg
