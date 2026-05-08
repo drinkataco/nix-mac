@@ -48,5 +48,4 @@ target/
 #
 .env
 /vendor/
-.claude/
 .direnv/
