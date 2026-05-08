@@ -4,15 +4,24 @@ return function()
     return vim.fn.findfile("Session.vim", ".;") ~= ""
   end
 
-  local function padded_name(tab)
-    local width = 15
-    local name_width = vim.fn.strdisplaywidth(tab.name)
-
-    if name_width >= width then
-      return " " .. tab.name
+  local function display_name(tab)
+    if vim.bo[tab.bufnr].filetype == "noice" and vim.bo[tab.bufnr].buftype == "nofile" then
+      return "Messages"
     end
 
-    return " " .. tab.name .. string.rep(" ", width - name_width)
+    return tab.name
+  end
+
+  local function padded_name(tab)
+    local width = 15
+    local name = display_name(tab)
+    local name_width = vim.fn.strdisplaywidth(name)
+
+    if name_width >= width then
+      return " " .. name
+    end
+
+    return " " .. name .. string.rep(" ", width - name_width)
   end
 
   require("bufferline").setup({

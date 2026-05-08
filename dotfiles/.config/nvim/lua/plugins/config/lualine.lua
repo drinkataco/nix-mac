@@ -22,6 +22,21 @@ return function()
 
   local filetype = { "filetype", icon_only = true }
 
+  local filename = {
+    function()
+      if vim.bo.filetype == "noice" and vim.bo.buftype == "nofile" then
+        return "Messages"
+      end
+
+      local name = vim.fn.expand("%:t")
+      if name ~= "" then
+        return name
+      end
+
+      return "[No Name]"
+    end,
+  }
+
   local diagnostics = {
     "diagnostics",
     sources = { "nvim_diagnostic" },
@@ -70,6 +85,33 @@ return function()
     show_name = true,
   }
 
+  local recording_status = {
+    function()
+      local register = vim.fn.reg_recording()
+      if register == "" then
+        return ""
+      end
+
+      return string.format(" recording @%s", register)
+    end,
+  }
+
+  local recording_refresh_group = vim.api.nvim_create_augroup("lualine_recording_status", { clear = true })
+  vim.api.nvim_create_autocmd("RecordingEnter", {
+    group = recording_refresh_group,
+    callback = function()
+      require("lualine").refresh({ place = { "statusline" } })
+    end,
+  })
+  vim.api.nvim_create_autocmd("RecordingLeave", {
+    group = recording_refresh_group,
+    callback = function()
+      vim.schedule(function()
+        require("lualine").refresh({ place = { "statusline" } })
+      end)
+    end,
+  })
+
   require("lualine").setup({
     options = {
       theme = "auto",
@@ -84,7 +126,7 @@ return function()
     sections = {
       lualine_a = { "mode" },
       lualine_b = { "branch" },
-      lualine_c = { "filename", lsp_status },
+      lualine_c = { filename, lsp_status, recording_status },
       lualine_x = { diff, diagnostics, filetype },
       lualine_y = {},
       lualine_z = {},

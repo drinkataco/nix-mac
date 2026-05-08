@@ -20,6 +20,7 @@ opt.numberwidth = 2
 opt.mouse = "a"
 opt.mousemoveevent = true
 opt.cmdheight = 0
+opt.showmode = false
 opt.signcolumn = "yes"
 opt.splitbelow = true
 opt.splitright = true
