@@ -42,6 +42,14 @@ return {
   },
   { "nvim-tree/nvim-web-devicons" },
   {
+    "folke/noice.nvim",
+    event = "VeryLazy",
+    dependencies = {
+      "MunifTanjim/nui.nvim",
+    },
+    config = config.noice,
+  },
+  {
     "akinsho/bufferline.nvim",
     version = "*",
     dependencies = {
