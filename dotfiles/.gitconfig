@@ -100,7 +100,7 @@
   gdiff = "!f() { nvim -p $(git diff --name-only) +\"tabdo Gdiff $@\" +tabfirst; }; f"
 
 [commit]
-  gpgsign = false
+  gpgsign = true
 
 [mergetool]
   keepBackup = false
