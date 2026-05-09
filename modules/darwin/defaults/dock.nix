@@ -5,6 +5,10 @@
   ...
 }:
 {
+  system.defaults.CustomUserPreferences."com.apple.dock" = {
+    "show-recent-count" = 1;
+  };
+
   system.defaults.dock = {
     autohide = true;
     magnification = false;
@@ -20,6 +24,12 @@
       }
       {
         app = "/Applications/Nix Apps/Alacritty.app";
+      }
+      {
+        app = "/Applications/Claude.app";
+      }
+      {
+        app = "/Applications/Codex.app";
       }
       {
         app = "/Applications/ChatGPT.app";
