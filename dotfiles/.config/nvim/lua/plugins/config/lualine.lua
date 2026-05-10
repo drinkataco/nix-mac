@@ -28,9 +28,14 @@ return function()
         return "Messages"
       end
 
-      local name = vim.fn.expand("%:t")
-      if name ~= "" then
-        return name
+      local path = vim.api.nvim_buf_get_name(0)
+      if path ~= "" then
+        local root = vim.fs.root(0, { ".git" })
+        if root then
+          return vim.fs.relpath(root, path) or path
+        end
+
+        return vim.fn.fnamemodify(path, ":p")
       end
 
       return "[No Name]"

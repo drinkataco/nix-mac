@@ -41,7 +41,7 @@ set -g @sessionx-git-branch 'off'
 set -g @sessionx-pointer '▐'
 
 # tmux-battery
-set -g @batt_icon_status_charged '󱐋'
-set -g @batt_icon_status_charging '󱐋'
-set -g @batt_icon_status_attached '󱐋'
-set -g @batt_icon_status_discharging '󱐌'
+set -g @batt_icon_status_charged '󱐋 '
+set -g @batt_icon_status_charging '󱐋 '
+set -g @batt_icon_status_attached '󱐋 '
+set -g @batt_icon_status_discharging '󱐌 '
