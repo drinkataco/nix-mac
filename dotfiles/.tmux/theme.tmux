@@ -53,4 +53,4 @@ set-window-option -g window-status-current-style bg="#1d1f21"
 #
 set -g status-right-style bg="#1d1f21",fg=cyan
 set -g status-right-length 80
-set -g status-right "#[fg=#3a3a3a,bg=#1d1f21]#[fg=cyan,bg=#3a3a3a] ⚡︎#{battery_percentage} #[fg=green,bg=#3a3a3a]#[fg=black,bg=green] %H:%M:%S #[fg=#3a3a3a]%d-%b-%y "
+set -g status-right "#[fg=#3a3a3a,bg=#1d1f21]#[fg=cyan,bg=#3a3a3a] #{battery_icon_status}#{battery_percentage} #[fg=green,bg=#3a3a3a]#[fg=black,bg=green] %H:%M:%S #[fg=#3a3a3a]%d-%b-%y "
