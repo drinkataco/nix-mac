@@ -54,6 +54,7 @@
     pnpm
     silver-searcher
     typescript
+    uv
     yq-go
 
     # Editor support

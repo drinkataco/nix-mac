@@ -13,6 +13,7 @@ fi
 
 # Default
 PATH="$HOME/scripts:$PATH"
+PATH="$HOME/.local/bin:$PATH"
 PNPM_HOME="$HOME/.local/share/pnpm"
 PATH="$PNPM_HOME:$PATH"
 
