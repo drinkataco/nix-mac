@@ -1,63 +1,176 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SOURCE="${BASH_SOURCE[0]}"
+while [ -L "$SOURCE" ]; do
+  # updatessy is normally reached through ~/scripts; resolve that link so the
+  # helper paths and repo root stay correct even when the checkout moves.
+  SOURCE_DIR="$(cd -P "$(dirname "$SOURCE")" && pwd)"
+  SOURCE="$(readlink "$SOURCE")"
+  [[ "$SOURCE" != /* ]] && SOURCE="${SOURCE_DIR}/${SOURCE}"
+done
+
+SCRIPT_DIR="$(cd -P "$(dirname "$SOURCE")" && pwd)"
 YES_NO="${SCRIPT_DIR}/yes_no"
-REPO_ROOT="${HOME}/projects/nix-mac"
 
 APPROVE_ALL=false
-RUN_UPDATE=true
+APPROVE_BREW=false
+APPROVE_NIX=false
+APPROVE_PNPM=false
+APPROVE_UV=false
+RUN_UPGRADE=true
+RAN_UPDATE=false
 
+#######################################
+# Prints command usage.
+# Outputs:
+#   Writes help text to stdout.
+#######################################
 usage() {
   cat <<'EOF'
 Usage: updatessy [--approve] [--rebuild-only]
 
-Update this nix-darwin repo and rebuild the current host.
+Update this nix-darwin repo from its Makefile workflow.
 
 Notes:
   - This repo manages Homebrew through nix-homebrew.
   - This repo manages pnpm itself through nixpkgs.
-  - Global pnpm tools are refreshed by Home Manager activation during rebuild.
-  - So brew/pnpm updates flow through flake updates and darwin-rebuild.
+  - Global pnpm tools are installed by Home Manager and upgraded manually here.
+  - uv tools are upgraded manually after rebuild.
+  - `make upgrade` updates flake.lock.
+  - `make update` rebuilds the current host.
 
 Options:
-  --approve       Skip prompts and approve actions
-  --rebuild-only  Rebuild without running `nix flake update`
+  --approve-all   Approve nix, brew, pnpm, and uv actions
+  --approve       Alias for --approve-all
+  --approve-nix   Approve flake, rebuild, and lockfile commit prompts
+  --approve-brew  Approve Homebrew package upgrades
+  --approve-pnpm  Approve pnpm global tool upgrades
+  --approve-uv    Approve uv tool upgrades
+  --rebuild-only  Run `make update` without running `make upgrade`
   --help          Show this help
 EOF
 }
 
-prompt_or_approve() {
-  local question="$1"
+#######################################
+# Checks whether a prompt scope has been approved by CLI option.
+# Globals:
+#   APPROVE_ALL
+#   APPROVE_BREW
+#   APPROVE_NIX
+#   APPROVE_PNPM
+#   APPROVE_UV
+# Arguments:
+#   Approval scope: nix, brew, pnpm, or uv.
+# Returns:
+#   0 when approved, 1 otherwise.
+#######################################
+scope_approved() {
+  local scope="$1"
 
   if [[ "${APPROVE_ALL}" == true ]]; then
+    return 0
+  fi
+
+  case "$scope" in
+    brew) [[ "${APPROVE_BREW}" == true ]] ;;
+    nix) [[ "${APPROVE_NIX}" == true ]] ;;
+    pnpm) [[ "${APPROVE_PNPM}" == true ]] ;;
+    uv) [[ "${APPROVE_UV}" == true ]] ;;
+    *) return 1 ;;
+  esac
+}
+
+#######################################
+# Prompts for a yes/no answer unless the scope was approved.
+# Globals:
+#   YES_NO
+# Arguments:
+#   Approval scope.
+#   Prompt text.
+# Returns:
+#   0 when approved, 1 otherwise.
+#######################################
+prompt_or_approve() {
+  local scope="$1"
+  local question="$2"
+
+  if scope_approved "$scope"; then
     return 0
   fi
 
   "${YES_NO}" "${question}" "y"
 }
 
-ensure_nix() {
-  if command -v nix >/dev/null 2>&1; then
+#######################################
+# Prompts for a Homebrew upgrade mode.
+# Arguments:
+#   Approval scope.
+#   Prompt text.
+# Outputs:
+#   Writes prompt text to the terminal and one of "a", "y", or "n" to stdout.
+#######################################
+prompt_upgrade_mode() {
+  local scope="$1"
+  local question="$2"
+  local value
+
+  if scope_approved "$scope"; then
+    # Scoped approvals are intended for unattended runs, so take the broadest
+    # upgrade choice rather than prompting per package.
+    printf 'a\n'
     return 0
   fi
 
-  if [[ -r /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh ]]; then
-    # shellcheck disable=SC1091
-    . /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
+  if [ -r /dev/tty ] && [ -w /dev/tty ]; then
+    printf "%s" "${question}" >/dev/tty
+    read -r value </dev/tty
+  else
+    printf "%s" "${question}" >&2
+    read -r value
   fi
 
-  command -v nix >/dev/null 2>&1
+  case "$value" in
+    A*|a*) printf 'a\n' ;;
+    Y*|y*) printf 'y\n' ;;
+    *) printf 'n\n' ;;
+  esac
 }
 
+#######################################
+# Parses command-line options.
+# Globals:
+#   APPROVE_ALL
+#   APPROVE_BREW
+#   APPROVE_NIX
+#   APPROVE_PNPM
+#   APPROVE_UV
+#   RUN_UPGRADE
+# Arguments:
+#   CLI arguments.
+# Outputs:
+#   Writes usage or unknown-option errors.
+#######################################
 parse_args() {
   while [[ $# -gt 0 ]]; do
     case "$1" in
-      --approve)
+      --approve|--approve-all)
         APPROVE_ALL=true
         ;;
+      --approve-brew)
+        APPROVE_BREW=true
+        ;;
+      --approve-nix)
+        APPROVE_NIX=true
+        ;;
+      --approve-pnpm)
+        APPROVE_PNPM=true
+        ;;
+      --approve-uv)
+        APPROVE_UV=true
+        ;;
       --rebuild-only)
-        RUN_UPDATE=false
+        RUN_UPGRADE=false
         ;;
       --help|-h)
         usage
@@ -73,39 +186,423 @@ parse_args() {
   done
 }
 
+#######################################
+# Finds the current Git repository root.
+# Outputs:
+#   Writes the absolute repo root to stdout.
+#######################################
+repo_root() {
+  git rev-parse --show-toplevel
+}
+
+#######################################
+# Finds the nix-darwin host to update.
+# Globals:
+#   HOST
+# Outputs:
+#   Writes the host name to stdout.
+#######################################
+current_host() {
+  if [[ -n "${HOST:-}" ]]; then
+    printf '%s\n' "$HOST"
+  elif command -v scutil >/dev/null 2>&1; then
+    scutil --get LocalHostName 2>/dev/null || hostname -s
+  else
+    hostname -s
+  fi
+}
+
+#######################################
+# Checks whether nix-darwin already upgrades Homebrew on activation.
+# Arguments:
+#   Host name.
+# Outputs:
+#   Writes a warning to stderr if evaluation fails.
+# Returns:
+#   0 when activation upgrades are enabled or unknown, 1 when disabled.
+#######################################
+homebrew_activation_upgrade_enabled() {
+  local host="$1"
+  local value
+
+  if ! value="$(nix eval --json ".#darwinConfigurations.${host}.config.homebrew.onActivation.upgrade" 2>/dev/null)"; then
+    # A failed eval means we do not know whether activation already handled brew
+    # upgrades. Skip the manual prompt instead of risking duplicate work.
+    echo "Could not evaluate homebrew.onActivation.upgrade for host ${host}; skipping manual brew upgrade prompts." >&2
+    return 0
+  fi
+
+  [[ "$value" == "true" ]]
+}
+
+#######################################
+# Prints a concise summary of flake.lock input changes.
+# Outputs:
+#   Writes changed flake inputs to stdout.
+#######################################
+print_lock_updates() {
+  local old_lock
+  local new_lock
+
+  old_lock="$(mktemp)"
+  new_lock="$(mktemp)"
+  trap "rm -f '$old_lock' '$new_lock'; trap - RETURN" RETURN
+
+  # Compare against HEAD instead of the index so the summary reflects what the
+  # user would commit after a normal flake update.
+  git show HEAD:flake.lock > "$old_lock"
+  cp flake.lock "$new_lock"
+
+  echo "flake.lock updates:"
+
+  if command -v jq >/dev/null 2>&1; then
+    jq -r -n --slurpfile old "$old_lock" --slurpfile new "$new_lock" '
+      def locked($doc; $name): $doc[0].nodes[$name].locked // {};
+      def ident($lock):
+        if $lock.rev then
+          $lock.rev[0:12]
+        elif $lock.version then
+          $lock.version
+        elif $lock.lastModified then
+          ($lock.lastModified | tostring)
+        else
+          "unknown"
+        end;
+
+      (($old[0].nodes + $new[0].nodes) | keys_unsorted | unique[]) as $name
+      | (locked($old; $name)) as $old_lock
+      | (locked($new; $name)) as $new_lock
+      | select($old_lock != $new_lock)
+      | "- \($name): \(ident($old_lock)) -> \(ident($new_lock))"
+    '
+  else
+    git diff --stat -- flake.lock
+  fi
+}
+
+#######################################
+# Runs the repo rebuild target and records that it ran.
+# Globals:
+#   RAN_UPDATE
+# Outputs:
+#   Streams make output.
+#######################################
+run_make_update() {
+  make update
+  RAN_UPDATE=true
+}
+
+#######################################
+# Offers to upgrade outdated Homebrew packages.
+# Arguments:
+#   Human-readable package group label.
+#   Optional brew flags, such as --cask.
+# Outputs:
+#   Writes outdated packages and brew output.
+#######################################
+upgrade_brew_outdated() {
+  local label="$1"
+  shift
+
+  local mode
+  local packages
+  local package
+  local outdated_command=(brew outdated -q "$@")
+  local upgrade_command=(brew upgrade "$@")
+
+  # Homebrew is managed declaratively here, but the actual installed packages
+  # still live in /opt/homebrew. These manual upgrades are only offered when the
+  # nix-darwin activation is not already configured to do them.
+  if ! command -v brew >/dev/null 2>&1; then
+    echo 'brew not found; skipping Homebrew package upgrades'
+    return 0
+  fi
+
+  packages="$("${outdated_command[@]}" 2>/dev/null || true)"
+  if [[ -z "$packages" ]]; then
+    echo "No outdated Homebrew ${label}"
+    return 0
+  fi
+
+  echo "Outdated Homebrew ${label}:"
+  printf '%s\n' "$packages" | sed 's/^/- /'
+
+  mode="$(prompt_upgrade_mode brew "Upgrade Homebrew ${label}? [A]ll/[y] individual/[n] none ")"
+  case "$mode" in
+    a)
+      "${upgrade_command[@]}"
+      ;;
+    y)
+      while IFS= read -r package; do
+        [[ -z "$package" ]] && continue
+        if prompt_or_approve brew "Upgrade ${package}? [Y/n] "; then
+          "${upgrade_command[@]}" "$package"
+        fi
+      done <<< "$packages"
+      ;;
+    *)
+      echo "Skipping Homebrew ${label}"
+      ;;
+  esac
+}
+
+#######################################
+# Prompts for manual Homebrew upgrades when activation upgrades are disabled.
+# Globals:
+#   RAN_UPDATE
+# Arguments:
+#   Host name.
+# Outputs:
+#   Writes prompt and brew output.
+#######################################
+maybe_upgrade_brew_packages() {
+  local host="$1"
+
+  if [[ "$RAN_UPDATE" != true ]]; then
+    # Updated taps are applied by make update. If the rebuild did not happen,
+    # manual brew upgrades may use stale tap state, so leave them alone.
+    return 0
+  fi
+
+  if homebrew_activation_upgrade_enabled "$host"; then
+    # When nix-darwin already upgrades Homebrew during activation, prompting here
+    # would just repeat the same work after the rebuild.
+    return 0
+  fi
+
+  echo 'homebrew.onActivation.upgrade is false for this host.'
+  upgrade_brew_outdated 'formulae'
+  upgrade_brew_outdated 'casks' --cask
+}
+
+#######################################
+# Ensures pnpm uses the repo's expected global bin directory.
+# Globals:
+#   HOME
+#   PATH
+#   PNPM_HOME
+# Outputs:
+#   Creates the pnpm global bin directory if needed.
+#######################################
+ensure_pnpm_env() {
+  export PNPM_HOME="${PNPM_HOME:-$HOME/.local/share/pnpm}"
+  export PATH="$PNPM_HOME/bin:$PATH"
+
+  mkdir -p "$PNPM_HOME/bin"
+}
+
+#######################################
+# Lists outdated global pnpm packages.
+# Outputs:
+#   Writes package names to stdout.
+#######################################
+pnpm_outdated_packages() {
+  local outdated_json
+
+  ensure_pnpm_env
+
+  outdated_json="$(pnpm outdated -g --format json 2>/dev/null || true)"
+  if [[ -z "$outdated_json" ]]; then
+    return 0
+  fi
+
+  printf '%s' "$outdated_json" | jq -r '
+    if type == "array" then
+      .[]? | .name // .package // empty
+    elif type == "object" then
+      keys[]
+    else
+      empty
+    end
+  '
+}
+
+#######################################
+# Offers to upgrade outdated global pnpm tools.
+# Outputs:
+#   Writes outdated packages and pnpm output.
+#######################################
+upgrade_pnpm_tools() {
+  local mode
+  local package
+  local packages
+
+  ensure_pnpm_env
+
+  if ! packages="$(pnpm_outdated_packages)"; then
+    return 0
+  fi
+
+  if [[ -z "$packages" ]]; then
+    echo 'No outdated pnpm global tools'
+    return 0
+  fi
+
+  echo 'Outdated pnpm global tools:'
+  printf '%s\n' "$packages" | sed 's/^/- /'
+
+  mode="$(prompt_upgrade_mode pnpm "Upgrade pnpm global tools? [A]ll/[y] individual/[n] none ")"
+  case "$mode" in
+    a)
+      pnpm update -g --latest --config.ignore-scripts=false --config.optional=true
+      ;;
+    y)
+      while IFS= read -r package; do
+        [[ -z "$package" ]] && continue
+        if prompt_or_approve pnpm "Upgrade ${package}? [Y/n] "; then
+          pnpm update -g --latest --config.ignore-scripts=false --config.optional=true "$package"
+        fi
+      done <<< "$packages"
+      ;;
+    *)
+      echo 'Skipping pnpm global tools'
+      ;;
+  esac
+}
+
+#######################################
+# Lists installed uv tools.
+# Outputs:
+#   Writes uv tool names to stdout.
+#######################################
+uv_tool_names() {
+  uv tool list 2>/dev/null | awk '/^[[:alnum:]_.-]+ v[0-9]/ { print $1 }'
+}
+
+#######################################
+# Offers to upgrade uv-managed tools.
+# Outputs:
+#   Writes installed tools and uv output.
+#######################################
+upgrade_uv_tools() {
+  local mode
+  local tool
+  local tools
+
+  if ! tools="$(uv_tool_names)"; then
+    return 0
+  fi
+
+  if [[ -z "$tools" ]]; then
+    echo 'No uv tools installed'
+    return 0
+  fi
+
+  echo 'Installed uv tools:'
+  printf '%s\n' "$tools" | sed 's/^/- /'
+
+  mode="$(prompt_upgrade_mode uv "Upgrade uv tools? [A]ll/[y] individual/[n] none ")"
+  case "$mode" in
+    a)
+      uv tool upgrade --all
+      ;;
+    y)
+      while IFS= read -r tool; do
+        [[ -z "$tool" ]] && continue
+        if prompt_or_approve uv "Upgrade ${tool}? [Y/n] "; then
+          uv tool upgrade "$tool"
+        fi
+      done <<< "$tools"
+      ;;
+    *)
+      echo 'Skipping uv tools'
+      ;;
+  esac
+}
+
+#######################################
+# Prompts for manual script/tool upgrades after a successful rebuild.
+# Globals:
+#   RAN_UPDATE
+# Outputs:
+#   Writes prompt and package manager output.
+#######################################
+maybe_upgrade_script_tools() {
+  if [[ "$RAN_UPDATE" != true ]]; then
+    # The package managers themselves are supplied by the rebuilt system. Run
+    # tool upgrades after that so they use the versions from the new generation.
+    return 0
+  fi
+
+  upgrade_pnpm_tools
+  upgrade_uv_tools
+}
+
+#######################################
+# Offers to commit an updated flake.lock.
+# Outputs:
+#   Writes git commit output or a skip message.
+#######################################
+commit_lockfile() {
+  if git diff --quiet -- flake.lock; then
+    return 0
+  fi
+
+  if prompt_or_approve nix "Commit updated flake.lock? [Y/n] "; then
+    git add flake.lock
+    git commit -m "Update flake lock"
+  else
+    echo 'Leaving flake.lock uncommitted'
+  fi
+}
+
+#######################################
+# Runs the update workflow.
+# Arguments:
+#   CLI arguments.
+# Outputs:
+#   Streams update, rebuild, prompt, brew, and git output.
+#######################################
 main() {
   parse_args "$@"
 
-  if ! ensure_nix; then
-    echo 'nix not found'
-    exit 1
-  fi
+  cd "${SCRIPT_DIR}"
 
-  if [[ ! -d "${REPO_ROOT}" || ! -f "${REPO_ROOT}/flake.nix" ]]; then
-    echo "flake repo not found at ${REPO_ROOT}"
+  local repo
+  repo="$(repo_root)"
+  cd "${repo}"
+
+  if [[ ! -f flake.nix || ! -f Makefile ]]; then
+    echo "expected flake.nix and Makefile in ${repo}" >&2
     exit 1
   fi
 
   local host
-  host="$(hostname -s)"
+  host="$(current_host)"
 
-  cd "${REPO_ROOT}"
+  echo '-'
 
-  if [[ "${RUN_UPDATE}" == true ]]; then
-    if prompt_or_approve "Run nix flake update? [Y/n] "; then
-      nix flake update
-    else
-      echo 'Skipping flake update'
+  if [[ "${RUN_UPGRADE}" == true ]]; then
+    # Refuse to run over a dirty lockfile so the before/after summary is about
+    # this invocation, not a mix of earlier edits and new flake input updates.
+    if ! git diff --quiet -- flake.lock || ! git diff --cached --quiet -- flake.lock; then
+      echo 'flake.lock already has uncommitted changes; commit or stash it before running upgrade.' >&2
+      exit 1
     fi
+
+    make upgrade
   fi
 
-  if prompt_or_approve "Rebuild nix-darwin for ${host}? [Y/n] "; then
-    if command -v darwin-rebuild >/dev/null 2>&1; then
-      sudo darwin-rebuild switch --flake ".#${host}"
-    else
-      sudo nix run nix-darwin/master#darwin-rebuild -- switch --flake ".#${host}"
+  if git diff --quiet -- flake.lock; then
+    echo 'flake.lock unchanged'
+
+    if prompt_or_approve nix "Run make update? [Y/n] "; then
+      run_make_update
     fi
+  else
+    print_lock_updates
+
+    if prompt_or_approve nix "Proceed with make update? [Y/n] "; then
+      run_make_update
+    else
+      echo 'Skipping make update'
+    fi
+
+    commit_lockfile
   fi
+
+  maybe_upgrade_brew_packages "$host"
+  maybe_upgrade_script_tools
 }
 
 main "$@"

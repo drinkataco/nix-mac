@@ -29,7 +29,7 @@
     cleanUp = "zap";
 
     # Upgrade already-installed Homebrew formulae and casks during activation
-    upgrade = true;
+    upgrade = false;
 
     # Allow Homebrew taps to update outside the pinned Nix-managed revisions
     mutableTaps = false;
