@@ -20,7 +20,6 @@ APPROVE_PNPM=false
 APPROVE_UV=false
 COMMIT_FLAKE_UPDATE=false
 RUN_UPGRADE=true
-RAN_UPDATE=false
 
 #######################################
 # Prints command usage.
@@ -37,7 +36,7 @@ Notes:
   - This repo manages Homebrew through nix-homebrew.
   - This repo manages pnpm itself through nixpkgs.
   - Global pnpm tools are installed by Home Manager and upgraded manually here.
-  - uv tools are upgraded manually after rebuild.
+  - uv tools are upgraded manually from this script.
   - `make upgrade` updates flake.lock.
   - `make update` rebuilds the current host.
 
@@ -105,41 +104,6 @@ prompt_or_approve() {
   fi
 
   "${YES_NO}" "${question}" "y"
-}
-
-#######################################
-# Prompts for a Homebrew upgrade mode.
-# Arguments:
-#   Approval scope.
-#   Prompt text.
-# Outputs:
-#   Writes prompt text to the terminal and one of "a", "y", or "n" to stdout.
-#######################################
-prompt_upgrade_mode() {
-  local scope="$1"
-  local question="$2"
-  local value
-
-  if scope_approved "$scope"; then
-    # Scoped approvals are intended for unattended runs, so take the broadest
-    # upgrade choice rather than prompting per package.
-    printf 'a\n'
-    return 0
-  fi
-
-  if [ -r /dev/tty ] && [ -w /dev/tty ]; then
-    printf "%s" "${question}" >/dev/tty
-    read -r value </dev/tty
-  else
-    printf "%s" "${question}" >&2
-    read -r value
-  fi
-
-  case "$value" in
-    A*|a*) printf 'a\n' ;;
-    Y*|y*) printf 'y\n' ;;
-    *) printf 'n\n' ;;
-  esac
 }
 
 #######################################
@@ -290,98 +254,76 @@ print_lock_updates() {
 }
 
 #######################################
-# Runs the repo rebuild target and records that it ran.
-# Globals:
-#   RAN_UPDATE
+# Runs the repo rebuild target.
 # Outputs:
 #   Streams make output.
 #######################################
 run_make_update() {
   make update
-  RAN_UPDATE=true
 }
 
 #######################################
-# Offers to upgrade outdated Homebrew packages.
+# Prompts for applying available package and tool updates.
 # Arguments:
-#   Human-readable package group label.
-#   Optional brew flags, such as --cask.
+#   Prompt text.
 # Outputs:
-#   Writes outdated packages and brew output.
+#   Writes prompt text to the terminal and one of "a", "y", or "n" to stdout.
 #######################################
-upgrade_brew_outdated() {
-  local label="$1"
-  shift
+prompt_apply_updates_mode() {
+  local question="$1"
+  local value
 
-  local mode
-  local packages
-  local package
-  local outdated_command=(brew outdated -q "$@")
-  local upgrade_command=(brew upgrade "$@")
-
-  # Homebrew is managed declaratively here, but the actual installed packages
-  # still live in /opt/homebrew. These manual upgrades are only offered when the
-  # nix-darwin activation is not already configured to do them.
-  if ! command -v brew >/dev/null 2>&1; then
-    echo 'brew not found; skipping Homebrew package upgrades'
+  if [[ "${APPROVE_ALL}" == true ]]; then
+    printf 'a\n'
     return 0
   fi
 
-  packages="$("${outdated_command[@]}" 2>/dev/null || true)"
-  if [[ -z "$packages" ]]; then
-    echo "No outdated Homebrew ${label}"
+  if [[ "${APPROVE_BREW}" == true || "${APPROVE_PNPM}" == true || "${APPROVE_UV}" == true ]]; then
+    printf 'y\n'
     return 0
   fi
 
-  echo "Outdated Homebrew ${label}:"
-  printf '%s\n' "$packages" | sed 's/^/- /'
+  if [ -r /dev/tty ] && [ -w /dev/tty ]; then
+    printf "%s" "${question}" >/dev/tty
+    read -r value </dev/tty
+  else
+    printf "%s" "${question}" >&2
+    read -r value
+  fi
 
-  mode="$(prompt_upgrade_mode brew "Upgrade Homebrew ${label}? [A]ll/[y] individual/[n] none ")"
-  case "$mode" in
-    a)
-      "${upgrade_command[@]}"
-      ;;
-    y)
-      while IFS= read -r package; do
-        [[ -z "$package" ]] && continue
-        if prompt_or_approve brew "Upgrade ${package}? [Y/n] "; then
-          "${upgrade_command[@]}" "$package"
-        fi
-      done <<< "$packages"
-      ;;
-    *)
-      echo "Skipping Homebrew ${label}"
-      ;;
+  case "$value" in
+    A*|a*) printf 'a\n' ;;
+    Y*|y*) printf 'y\n' ;;
+    *) printf 'n\n' ;;
   esac
 }
 
 #######################################
-# Prompts for manual Homebrew upgrades when activation upgrades are disabled.
-# Globals:
-#   RAN_UPDATE
+# Counts newline-separated items.
 # Arguments:
-#   Host name.
+#   Newline-separated item list.
 # Outputs:
-#   Writes prompt and brew output.
+#   Writes the item count to stdout.
 #######################################
-maybe_upgrade_brew_packages() {
-  local host="$1"
+count_items() {
+  local items="$1"
 
-  if [[ "$RAN_UPDATE" != true ]]; then
-    # Updated taps are applied by make update. If the rebuild did not happen,
-    # manual brew upgrades may use stale tap state, so leave them alone.
-    return 0
+  if [[ -z "$items" ]]; then
+    printf '0\n'
+  else
+    printf '%s\n' "$items" | sed '/^$/d' | wc -l | tr -d ' '
   fi
+}
 
-  if homebrew_activation_upgrade_enabled "$host"; then
-    # When nix-darwin already upgrades Homebrew during activation, prompting here
-    # would just repeat the same work after the rebuild.
-    return 0
-  fi
-
-  echo 'homebrew.onActivation.upgrade is false for this host.'
-  upgrade_brew_outdated 'formulae'
-  upgrade_brew_outdated 'casks' --cask
+#######################################
+# Lists outdated Homebrew packages.
+# Arguments:
+#   Optional brew flags, such as --cask.
+# Outputs:
+#   Writes package names to stdout.
+#######################################
+brew_outdated_packages() {
+  brew outdated -q "$@" 2>/dev/null || true
 }
 
 #######################################
@@ -427,49 +369,6 @@ pnpm_outdated_packages() {
 }
 
 #######################################
-# Offers to upgrade outdated global pnpm tools.
-# Outputs:
-#   Writes outdated packages and pnpm output.
-#######################################
-upgrade_pnpm_tools() {
-  local mode
-  local package
-  local packages
-
-  ensure_pnpm_env
-
-  if ! packages="$(pnpm_outdated_packages)"; then
-    return 0
-  fi
-
-  if [[ -z "$packages" ]]; then
-    echo 'No outdated pnpm global tools'
-    return 0
-  fi
-
-  echo 'Outdated pnpm global tools:'
-  printf '%s\n' "$packages" | sed 's/^/- /'
-
-  mode="$(prompt_upgrade_mode pnpm "Upgrade pnpm global tools? [A]ll/[y] individual/[n] none ")"
-  case "$mode" in
-    a)
-      pnpm update -g --latest --config.ignore-scripts=false --config.optional=true
-      ;;
-    y)
-      while IFS= read -r package; do
-        [[ -z "$package" ]] && continue
-        if prompt_or_approve pnpm "Upgrade ${package}? [Y/n] "; then
-          pnpm update -g --latest --config.ignore-scripts=false --config.optional=true "$package"
-        fi
-      done <<< "$packages"
-      ;;
-    *)
-      echo 'Skipping pnpm global tools'
-      ;;
-  esac
-}
-
-#######################################
 # Lists installed uv tools.
 # Outputs:
 #   Writes uv tool names to stdout.
@@ -479,62 +378,194 @@ uv_tool_names() {
 }
 
 #######################################
-# Offers to upgrade uv-managed tools.
+# Prints available update counts across user-managed package tools.
+# Arguments:
+#   Outdated Homebrew formulae.
+#   Outdated Homebrew casks.
+#   Outdated pnpm global tools.
+#   Installed uv tools.
 # Outputs:
-#   Writes installed tools and uv output.
+#   Writes a concise update summary to stdout.
 #######################################
-upgrade_uv_tools() {
-  local mode
-  local tool
-  local tools
+print_update_counts() {
+  local brew_formulae="$1"
+  local brew_casks="$2"
+  local pnpm_tools="$3"
+  local uv_tools="$4"
+  local brew_formula_count
+  local brew_cask_count
+  local brew_total
 
-  if ! tools="$(uv_tool_names)"; then
+  brew_formula_count="$(count_items "$brew_formulae")"
+  brew_cask_count="$(count_items "$brew_casks")"
+  brew_total=$((brew_formula_count + brew_cask_count))
+
+  echo "Available updates:"
+  echo "- Homebrew: ${brew_total} (${brew_formula_count} formulae, ${brew_cask_count} casks)"
+  echo "- pnpm global tools: $(count_items "$pnpm_tools")"
+  echo "- uv tools: $(count_items "$uv_tools")"
+}
+
+#######################################
+# Applies Homebrew package updates from a precomputed package list.
+# Arguments:
+#   Human-readable package group label.
+#   Newline-separated package list.
+#   Optional brew flags, such as --cask.
+# Outputs:
+#   Writes prompt and brew output.
+#######################################
+apply_brew_updates() {
+  local label="$1"
+  local packages="$2"
+  shift 2
+
+  local package
+
+  if [[ -z "$packages" ]]; then
     return 0
   fi
 
+  echo "Outdated Homebrew ${label}:"
+  printf '%s\n' "$packages" | sed 's/^/- /'
+
+  if scope_approved brew; then
+    brew upgrade "$@"
+    return 0
+  fi
+
+  while IFS= read -r package; do
+    [[ -z "$package" ]] && continue
+    if prompt_or_approve brew "Upgrade ${package}? [Y/n] "; then
+      brew upgrade "$@" "$package"
+    fi
+  done <<< "$packages"
+}
+
+#######################################
+# Applies pnpm global tool updates from a precomputed package list.
+# Arguments:
+#   Newline-separated package list.
+# Outputs:
+#   Writes prompt and pnpm output.
+#######################################
+apply_pnpm_updates() {
+  local packages="$1"
+  local package
+
+  if [[ -z "$packages" ]]; then
+    return 0
+  fi
+
+  ensure_pnpm_env
+
+  echo 'Outdated pnpm global tools:'
+  printf '%s\n' "$packages" | sed 's/^/- /'
+
+  if scope_approved pnpm; then
+    pnpm update -g --latest --config.ignore-scripts=false --config.optional=true
+    return 0
+  fi
+
+  while IFS= read -r package; do
+    [[ -z "$package" ]] && continue
+    if prompt_or_approve pnpm "Upgrade ${package}? [Y/n] "; then
+      pnpm update -g --latest --config.ignore-scripts=false --config.optional=true "$package"
+    fi
+  done <<< "$packages"
+}
+
+#######################################
+# Applies uv tool updates from a precomputed tool list.
+# Arguments:
+#   Newline-separated tool list.
+# Outputs:
+#   Writes prompt and uv output.
+#######################################
+apply_uv_updates() {
+  local tools="$1"
+  local tool
+
   if [[ -z "$tools" ]]; then
-    echo 'No uv tools installed'
     return 0
   fi
 
   echo 'Installed uv tools:'
   printf '%s\n' "$tools" | sed 's/^/- /'
 
-  mode="$(prompt_upgrade_mode uv "Upgrade uv tools? [A]ll/[y] individual/[n] none ")"
-  case "$mode" in
-    a)
-      uv tool upgrade --all
-      ;;
-    y)
-      while IFS= read -r tool; do
-        [[ -z "$tool" ]] && continue
-        if prompt_or_approve uv "Upgrade ${tool}? [Y/n] "; then
-          uv tool upgrade "$tool"
-        fi
-      done <<< "$tools"
-      ;;
-    *)
-      echo 'Skipping uv tools'
-      ;;
-  esac
-}
-
-#######################################
-# Prompts for manual script/tool upgrades after a successful rebuild.
-# Globals:
-#   RAN_UPDATE
-# Outputs:
-#   Writes prompt and package manager output.
-#######################################
-maybe_upgrade_script_tools() {
-  if [[ "$RAN_UPDATE" != true ]]; then
-    # The package managers themselves are supplied by the rebuilt system. Run
-    # tool upgrades after that so they use the versions from the new generation.
+  if scope_approved uv; then
+    uv tool upgrade --all
     return 0
   fi
 
-  upgrade_pnpm_tools
-  upgrade_uv_tools
+  while IFS= read -r tool; do
+    [[ -z "$tool" ]] && continue
+    if prompt_or_approve uv "Upgrade ${tool}? [Y/n] "; then
+      uv tool upgrade "$tool"
+    fi
+  done <<< "$tools"
+}
+
+#######################################
+# Prompts once for whether to apply available package/tool updates.
+# Arguments:
+#   Host name.
+# Outputs:
+#   Writes update summary, prompts, and package manager output.
+#######################################
+maybe_apply_available_updates() {
+  local host="$1"
+  local brew_formulae
+  local brew_casks
+  local pnpm_tools
+  local uv_tools
+  local mode
+  local total_updates
+
+  brew_formulae=''
+  brew_casks=''
+  if ! homebrew_activation_upgrade_enabled "$host"; then
+    brew_formulae="$(brew_outdated_packages)"
+    brew_casks="$(brew_outdated_packages --cask)"
+  fi
+
+  pnpm_tools="$(pnpm_outdated_packages)"
+  uv_tools="$(uv_tool_names)"
+
+  total_updates=$(
+    (
+      count_items "$brew_formulae"
+      count_items "$brew_casks"
+      count_items "$pnpm_tools"
+      count_items "$uv_tools"
+    ) | awk '{ total += $1 } END { print total + 0 }'
+  )
+
+  print_update_counts "$brew_formulae" "$brew_casks" "$pnpm_tools" "$uv_tools"
+
+  if [[ "$total_updates" -eq 0 ]]; then
+    return 0
+  fi
+
+  mode="$(prompt_apply_updates_mode "Apply available updates? [A]ll/[y] individual/[n] none ")"
+  case "$mode" in
+    a)
+      APPROVE_BREW=true
+      APPROVE_PNPM=true
+      APPROVE_UV=true
+      ;;
+    y)
+      ;;
+    *)
+      echo 'Skipping package and tool updates'
+      return 0
+      ;;
+  esac
+
+  apply_brew_updates 'formulae' "$brew_formulae"
+  apply_brew_updates 'casks' "$brew_casks" --cask
+  apply_pnpm_updates "$pnpm_tools"
+  apply_uv_updates "$uv_tools"
 }
 
 #######################################
@@ -578,6 +609,7 @@ main() {
 
   local host
   host="$(current_host)"
+  local lock_changed=false
 
   echo '-'
 
@@ -592,26 +624,25 @@ main() {
     make upgrade
   fi
 
-  if git diff --quiet -- flake.lock; then
-    echo 'flake.lock unchanged'
-
-    if prompt_or_approve nix "Run make update? [Y/n] "; then
-      run_make_update
-    fi
-  else
-    print_lock_updates
-
-    if prompt_or_approve nix "Proceed with make update? [Y/n] "; then
-      run_make_update
-    else
-      echo 'Skipping make update'
-    fi
-
-    commit_lockfile
+  if ! git diff --quiet -- flake.lock; then
+    lock_changed=true
   fi
 
-  maybe_upgrade_brew_packages "$host"
-  maybe_upgrade_script_tools
+  if [[ "$lock_changed" == true ]]; then
+    print_lock_updates
+  else
+    echo 'flake.lock unchanged'
+  fi
+
+  maybe_apply_available_updates "$host"
+
+  if prompt_or_approve nix "Run make update? [Y/n] "; then
+    run_make_update
+  fi
+
+  if [[ "$lock_changed" == true ]]; then
+    commit_lockfile
+  fi
 }
 
 main "$@"
