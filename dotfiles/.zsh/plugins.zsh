@@ -29,7 +29,8 @@ if [[ -r ${ZIM_HOME}/init.zsh ]]; then
 fi
 
 # Keep the gitster prompt shape, but use the preferred glyph for the leading prompt marker.
-PS1='%B%(?:%F{green}:%F{red}) %F{white}$(prompt-pwd)${(e)git_info[prompt]}%f%b '
+# PS1='%B%(?:%F{green}:%F{red}) %F{white}$(prompt-pwd)${(e)git_info[prompt]}%f%b '
+PROMPT="${PROMPT//➜/}"
 
 # Show normal mode in the right prompt without replacing the existing git status.
 typeset -g ZVM_RPROMPT_BASE="${RPROMPT}"
