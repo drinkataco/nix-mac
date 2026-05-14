@@ -18,6 +18,7 @@ APPROVE_BREW=false
 APPROVE_NIX=false
 APPROVE_PNPM=false
 APPROVE_UV=false
+COMMIT_FLAKE_UPDATE=false
 RUN_UPGRADE=true
 RAN_UPDATE=false
 
@@ -47,6 +48,8 @@ Options:
   --approve-brew  Approve Homebrew package upgrades
   --approve-pnpm  Approve pnpm global tool upgrades
   --approve-uv    Approve uv tool upgrades
+  --commit-flake-update
+                  Approve committing flake.lock after a flake update
   --rebuild-only  Run `make update` without running `make upgrade`
   --help          Show this help
 EOF
@@ -60,8 +63,9 @@ EOF
 #   APPROVE_NIX
 #   APPROVE_PNPM
 #   APPROVE_UV
+#   COMMIT_FLAKE_UPDATE
 # Arguments:
-#   Approval scope: nix, brew, pnpm, or uv.
+#   Approval scope: nix, brew, pnpm, uv, or commit-flake.
 # Returns:
 #   0 when approved, 1 otherwise.
 #######################################
@@ -74,6 +78,7 @@ scope_approved() {
 
   case "$scope" in
     brew) [[ "${APPROVE_BREW}" == true ]] ;;
+    commit-flake) [[ "${COMMIT_FLAKE_UPDATE}" == true ]] ;;
     nix) [[ "${APPROVE_NIX}" == true ]] ;;
     pnpm) [[ "${APPROVE_PNPM}" == true ]] ;;
     uv) [[ "${APPROVE_UV}" == true ]] ;;
@@ -145,6 +150,7 @@ prompt_upgrade_mode() {
 #   APPROVE_NIX
 #   APPROVE_PNPM
 #   APPROVE_UV
+#   COMMIT_FLAKE_UPDATE
 #   RUN_UPGRADE
 # Arguments:
 #   CLI arguments.
@@ -168,6 +174,9 @@ parse_args() {
         ;;
       --approve-uv)
         APPROVE_UV=true
+        ;;
+      --commit-flake-update)
+        COMMIT_FLAKE_UPDATE=true
         ;;
       --rebuild-only)
         RUN_UPGRADE=false
@@ -538,7 +547,7 @@ commit_lockfile() {
     return 0
   fi
 
-  if prompt_or_approve nix "Commit updated flake.lock? [Y/n] "; then
+  if prompt_or_approve commit-flake "Commit updated flake.lock? [Y/n] "; then
     git add flake.lock
     git commit -m "Update flake lock"
   else
