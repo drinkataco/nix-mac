@@ -28,6 +28,8 @@ if [[ -r ${ZIM_HOME}/init.zsh ]]; then
   source "${ZIM_HOME}/init.zsh"
 fi
 
+PROMPT="${PROMPT//➜/}"
+
 # Show normal mode in the right prompt without replacing the existing git status.
 typeset -g ZVM_RPROMPT_BASE="${RPROMPT}"
 
