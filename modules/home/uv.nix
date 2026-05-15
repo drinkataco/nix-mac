@@ -12,7 +12,8 @@ let
 in
 {
   home.activation.installGlobalUvTools = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-    export PATH="${uvBinDir}:${pkgs.uv}/bin:$PATH"
+    export PATH="${uvBinDir}:${pkgs.git}/bin:${pkgs.python3}/bin:${pkgs.uv}/bin:/usr/bin:/bin:$PATH"
+    export UV_PYTHON_PREFERENCE=system
 
     mkdir -p "${uvBinDir}"
 

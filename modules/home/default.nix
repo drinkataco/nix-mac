@@ -1,4 +1,9 @@
-{ features, lib, ... }:
+{
+  features,
+  lib,
+  pkgs,
+  ...
+}:
 {
   imports = [
     ./dotfiles.nix
@@ -15,4 +20,8 @@
   home.stateVersion = "25.05";
 
   programs.home-manager.enable = true;
+
+  home.activation.prependGnuCoreutils = lib.hm.dag.entryBefore [ "linkGeneration" ] ''
+    export PATH="${pkgs.coreutils}/libexec/gnubin:$PATH"
+  '';
 }

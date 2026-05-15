@@ -52,6 +52,7 @@
     openvpn
     pinentry_mac
     pnpm
+    python3
     silver-searcher
     typescript
     uv
