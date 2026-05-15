@@ -1,7 +1,7 @@
 {
-  config,
   lib,
   pkgs,
+  uvSettings,
   ...
 }:
 let
@@ -14,23 +14,22 @@ let
 
   uv = "${pkgs.uv}/bin/uv";
   uvBinDir = "$HOME/.local/bin";
+  activationPath = lib.makeBinPath [
+    pkgs.git
+    pkgs.python3
+    pkgs.uv
+  ];
 in
 {
-  options.uv.autoUpgrade = lib.mkOption {
-    type = lib.types.bool;
-    default = false;
-    description = "Upgrade global uv tools during Home Manager activation.";
-  };
-
   home.activation.installGlobalUvTools = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-    export PATH="${uvBinDir}:${pkgs.git}/bin:${pkgs.python3}/bin:${pkgs.uv}/bin:/usr/bin:/bin:$PATH"
+    export PATH="${uvBinDir}:${activationPath}:$PATH:/usr/bin:/bin"
     export UV_PYTHON_PREFERENCE=system
 
     mkdir -p "${uvBinDir}"
 
     ${lib.concatMapStringsSep "\n" (tool: ''
       if [ -x "${uvBinDir}/${tool.name}" ]; then
-        if [ "${lib.boolToString config.uv.autoUpgrade}" = true ]; then
+        if [ "${lib.boolToString uvSettings.autoUpgrade}" = true ]; then
           "${uv}" tool upgrade ${lib.escapeShellArg tool.name} >/dev/null 2>&1 \
             || "${uv}" tool install ${lib.escapeShellArg tool.package}
         fi

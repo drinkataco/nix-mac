@@ -4,6 +4,12 @@
   pkgs,
   ...
 }:
+let
+  activationReadlink = pkgs.runCommand "activation-readlink" { } ''
+    mkdir -p "$out/bin"
+    ln -s ${pkgs.coreutils}/libexec/gnubin/readlink "$out/bin/readlink"
+  '';
+in
 {
   imports = [
     ./dotfiles.nix
@@ -20,8 +26,5 @@
   home.stateVersion = "25.05";
 
   programs.home-manager.enable = true;
-
-  home.activation.prependGnuCoreutils = lib.hm.dag.entryBefore [ "linkGeneration" ] ''
-    export PATH="${pkgs.coreutils}/libexec/gnubin:$PATH"
-  '';
+  home.extraActivationPath = [ activationReadlink ];
 }

@@ -1,7 +1,7 @@
 {
-  config,
   lib,
   pkgs,
+  pnpmSettings,
   ...
 }:
 let
@@ -20,12 +20,6 @@ let
   pnpm = "${pkgs.pnpm}/bin/pnpm";
 in
 {
-  options.pnpm.autoUpgrade = lib.mkOption {
-    type = lib.types.bool;
-    default = false;
-    description = "Upgrade global pnpm tools during Home Manager activation.";
-  };
-
   home.activation.installFnmNodeVersions = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
     export PATH="${pkgs.fnm}/bin:$PATH"
 
@@ -38,14 +32,14 @@ in
 
   home.activation.installGlobalNodeTools = lib.hm.dag.entryAfter [ "installFnmNodeVersions" ] ''
     export PNPM_HOME="$HOME/.local/share/pnpm"
-    export PATH="$PNPM_HOME/bin:${pkgs.pnpm}/bin:$PATH"
+    export PATH="$PNPM_HOME:${pkgs.pnpm}/bin:$PATH"
 
-    mkdir -p "$PNPM_HOME/bin"
+    mkdir -p "$PNPM_HOME"
 
     for package in ${lib.escapeShellArgs globalNodePackages}; do
       if ! "${pnpm}" list -g --depth=0 2>/dev/null | grep -Fq " ''${package}@"; then
         "${pnpm}" add -g --config.ignore-scripts=false --config.optional=true "$package"
-      elif [ "${lib.boolToString config.pnpm.autoUpgrade}" = true ]; then
+      elif [ "${lib.boolToString pnpmSettings.autoUpgrade}" = true ]; then
         "${pnpm}" update -g --latest --config.ignore-scripts=false --config.optional=true "$package"
       fi
     done

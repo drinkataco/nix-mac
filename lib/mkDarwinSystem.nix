@@ -21,7 +21,21 @@ darwin.lib.darwinSystem {
     (
       { config, lib, ... }:
       {
-        options.features.gamesDir = lib.mkEnableOption "the user games application directory";
+        options = {
+          features.gamesDir = lib.mkEnableOption "the user games application directory";
+
+          pnpm.autoUpgrade = lib.mkOption {
+            type = lib.types.bool;
+            default = false;
+            description = "Upgrade global pnpm tools during Home Manager activation.";
+          };
+
+          uv.autoUpgrade = lib.mkOption {
+            type = lib.types.bool;
+            default = false;
+            description = "Upgrade global uv tools during Home Manager activation.";
+          };
+        };
 
         config = {
           home-manager = {
@@ -39,6 +53,8 @@ darwin.lib.darwinSystem {
                 username
                 ;
               inherit (config) features;
+              pnpmSettings = config.pnpm;
+              uvSettings = config.uv;
             };
             users.${username} =
               { lib, ... }:
