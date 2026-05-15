@@ -8,7 +8,7 @@
 {
   imports = [
     (lib.mkAliasOptionModule [ "homebrew" "cleanUp" ] [ "homebrew" "onActivation" "cleanup" ])
-    (lib.mkAliasOptionModule [ "homebrew" "upgrade" ] [ "homebrew" "onActivation" "upgrade" ])
+    (lib.mkAliasOptionModule [ "homebrew" "autoUpgrade" ] [ "homebrew" "onActivation" "upgrade" ])
     (lib.mkAliasOptionModule [ "homebrew" "mutableTaps" ] [ "nix-homebrew" "mutableTaps" ])
   ];
 

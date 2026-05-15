@@ -16,7 +16,7 @@ let
   uvBinDir = "$HOME/.local/bin";
 in
 {
-  options.uv.upgrade = lib.mkOption {
+  options.uv.autoUpgrade = lib.mkOption {
     type = lib.types.bool;
     default = false;
     description = "Upgrade global uv tools during Home Manager activation.";
@@ -30,7 +30,7 @@ in
 
     ${lib.concatMapStringsSep "\n" (tool: ''
       if [ -x "${uvBinDir}/${tool.name}" ]; then
-        if [ "${lib.boolToString config.uv.upgrade}" = true ]; then
+        if [ "${lib.boolToString config.uv.autoUpgrade}" = true ]; then
           "${uv}" tool upgrade ${lib.escapeShellArg tool.name} >/dev/null 2>&1 \
             || "${uv}" tool install ${lib.escapeShellArg tool.package}
         fi

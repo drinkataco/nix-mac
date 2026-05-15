@@ -20,7 +20,7 @@ let
   pnpm = "${pkgs.pnpm}/bin/pnpm";
 in
 {
-  options.pnpm.upgrade = lib.mkOption {
+  options.pnpm.autoUpgrade = lib.mkOption {
     type = lib.types.bool;
     default = false;
     description = "Upgrade global pnpm tools during Home Manager activation.";
@@ -45,7 +45,7 @@ in
     for package in ${lib.escapeShellArgs globalNodePackages}; do
       if ! "${pnpm}" list -g --depth=0 2>/dev/null | grep -Fq " ''${package}@"; then
         "${pnpm}" add -g --config.ignore-scripts=false --config.optional=true "$package"
-      elif [ "${lib.boolToString config.pnpm.upgrade}" = true ]; then
+      elif [ "${lib.boolToString config.pnpm.autoUpgrade}" = true ]; then
         "${pnpm}" update -g --latest --config.ignore-scripts=false --config.optional=true "$package"
       fi
     done
