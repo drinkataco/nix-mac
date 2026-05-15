@@ -78,6 +78,21 @@ sudo darwin-rebuild switch --flake '.#work'
 make update HOST=work
 ```
 
+### Upgrading
+
+There is also a local helper script [updatessy](./dotfiles/scripts/updatessy).
+
+Use that when you want one guided upgrade pass across the machine - it:
+
+- Updates packages
+  - `make update` - updating `flake.lock` and `nixpkgs`
+  - `brew --upgrade` - upgrading homebrew packages
+  - `pnpm ...` - upgrades any packages installed by pnpm
+  - `uv ...` - upgrades any packages installed by uv
+- Rebuild the current host with `make update`
+
+Use `updatessy --help` to see its flags and how to use it
+
 ### Uninstalling Nix
 
 If a machine already has a different Nix installation and I want to reset it back to the repo's expected upstream Nix install, run:
