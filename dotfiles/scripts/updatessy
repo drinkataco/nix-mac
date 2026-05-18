@@ -544,6 +544,54 @@ uv_installed_count() {
 }
 
 #######################################
+# Returns the current and candidate nixpkgs lock revisions.
+# Outputs:
+#   Writes tab-separated fields:
+#     outdated-count, total-count, current-rev, candidate-rev
+#######################################
+nixpkgs_status() {
+  local current_rev
+  local candidate_rev
+  local temp_lock
+
+  current_rev="$(jq -r '.nodes.nixpkgs.locked.rev // "unknown"' flake.lock)"
+  temp_lock="$(mktemp)"
+  cp flake.lock "$temp_lock"
+
+  if ! nix flake lock . --quiet --output-lock-file "$temp_lock" --update-input nixpkgs >/dev/null 2>&1; then
+    rm -f "$temp_lock"
+    printf '0\t1\t%s\t%s\n' "$current_rev" "$current_rev"
+    return 0
+  fi
+
+  candidate_rev="$(jq -r '.nodes.nixpkgs.locked.rev // "unknown"' "$temp_lock")"
+  rm -f "$temp_lock"
+
+  if [[ "$current_rev" == "$candidate_rev" ]]; then
+    printf '0\t1\t%s\t%s\n' "$current_rev" "$candidate_rev"
+  else
+    printf '1\t1\t%s\t%s\n' "$current_rev" "$candidate_rev"
+  fi
+}
+
+#######################################
+# Shortens a revision for human-readable output.
+# Arguments:
+#   Revision.
+# Outputs:
+#   Writes the shortened revision to stdout.
+#######################################
+short_rev() {
+  local rev="$1"
+
+  if [[ "${#rev}" -gt 12 ]]; then
+    printf '%s\n' "${rev:0:12}"
+  else
+    printf '%s\n' "$rev"
+  fi
+}
+
+#######################################
 # Counts outdated Homebrew formulae from brew JSON.
 # Arguments:
 #   Brew outdated JSON.
@@ -615,6 +663,31 @@ print_manager_status() {
 }
 
 #######################################
+# Prints the nixpkgs flake input status.
+# Arguments:
+#   Outdated count.
+# Outputs:
+#   Writes the nixpkgs pin status to stdout.
+#######################################
+print_nixpkgs_status() {
+  local outdated_count="$1"
+
+  if [[ -t 1 ]]; then
+    if [[ "$outdated_count" -gt 0 ]]; then
+      printf '%b\n' "${COLOR_YELLOW}nixpkgs pin:${COLOR_RESET} ${COLOR_BLUE}update available${COLOR_RESET}"
+    else
+      printf '%b\n' "${COLOR_YELLOW}nixpkgs pin:${COLOR_RESET} ${COLOR_GREEN}up to date${COLOR_RESET}"
+    fi
+  else
+    if [[ "$outdated_count" -gt 0 ]]; then
+      echo "nixpkgs pin: update available"
+    else
+      echo "nixpkgs pin: up to date"
+    fi
+  fi
+}
+
+#######################################
 # Prints a colored long-form package detail line.
 # Arguments:
 #   Package/tool name.
@@ -670,6 +743,31 @@ print_status_title_with_count() {
     printf '%b\n' "${COLOR_YELLOW}${title}${COLOR_RESET} (${COLOR_BLUE}${outdated_count}${COLOR_RESET} out of ${COLOR_BLUE}${installed_count}${COLOR_RESET} packages to update):"
   else
     printf '%s (%s out of %s packages to update):\n' "$title" "$outdated_count" "$installed_count"
+  fi
+}
+
+#######################################
+# Prints the LONG nixpkgs section title.
+# Arguments:
+#   Outdated count.
+# Outputs:
+#   Writes the formatted nixpkgs title line to stdout.
+#######################################
+print_nixpkgs_title() {
+  local outdated_count="$1"
+
+  if [[ -t 1 ]]; then
+    if [[ "$outdated_count" -gt 0 ]]; then
+      printf '%b\n' "${COLOR_YELLOW}nixpkgs pin${COLOR_RESET} (${COLOR_BLUE}update available${COLOR_RESET}):"
+    else
+      printf '%b\n' "${COLOR_YELLOW}nixpkgs pin${COLOR_RESET} (${COLOR_GREEN}up to date${COLOR_RESET}):"
+    fi
+  else
+    if [[ "$outdated_count" -gt 0 ]]; then
+      echo "nixpkgs pin (update available):"
+    else
+      echo "nixpkgs pin (up to date):"
+    fi
   fi
 }
 
@@ -773,16 +871,22 @@ print_status_report() {
   local brew_json
   local pnpm_json
   local uv_tools
+  local nixpkgs_raw
   local brew_outdated
   local brew_installed
   local pnpm_outdated
   local pnpm_installed
   local uv_outdated
   local uv_installed
+  local nixpkgs_outdated
+  local nixpkgs_total
+  local nixpkgs_current
+  local nixpkgs_candidate
 
   brew_json="$(brew_outdated_json)"
   pnpm_json="$(pnpm_outdated_json)"
   uv_tools="$(uv_outdated_tools)"
+  nixpkgs_raw="$(nixpkgs_status)"
 
   brew_outdated=$(( $(brew_outdated_formulae_count "$brew_json") + $(brew_outdated_casks_count "$brew_json") ))
   brew_installed=$(( $(brew_installed_formulae_count) + $(brew_installed_casks_count) ))
@@ -790,14 +894,22 @@ print_status_report() {
   pnpm_installed="$(pnpm_installed_count)"
   uv_outdated="$(count_items "$uv_tools")"
   uv_installed="$(uv_installed_count)"
+  IFS=$'\t' read -r nixpkgs_outdated nixpkgs_total nixpkgs_current nixpkgs_candidate <<< "$nixpkgs_raw"
 
   if [[ "$mode" != "LONG" ]]; then
+    print_nixpkgs_status "$nixpkgs_outdated"
     print_manager_status "Homebrew" "$brew_outdated" "$brew_installed"
     print_manager_status "pnpm" "$pnpm_outdated" "$pnpm_installed"
     print_manager_status "uv" "$uv_outdated" "$uv_installed"
     return 0
   fi
 
+  print_nixpkgs_title "$nixpkgs_outdated"
+  if [[ "$nixpkgs_outdated" -gt 0 ]]; then
+    print_status_detail 'nixpkgs' "$(short_rev "$nixpkgs_current")" "$(short_rev "$nixpkgs_candidate")"
+  fi
+
+  echo
   print_status_title_with_count 'Homebrew' "$brew_outdated" "$brew_installed"
   if [[ "$brew_outdated" -gt 0 ]]; then
     print_brew_status_long "$brew_json"
