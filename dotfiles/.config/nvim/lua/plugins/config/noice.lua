@@ -21,6 +21,16 @@ return function()
       view_warn = "mini",
       view_history = "messages",
     },
+    routes = {
+      {
+        filter = {
+          event = "lsp",
+          kind = { "progress", "message" },
+          find = "[Pp]yright",
+        },
+        opts = { skip = true },
+      },
+    },
     popupmenu = {
       enabled = true,
       backend = "nui",
