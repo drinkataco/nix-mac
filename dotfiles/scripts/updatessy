@@ -20,6 +20,15 @@ APPROVE_PNPM=false
 APPROVE_UV=false
 COMMIT_FLAKE_UPDATE=false
 RUN_UPGRADE=true
+SILENT_MODE=false
+STATUS_MODE=""
+
+COLOR_RESET=$'\033[0m'
+COLOR_RED=$'\033[1;31m'
+COLOR_GREEN=$'\033[1;32m'
+COLOR_YELLOW=$'\033[1;33m'
+COLOR_BLUE=$'\033[1;34m'
+COLOR_CYAN=$'\033[1;36m'
 
 #######################################
 # Prints a startup banner when stdout is a terminal.
@@ -31,17 +40,12 @@ print_banner() {
     return 0
   fi
 
-  local reset=$'\033[0m'
-  local cyan=$'\033[1;36m'
-  local blue=$'\033[1;34m'
-  local yellow=$'\033[1;33m'
-
-  printf '%b\n' "${cyan}   __  __          __      __                             ${reset}"
-  printf '%b\n' "${cyan}  / / / /___  ____/ /___ _/ /____  ____________  __       ${reset}"
-  printf '%b\n' "${blue} / / / / __ \\/ __  / __ \`/ __/ _ \\/ ___/ ___/ / / /    ${reset}"
-  printf '%b\n' "${blue}/ /_/ / /_/ / /_/ / /_/ / /_/  __(__  |__  ) /_/ /        ${reset}"
-  printf '%b\n' "${yellow}\\____/ .___/\\__,_/\\__,_/\\__/\\___/____/____/\\__, / ${reset}"
-  printf '%b\n' "${yellow}    /_/                                   /____/        ${reset}"
+  printf '%b\n' "${COLOR_CYAN}   __  __          __      __                             ${COLOR_RESET}"
+  printf '%b\n' "${COLOR_CYAN}  / / / /___  ____/ /___ _/ /____  ____________  __       ${COLOR_RESET}"
+  printf '%b\n' "${COLOR_BLUE} / / / / __ \\/ __  / __ \`/ __/ _ \\/ ___/ ___/ / / /    ${COLOR_RESET}"
+  printf '%b\n' "${COLOR_BLUE}/ /_/ / /_/ / /_/ / /_/ / /_/  __(__  |__  ) /_/ /        ${COLOR_RESET}"
+  printf '%b\n' "${COLOR_YELLOW}\\____/ .___/\\__,_/\\__,_/\\__/\\___/____/____/\\__, / ${COLOR_RESET}"
+  printf '%b\n' "${COLOR_YELLOW}    /_/                                   /____/        ${COLOR_RESET}"
   printf '\n'
   printf '%b\n' "Update nix, brew, pnpm, and uv for computer '$(hostname)'"
   echo
@@ -57,11 +61,8 @@ print_banner() {
 #   Writes the formatted error to stderr.
 #######################################
 err() {
-  local reset=$'\033[0m'
-  local red=$'\033[1;31m'
-
   if [[ -t 2 ]]; then
-    printf '%b\n' "${red}Error:${reset} $*" >&2
+    printf '%b\n' "${COLOR_RED}Error:${COLOR_RESET} $*" >&2
   else
     printf 'Error: %s\n' "$*" >&2
   fi
@@ -96,6 +97,10 @@ Options:
   --commit-flake-update
                   Approve committing flake.lock after a flake update
   --rebuild-only  Run `make update` without running `make upgrade`
+  --silent        Run `make upgrade`, collect dependency status, and write logs
+                  to a timestamped directory without prompting or rebuilding
+  --status        Show how many updates are outstanding
+  --status=LONG   Show counts plus package-level detail where available
   --help          Show this help
 EOF
 }
@@ -191,6 +196,15 @@ parse_args() {
       --rebuild-only)
         RUN_UPGRADE=false
         ;;
+      --silent)
+        SILENT_MODE=true
+        ;;
+      --status)
+        STATUS_MODE="SHORT"
+        ;;
+      --status=LONG)
+        STATUS_MODE="LONG"
+        ;;
       --help|-h)
         usage
         exit 0
@@ -203,6 +217,11 @@ parse_args() {
     esac
     shift
   done
+
+  if [[ "${SILENT_MODE}" == true && -n "${STATUS_MODE}" ]]; then
+    err '--silent and --status cannot be used together'
+    exit 1
+  fi
 }
 
 #######################################
@@ -373,6 +392,33 @@ brew_outdated_packages() {
 }
 
 #######################################
+# Lists outdated Homebrew packages as JSON.
+# Outputs:
+#   Writes brew outdated JSON to stdout.
+#######################################
+brew_outdated_json() {
+  brew outdated --json=v2 2>/dev/null || printf '{"formulae":[],"casks":[]}\n'
+}
+
+#######################################
+# Counts installed Homebrew formulae.
+# Outputs:
+#   Writes the installed formula count to stdout.
+#######################################
+brew_installed_formulae_count() {
+  brew list --formula 2>/dev/null | sed '/^$/d' | wc -l | tr -d ' '
+}
+
+#######################################
+# Counts installed Homebrew casks.
+# Outputs:
+#   Writes the installed cask count to stdout.
+#######################################
+brew_installed_casks_count() {
+  brew list --cask 2>/dev/null | sed '/^$/d' | wc -l | tr -d ' '
+}
+
+#######################################
 # Ensures pnpm uses the repo's expected global bin directory.
 # Globals:
 #   HOME
@@ -415,12 +461,402 @@ pnpm_outdated_packages() {
 }
 
 #######################################
+# Lists outdated global pnpm packages as JSON.
+# Outputs:
+#   Writes pnpm outdated JSON to stdout.
+#######################################
+pnpm_outdated_json() {
+  ensure_pnpm_env
+  pnpm outdated -g --format json 2>/dev/null || true
+}
+
+#######################################
+# Counts installed global pnpm packages.
+# Outputs:
+#   Writes the installed package count to stdout.
+#######################################
+pnpm_installed_count() {
+  local root
+
+  ensure_pnpm_env
+  root="$(pnpm root -g 2>/dev/null || true)"
+
+  if [[ -z "$root" || ! -d "$root" ]]; then
+    printf '0\n'
+    return 0
+  fi
+
+  find "$root" -mindepth 1 -maxdepth 2 -type d ! -name .bin \
+    | awk -F/ '
+        /\/node_modules\/@[^/]+\/[^/]+$/ { count++ }
+        /\/node_modules\/[^@][^/]*$/ { count++ }
+        END { print count + 0 }
+      '
+}
+
+#######################################
 # Lists installed uv tools.
 # Outputs:
 #   Writes uv tool names to stdout.
 #######################################
 uv_tool_names() {
   uv tool list 2>/dev/null | awk '/^[[:alnum:]_.-]+ v[0-9]/ { print $1 }'
+}
+
+#######################################
+# Lists outdated uv tools.
+# Outputs:
+#   Writes outdated uv tool lines to stdout.
+#######################################
+uv_outdated_tools() {
+  (uv tool list --outdated --show-version-specifiers 2>/dev/null || true) | awk '
+    /^[[:alnum:]_.-]+ v[0-9]/ {
+      if (record != "") {
+        print record
+      }
+      record = $0
+      next
+    }
+
+    /^[[:space:]]+/ {
+      gsub(/^[[:space:]]+/, "", $0)
+      if (record != "") {
+        record = record " " $0
+      }
+      next
+    }
+
+    END {
+      if (record != "") {
+        print record
+      }
+    }
+  '
+}
+
+#######################################
+# Counts installed uv tools.
+# Outputs:
+#   Writes the installed tool count to stdout.
+#######################################
+uv_installed_count() {
+  (uv tool list 2>/dev/null || true) | awk '/^[[:alnum:]_.-]+ v[0-9]/ { count++ } END { print count + 0 }'
+}
+
+#######################################
+# Counts outdated Homebrew formulae from brew JSON.
+# Arguments:
+#   Brew outdated JSON.
+# Outputs:
+#   Writes the outdated formula count to stdout.
+#######################################
+brew_outdated_formulae_count() {
+  local brew_json="$1"
+  printf '%s' "$brew_json" | jq '.formulae | length'
+}
+
+#######################################
+# Counts outdated Homebrew casks from brew JSON.
+# Arguments:
+#   Brew outdated JSON.
+# Outputs:
+#   Writes the outdated cask count to stdout.
+#######################################
+brew_outdated_casks_count() {
+  local brew_json="$1"
+  printf '%s' "$brew_json" | jq '.casks | length'
+}
+
+#######################################
+# Counts outdated global pnpm packages from pnpm JSON.
+# Arguments:
+#   pnpm outdated JSON.
+# Outputs:
+#   Writes the outdated package count to stdout.
+#######################################
+pnpm_outdated_count() {
+  local pnpm_json="$1"
+
+  if [[ -z "$pnpm_json" ]]; then
+    printf '0\n'
+    return 0
+  fi
+
+  printf '%s' "$pnpm_json" | jq '
+    if type == "array" then
+      length
+    elif type == "object" then
+      length
+    else
+      0
+    end
+  '
+}
+
+#######################################
+# Prints one manager status line.
+# Arguments:
+#   Label.
+#   Outdated count.
+#   Installed count.
+# Outputs:
+#   Writes the status summary to stdout.
+#######################################
+print_manager_status() {
+  local label="$1"
+  local outdated_count="$2"
+  local installed_count="$3"
+
+  if [[ -t 1 ]]; then
+    printf '%b\n' "${COLOR_YELLOW}${label}:${COLOR_RESET} ${COLOR_BLUE}${outdated_count}${COLOR_RESET} out of ${COLOR_BLUE}${installed_count}${COLOR_RESET} packages to update"
+  else
+    echo "${label}: ${outdated_count} out of ${installed_count} packages to update"
+  fi
+}
+
+#######################################
+# Prints a colored long-form package detail line.
+# Arguments:
+#   Package/tool name.
+#   Current version/details.
+#   Target version/details.
+# Outputs:
+#   Writes the formatted detail line to stdout.
+#######################################
+print_status_detail() {
+  local name="$1"
+  local current="$2"
+  local target="$3"
+
+  if [[ -t 1 ]]; then
+    printf '%b\n' "  - ${COLOR_BLUE}${name}${COLOR_RESET}: ${COLOR_RED}${current}${COLOR_RESET} -> ${COLOR_GREEN}${target}${COLOR_RESET}"
+  else
+    printf '  - %s: %s -> %s\n' "$name" "$current" "$target"
+  fi
+}
+
+#######################################
+# Prints a colored status section title.
+# Arguments:
+#   Title text.
+# Outputs:
+#   Writes the formatted title to stdout.
+#######################################
+print_status_title() {
+  local title="$1"
+
+  if [[ -t 1 ]]; then
+    printf '%b\n' "${COLOR_YELLOW}${title}${COLOR_RESET}"
+  else
+    printf '%s\n' "$title"
+  fi
+}
+
+#######################################
+# Prints a colorized LONG section title with counts.
+# Arguments:
+#   Title text.
+#   Outdated count.
+#   Installed count.
+# Outputs:
+#   Writes the formatted title line to stdout.
+#######################################
+print_status_title_with_count() {
+  local title="$1"
+  local outdated_count="$2"
+  local installed_count="$3"
+
+  if [[ -t 1 ]]; then
+    printf '%b\n' "${COLOR_YELLOW}${title}${COLOR_RESET} (${COLOR_BLUE}${outdated_count}${COLOR_RESET} out of ${COLOR_BLUE}${installed_count}${COLOR_RESET} packages to update):"
+  else
+    printf '%s (%s out of %s packages to update):\n' "$title" "$outdated_count" "$installed_count"
+  fi
+}
+
+#######################################
+# Prints long-form Homebrew package details.
+# Arguments:
+#   Brew outdated JSON.
+# Outputs:
+#   Writes package-level outdated details to stdout.
+#######################################
+print_brew_status_long() {
+  local brew_json="$1"
+  local name
+  local current
+  local target
+
+  while IFS=$'\t' read -r name current target; do
+    [[ -z "$name" ]] && continue
+    print_status_detail "$name" "$current" "$target"
+  done < <(
+    printf '%s' "$brew_json" | jq -r '
+      (.formulae[]? | [.name, (.installed_versions[0] // "unknown"), .current_version]) ,
+      (.casks[]? | [.name, (.installed_versions[0] // "unknown"), .current_version])
+      | @tsv
+    '
+  )
+}
+
+#######################################
+# Prints long-form pnpm package details.
+# Arguments:
+#   pnpm outdated JSON.
+# Outputs:
+#   Writes package-level outdated details to stdout.
+#######################################
+print_pnpm_status_long() {
+  local pnpm_json="$1"
+  local name
+  local current
+  local target
+
+  if [[ -z "$pnpm_json" ]]; then
+    return 0
+  fi
+
+  while IFS=$'\t' read -r name current target; do
+    [[ -z "$name" ]] && continue
+    print_status_detail "$name" "$current" "$target"
+  done < <(
+    printf '%s' "$pnpm_json" | jq -r '
+      if type == "array" then
+        .[]? | [.name // .package // "unknown", (.current // "unknown"), (.latest // .wanted // "unknown")]
+      elif type == "object" then
+        to_entries[] | [.key, (.value.current // "unknown"), (.value.latest // .value.wanted // "unknown")]
+      else
+        empty
+      end
+      | @tsv
+    '
+  )
+}
+
+#######################################
+# Prints long-form uv tool details.
+# Arguments:
+#   uv outdated tool list.
+# Outputs:
+#   Writes outdated tool lines to stdout.
+#######################################
+print_uv_status_long() {
+  local uv_tools="$1"
+  local line
+  local name
+  local details
+
+  if [[ -z "$uv_tools" ]]; then
+    return 0
+  fi
+
+  while IFS= read -r line; do
+    [[ -z "$line" ]] && continue
+    name="${line%% *}"
+    details="${line#${name}}"
+    if [[ -t 1 ]]; then
+      printf '%b\n' "  - ${COLOR_BLUE}${name}${COLOR_RESET}${COLOR_GREEN}${details}${COLOR_RESET}"
+    else
+      printf '  - %s\n' "$line"
+    fi
+  done <<< "$uv_tools"
+}
+
+#######################################
+# Prints dependency update status.
+# Arguments:
+#   SHORT or LONG.
+# Outputs:
+#   Writes manager-level update status to stdout.
+#######################################
+print_status_report() {
+  local mode="$1"
+  local brew_json
+  local pnpm_json
+  local uv_tools
+  local brew_outdated
+  local brew_installed
+  local pnpm_outdated
+  local pnpm_installed
+  local uv_outdated
+  local uv_installed
+
+  brew_json="$(brew_outdated_json)"
+  pnpm_json="$(pnpm_outdated_json)"
+  uv_tools="$(uv_outdated_tools)"
+
+  brew_outdated=$(( $(brew_outdated_formulae_count "$brew_json") + $(brew_outdated_casks_count "$brew_json") ))
+  brew_installed=$(( $(brew_installed_formulae_count) + $(brew_installed_casks_count) ))
+  pnpm_outdated="$(pnpm_outdated_count "$pnpm_json")"
+  pnpm_installed="$(pnpm_installed_count)"
+  uv_outdated="$(count_items "$uv_tools")"
+  uv_installed="$(uv_installed_count)"
+
+  if [[ "$mode" != "LONG" ]]; then
+    print_manager_status "Homebrew" "$brew_outdated" "$brew_installed"
+    print_manager_status "pnpm" "$pnpm_outdated" "$pnpm_installed"
+    print_manager_status "uv" "$uv_outdated" "$uv_installed"
+    return 0
+  fi
+
+  print_status_title_with_count 'Homebrew' "$brew_outdated" "$brew_installed"
+  if [[ "$brew_outdated" -gt 0 ]]; then
+    print_brew_status_long "$brew_json"
+  fi
+
+  echo
+  print_status_title_with_count 'pnpm' "$pnpm_outdated" "$pnpm_installed"
+  if [[ "$pnpm_outdated" -gt 0 ]]; then
+    print_pnpm_status_long "$pnpm_json"
+  fi
+
+  echo
+  print_status_title_with_count 'uv' "$uv_outdated" "$uv_installed"
+  if [[ "$uv_outdated" -gt 0 ]]; then
+    print_uv_status_long "$uv_tools"
+  fi
+}
+
+#######################################
+# Creates a timestamped log directory for silent runs.
+# Outputs:
+#   Writes the absolute log directory path to stdout.
+#######################################
+silent_log_dir() {
+  local base_dir="${HOME}/.cache/updatessy"
+  local timestamp
+  timestamp="$(date +%Y%m%d-%H%M%S)"
+  mkdir -p "${base_dir}/${timestamp}"
+  printf '%s\n' "${base_dir}/${timestamp}"
+}
+
+#######################################
+# Runs the non-interactive silent workflow and logs results.
+# Outputs:
+#   Writes the log directory path to stdout.
+#######################################
+run_silent_mode() {
+  local log_dir
+  log_dir="$(silent_log_dir)"
+
+  if [[ "${RUN_UPGRADE}" == true ]]; then
+    if ! git diff --quiet -- flake.lock || ! git diff --cached --quiet -- flake.lock; then
+      err 'flake.lock already has uncommitted changes; commit or stash it before running upgrade.'
+      exit 1
+    fi
+
+    if ! make upgrade >"${log_dir}/make-upgrade.log" 2>&1; then
+      err "make upgrade failed; see ${log_dir}/make-upgrade.log"
+      exit 1
+    fi
+  fi
+
+  git diff -- flake.lock > "${log_dir}/flake.lock.diff" 2>&1 || true
+  brew_outdated_json > "${log_dir}/brew-outdated.json"
+  pnpm_outdated_json > "${log_dir}/pnpm-outdated.json"
+  uv_outdated_tools > "${log_dir}/uv-outdated.txt"
+  print_status_report "LONG" > "${log_dir}/status.txt"
+
+  echo "Silent update logs written to ${log_dir}"
 }
 
 #######################################
@@ -641,7 +1077,6 @@ commit_lockfile() {
 #######################################
 main() {
   parse_args "$@"
-  print_banner
 
   cd "${SCRIPT_DIR}"
 
@@ -653,6 +1088,18 @@ main() {
     err "Expected flake.nix and Makefile in ${repo}"
     exit 1
   fi
+
+  if [[ -n "${STATUS_MODE}" ]]; then
+    print_status_report "${STATUS_MODE}"
+    return 0
+  fi
+
+  if [[ "${SILENT_MODE}" == true ]]; then
+    run_silent_mode
+    return 0
+  fi
+
+  print_banner
 
   local host
   host="$(current_host)"
