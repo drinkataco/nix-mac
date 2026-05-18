@@ -22,6 +22,52 @@ COMMIT_FLAKE_UPDATE=false
 RUN_UPGRADE=true
 
 #######################################
+# Prints a startup banner when stdout is a terminal.
+# Outputs:
+#   Writes colored ASCII art and a short summary to stdout.
+#######################################
+print_banner() {
+  if [[ ! -t 1 ]]; then
+    return 0
+  fi
+
+  local reset=$'\033[0m'
+  local cyan=$'\033[1;36m'
+  local blue=$'\033[1;34m'
+  local yellow=$'\033[1;33m'
+
+  printf '%b\n' "${cyan}   __  __      __      __                            ${reset}"
+  printf '%b\n' "${cyan}  / / / /___  / /___ _/ /____  ____________  __      ${reset}"
+  printf '%b\n' "${blue} / / / / __ \\/ / __ \`/ __/ _ \\/ ___/ ___/ / / /   ${reset}"
+  printf '%b\n' "${blue}/ /_/ / /_/ / / /_/ / /_/  __(__  |__  ) /_/ /       ${reset}"
+  printf '%b\n' "${yellow}\\____/ .___/_/\\__,_/\\__/\\___/____/____/\\__, / ${reset}"
+  printf '%b\n' "${yellow}    /_/                               /____/       ${reset}"
+  printf '\n'
+  printf '%b\n' "Update nix, brew, pnpm, and uv for computer '$(hostname)'"
+  echo
+  echo '---'
+  echo
+}
+
+#######################################
+# Prints an error message to stderr in red when stderr is a terminal.
+# Arguments:
+#   Error text.
+# Outputs:
+#   Writes the formatted error to stderr.
+#######################################
+err() {
+  local reset=$'\033[0m'
+  local red=$'\033[1;31m'
+
+  if [[ -t 2 ]]; then
+    printf '%b\n' "${red}Error:${reset} $*" >&2
+  else
+    printf 'Error: %s\n' "$*" >&2
+  fi
+}
+
+#######################################
 # Prints command usage.
 # Outputs:
 #   Writes help text to stdout.
@@ -150,7 +196,7 @@ parse_args() {
         exit 0
         ;;
       *)
-        echo "Unknown option: $1"
+        err "Unknown option: $1"
         usage
         exit 1
         ;;
@@ -201,7 +247,7 @@ homebrew_activation_upgrade_enabled() {
   if ! value="$(nix eval --json ".#darwinConfigurations.${host}.config.homebrew.onActivation.upgrade" 2>/dev/null)"; then
     # A failed eval means we do not know whether activation already handled brew
     # upgrades. Skip the manual prompt instead of risking duplicate work.
-    echo "Could not evaluate homebrew.onActivation.upgrade for host ${host}; skipping manual brew upgrade prompts." >&2
+    err "Could not evaluate homebrew.onActivation.upgrade for host ${host}; skipping manual brew upgrade prompts."
     return 0
   fi
 
@@ -595,6 +641,7 @@ commit_lockfile() {
 #######################################
 main() {
   parse_args "$@"
+  print_banner
 
   cd "${SCRIPT_DIR}"
 
@@ -603,7 +650,7 @@ main() {
   cd "${repo}"
 
   if [[ ! -f flake.nix || ! -f Makefile ]]; then
-    echo "expected flake.nix and Makefile in ${repo}" >&2
+    err "Expected flake.nix and Makefile in ${repo}"
     exit 1
   fi
 
@@ -611,13 +658,11 @@ main() {
   host="$(current_host)"
   local lock_changed=false
 
-  echo '-'
-
   if [[ "${RUN_UPGRADE}" == true ]]; then
     # Refuse to run over a dirty lockfile so the before/after summary is about
     # this invocation, not a mix of earlier edits and new flake input updates.
     if ! git diff --quiet -- flake.lock || ! git diff --cached --quiet -- flake.lock; then
-      echo 'flake.lock already has uncommitted changes; commit or stash it before running upgrade.' >&2
+      err 'flake.lock already has uncommitted changes; commit or stash it before running upgrade.'
       exit 1
     fi
 
