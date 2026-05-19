@@ -32,9 +32,9 @@ in
 
   home.activation.installGlobalNodeTools = lib.hm.dag.entryAfter [ "installFnmNodeVersions" ] ''
     export PNPM_HOME="$HOME/.local/share/pnpm"
-    export PATH="$PNPM_HOME:${pkgs.pnpm}/bin:$PATH"
+    export PATH="$PNPM_HOME/bin:${pkgs.pnpm}/bin:$PATH"
 
-    mkdir -p "$PNPM_HOME"
+    mkdir -p "$PNPM_HOME/bin"
 
     for package in ${lib.escapeShellArgs globalNodePackages}; do
       if ! "${pnpm}" list -g --depth=0 2>/dev/null | grep -Fq " ''${package}@"; then
