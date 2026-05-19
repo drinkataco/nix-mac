@@ -35,6 +35,7 @@
     ansible
     awscli2
     delta
+    delve
     dockerfile-language-server
     fnm
     gcc
@@ -69,6 +70,7 @@
     nixfmt # Nix formatter
     prettier # HTML, CSS, Markdown, JSONC, and JavaScript formatter
     pyright # Python language server
+    python3Packages.debugpy # Python debug adapter used by nvim-dap
     ruff # Python formatter and linter
     rust-analyzer # Rust language server
     cargo-nextest # Rust test runner used by neotest-rust
