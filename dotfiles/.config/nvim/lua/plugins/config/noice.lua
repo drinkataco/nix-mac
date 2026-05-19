@@ -63,7 +63,9 @@ return function()
       },
     },
     views = {
+      -- Keep the cmdline stack above DAP confirmation and selection floats.
       cmdline_popup = {
+        zindex = 200,
         position = {
           row = 5,
           col = "50%",
@@ -78,6 +80,7 @@ return function()
         },
       },
       popupmenu = {
+        zindex = 210,
         relative = "editor",
         position = {
           row = 8,
@@ -109,6 +112,7 @@ return function()
       mini = {
         align = "message-left",
         timeout = 5000,
+        zindex = 200,
         position = {
           row = -1,
           col = 0,
