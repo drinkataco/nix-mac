@@ -284,6 +284,11 @@ vim.keymap.set({ "n", "x" }, "x", '"dx')
     - current file
     - current package
     - current test file
+- JavaScript and TypeScript debugging uses `vscode-js-debug`
+  - supports `pwa-node` and VS Code `launch.json` configs such as `node-terminal`
+  - available launch modes:
+    - current file
+    - attach to process
 - The DAP UI opens automatically when a session starts and closes when it exits
 
 ## Editor keymaps

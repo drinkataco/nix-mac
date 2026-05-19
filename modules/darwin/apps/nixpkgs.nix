@@ -57,6 +57,7 @@
     silver-searcher
     typescript
     uv
+    vscode-js-debug
     yq-go
 
     # Editor support
