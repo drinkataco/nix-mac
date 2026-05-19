@@ -112,8 +112,18 @@ return function()
     dap_python.test_runner = "pytest"
   end
 
-  local js_debug_server =
-    vim.fn.glob("/run/current-system/sw/share/vscode/extensions/*js-debug*/src/dapDebugServer.js", true)
+  -- VSCODE_JS_DEBUG_SERVER set by nix-darwin; fall back to nix store glob before darwin-rebuild runs
+  local js_debug_server = vim.fn.expand("$VSCODE_JS_DEBUG_SERVER")
+  if js_debug_server == "$VSCODE_JS_DEBUG_SERVER" or js_debug_server == "" then
+    js_debug_server = vim.fn.glob(
+      "/nix/store/*-vscode-js-debug-*/lib/node_modules/js-debug/dist/src/dapDebugServer.js",
+      true
+    )
+    -- glob returns newline-separated list if multiple versions exist; take the last
+    local entries = vim.split(js_debug_server, "\n", { trimempty = true })
+    js_debug_server = entries[#entries] or ""
+  end
+
   if js_debug_server ~= "" and vim.fn.exepath("node") ~= "" then
     local js_adapters = {
       "pwa-node",
@@ -144,6 +154,15 @@ return function()
         cwd = "${workspaceFolder}",
         console = "integratedTerminal",
         sourceMaps = true,
+      },
+      {
+        type = "pwa-node",
+        request = "attach",
+        name = "Attach to port 9229",
+        port = 9229,
+        cwd = "${workspaceFolder}",
+        sourceMaps = true,
+        resolveSourceMapLocations = { "${workspaceFolder}/**", "!**/node_modules/**" },
       },
       {
         type = "pwa-node",

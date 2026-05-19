@@ -2,6 +2,10 @@
 {
   # These packages are installed on every host. For host-specific packages, add
   #  `environment.systemPackages = [ ... ];` in the relevant host module
+  environment.variables = {
+    VSCODE_JS_DEBUG_SERVER = "${pkgs.vscode-js-debug}/lib/node_modules/js-debug/dist/src/dapDebugServer.js";
+  };
+
   environment.systemPackages = with pkgs; [
     # Shell and terminal
     alacritty
