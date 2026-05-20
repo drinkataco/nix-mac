@@ -132,7 +132,7 @@ return function()
         port = "${port}",
         executable = {
           command = "node",
-          args = { js_debug_server, "${port}" },
+          args = { js_debug_server, "${port}", "127.0.0.1" },
         },
       }
     end
