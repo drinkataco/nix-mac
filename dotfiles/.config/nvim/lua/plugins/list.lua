@@ -31,6 +31,12 @@ return {
 
   -- Syntax and visual structure
   {
+    "folke/snacks.nvim",
+    lazy = false,
+    priority = 1000,
+    config = config.snacks,
+  },
+  {
     "folke/tokyonight.nvim",
     lazy = false,
     priority = 1000,

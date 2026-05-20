@@ -63,7 +63,8 @@ return function()
       },
     },
     views = {
-      -- Keep the cmdline stack above DAP confirmation and selection floats.
+      -- Keep command prompts in a predictable stack so DAP confirm/input
+      -- dialogs remain visible at the same time.
       cmdline_popup = {
         zindex = 200,
         position = {
@@ -73,6 +74,39 @@ return function()
         size = {
           width = 100,
           height = "auto",
+        },
+        border = popup_border,
+        win_options = {
+          winhighlight = popup_winhighlight,
+        },
+      },
+      cmdline_input = {
+        view = "cmdline_popup",
+        zindex = 220,
+        position = {
+          row = 9,
+          col = "50%",
+        },
+        size = {
+          width = 100,
+          height = "auto",
+        },
+        border = popup_border,
+        win_options = {
+          winhighlight = popup_winhighlight,
+        },
+      },
+      cmdline_popupmenu = {
+        relative = "editor",
+        zindex = 230,
+        position = {
+          row = 12,
+          col = "50%",
+        },
+        size = {
+          width = 100,
+          height = "auto",
+          max_height = 10,
         },
         border = popup_border,
         win_options = {

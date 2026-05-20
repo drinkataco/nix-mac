@@ -115,10 +115,8 @@ return function()
   -- VSCODE_JS_DEBUG_SERVER set by nix-darwin; fall back to nix store glob before darwin-rebuild runs
   local js_debug_server = vim.fn.expand("$VSCODE_JS_DEBUG_SERVER")
   if js_debug_server == "$VSCODE_JS_DEBUG_SERVER" or js_debug_server == "" then
-    js_debug_server = vim.fn.glob(
-      "/nix/store/*-vscode-js-debug-*/lib/node_modules/js-debug/dist/src/dapDebugServer.js",
-      true
-    )
+    js_debug_server =
+      vim.fn.glob("/nix/store/*-vscode-js-debug-*/lib/node_modules/js-debug/dist/src/dapDebugServer.js", true)
     -- glob returns newline-separated list if multiple versions exist; take the last
     local entries = vim.split(js_debug_server, "\n", { trimempty = true })
     js_debug_server = entries[#entries] or ""
