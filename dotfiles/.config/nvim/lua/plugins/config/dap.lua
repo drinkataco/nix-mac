@@ -70,13 +70,7 @@ return function()
     dapui.open()
   end
 
-  local close_view = function()
-    dapui.close()
-  end
-
   dap.listeners.after.event_initialized["dap_view"] = open_view
-  dap.listeners.before.event_terminated["dap_view"] = close_view
-  dap.listeners.before.event_exited["dap_view"] = close_view
 
   local debugpy = vim.fn.exepath("debugpy-adapter")
   if debugpy ~= "" then
