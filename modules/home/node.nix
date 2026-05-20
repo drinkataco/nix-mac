@@ -1,6 +1,7 @@
 {
   lib,
   pkgs,
+  config,
   pnpmSettings,
   ...
 }:
@@ -20,6 +21,10 @@ let
   pnpm = "${pkgs.pnpm}/bin/pnpm";
 in
 {
+  home.sessionPath = [
+    "${config.home.homeDirectory}/.local/share/fnm/aliases/default/bin"
+  ];
+
   home.activation.installFnmNodeVersions = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
     export PATH="${pkgs.fnm}/bin:$PATH"
 
