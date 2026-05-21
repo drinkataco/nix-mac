@@ -1,5 +1,6 @@
 return function()
   require("neogen").setup({
+    snippet_engine = "luasnip",
     languages = {
       typescript = {
         template = { annotation_convention = "tsdoc" },
