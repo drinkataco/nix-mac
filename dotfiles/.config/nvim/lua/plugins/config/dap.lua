@@ -2,9 +2,24 @@ return function()
   local dap = require("dap")
   local dap_python = require("dap-python")
   local dapui = require("dapui")
+  local baleia = require("baleia").setup({})
   local ui = require("settings.ui")
 
   require("nvim-dap-virtual-text").setup({})
+
+  local colorize_dap_output = function(args)
+    -- Debug adapters often emit ANSI escapes into REPL/console buffers rather
+    -- than true terminal buffers, so Neovim needs Baleia to render the colors.
+    baleia.once(args.buf)
+    baleia.automatically(args.buf)
+  end
+
+  vim.api.nvim_create_autocmd("FileType", {
+    group = vim.api.nvim_create_augroup("DapAnsiOutput", { clear = true }),
+    pattern = { "dap-repl", "dapui_console" },
+    callback = colorize_dap_output,
+    desc = "Render ANSI colors in DAP REPL and console buffers",
+  })
 
   local function has_adapter(config)
     return config.type and dap.adapters[config.type] ~= nil
