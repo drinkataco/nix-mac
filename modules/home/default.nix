@@ -12,6 +12,7 @@ let
 in
 {
   imports = [
+    ./direnv.nix
     ./dotfiles.nix
     ./gpg.nix
     ./node.nix
