@@ -4,9 +4,9 @@
 # PROMPT                 #
 ##########################
 
-# Keep the gitster prompt shape, but use the preferred glyph for the leading prompt marker.
-# PS1='%B%(?:%F{green}:%F{red}) %F{white}$(prompt-pwd)${(e)git_info[prompt]}%f%b '
-PROMPT="${PROMPT//➜/}"
+# 1. Add Virtual ENV prompt
+# 2. Keep the gitster prompt shape, but use the preferred glyph for the leading prompt marker.
+PROMPT='${VIRTUAL_ENV_PROMPT:+%f(venv)%f }'"${PROMPT//➜/}"
 
 # Show normal mode in the right prompt without replacing the existing git status.
 typeset -g ZVM_RPROMPT_BASE="${RPROMPT}"
