@@ -235,6 +235,21 @@ return {
     config = config.render_markdown,
   },
 
+  {
+    "danymat/neogen",
+    dependencies = { "nvim-treesitter/nvim-treesitter" },
+    keys = {
+      {
+        "<leader>jd",
+        function()
+          require("neogen").generate()
+        end,
+        desc = "Generate docblock",
+      },
+    },
+    config = config.neogen,
+  },
+
   -- Testing
   {
     "nvim-neotest/neotest",

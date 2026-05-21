@@ -140,6 +140,12 @@ vim.keymap.set({ "n", "x" }, "x", '"dx')
 - `LuaSnip`
   - docs: [github.com/L3MON4D3/LuaSnip](https://github.com/L3MON4D3/LuaSnip)
   - `friendly-snippets` is loaded for common languages, including TypeScript, JavaScript, JSON, Rust, and Python.
+- `neogen`
+  - docs: [github.com/danymat/neogen](https://github.com/danymat/neogen)
+  - Generates docblock comments for functions, classes, and types using Tree-sitter.
+  - TypeScript and TSX use TSDoc format.
+  - Common keys:
+    - `<leader>jd` generates a docblock for the symbol under the cursor
 - `CodeCompanion.nvim`
   - docs: [codecompanion.olimorris.dev](https://codecompanion.olimorris.dev/)
   - AI chat, action palette, and inline editing live inside Neovim.
@@ -295,6 +301,8 @@ vim.keymap.set({ "n", "x" }, "x", '"dx')
 
 ### Core
 
+- `<leader>jd`
+  - generate a docblock for the symbol under the cursor (neogen)
 - `<leader>p`
   - format current buffer
 - `<leader>h`
