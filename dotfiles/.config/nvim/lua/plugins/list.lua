@@ -115,6 +115,7 @@ return {
       "nvim-neotest/nvim-nio",
       "theHamsta/nvim-dap-virtual-text",
       "mfussenegger/nvim-dap-python",
+      "m00qek/baleia.nvim",
     },
     keys = {
       {
