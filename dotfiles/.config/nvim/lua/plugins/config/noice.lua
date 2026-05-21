@@ -9,6 +9,10 @@ return function()
     FloatBorder = "DiagnosticInfo",
   }
 
+  vim.keymap.set("n", "<Esc>", function()
+    require("noice").cmd("dismiss")
+  end, { desc = "Dismiss notifications" })
+
   require("noice").setup({
     cmdline = {
       enabled = true,
