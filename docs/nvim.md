@@ -162,6 +162,11 @@ vim.keymap.set({ "n", "x" }, "x", '"dx')
 
 ### Git and workflow
 
+- `snacks.gitbrowse`
+  - docs: [github.com/folke/snacks.nvim/blob/main/docs/gitbrowse.md](https://github.com/folke/snacks.nvim/blob/main/docs/gitbrowse.md)
+  - Opens the current file (or visual selection) on GitHub in the browser.
+  - Common keys:
+    - `<leader>go` opens the current file at the current line on GitHub
 - `vim-fugitive`
   - docs: [github.com/tpope/vim-fugitive](https://github.com/tpope/vim-fugitive)
   - Example Commands:
@@ -303,6 +308,10 @@ vim.keymap.set({ "n", "x" }, "x", '"dx')
 
 - `<leader>jd`
   - generate a docblock for the symbol under the cursor (neogen)
+- `<leader>go`
+  - open the current file at the current line on GitHub (snacks.gitbrowse)
+- `]w` / `[w`
+  - jump to next / previous LSP reference of the word under the cursor (snacks.words)
 - `<leader>p`
   - format current buffer
 - `<leader>h`
