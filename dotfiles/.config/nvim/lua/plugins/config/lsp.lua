@@ -157,6 +157,12 @@ return function()
   vim.lsp.config("pyright", {
     capabilities = capabilities,
     on_attach = on_attach,
+    before_init = function(_, config)
+      local venv = vim.env.VIRTUAL_ENV
+      if venv then
+        config.settings.python.pythonPath = venv .. "/bin/python3"
+      end
+    end,
     settings = {
       python = {
         analysis = {
