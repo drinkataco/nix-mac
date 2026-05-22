@@ -11,10 +11,10 @@ if [[ -r /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh ]]; then
   . /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
 fi
 
-# Default
-PATH="$HOME/scripts:$PATH"
+# Custom scripts
+PATH="$HOME/.local/bin:$PATH"
 PNPM_HOME="$HOME/.local/share/pnpm"
-PATH="$PNPM_HOME:$PATH"
+PATH="$PNPM_HOME/bin:$PATH"
 
 # Keep common Nix profile bins reachable even when shell startup bypasses
 # nix-darwin's generated environment wrapper.

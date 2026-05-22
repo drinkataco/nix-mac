@@ -1,0 +1,222 @@
+return function()
+  local dap = require("dap")
+  local dap_python = require("dap-python")
+  local dapui = require("dapui")
+  local baleia = require("baleia").setup({})
+  local ui = require("settings.ui")
+
+  require("nvim-dap-virtual-text").setup({})
+
+  local colorize_dap_output = function(args)
+    -- Debug adapters often emit ANSI escapes into REPL/console buffers rather
+    -- than true terminal buffers, so Neovim needs Baleia to render the colors.
+    baleia.once(args.buf)
+    baleia.automatically(args.buf)
+  end
+
+  vim.api.nvim_create_autocmd("FileType", {
+    group = vim.api.nvim_create_augroup("DapAnsiOutput", { clear = true }),
+    pattern = { "dap-repl", "dapui_console" },
+    callback = colorize_dap_output,
+    desc = "Render ANSI colors in DAP REPL and console buffers",
+  })
+
+  local function has_adapter(config)
+    return config.type and dap.adapters[config.type] ~= nil
+  end
+
+  local function prune_configs(configs)
+    return vim.tbl_filter(has_adapter, configs or {})
+  end
+
+  local function prune_missing_adapters(filetype)
+    local configs = dap.configurations[filetype]
+    if not configs then
+      return
+    end
+
+    dap.configurations[filetype] = prune_configs(configs)
+  end
+
+  local dap_continue = dap.continue
+  local launch_json_provider = dap.providers.configs["dap.launch.json"]
+  -- Project-local launch configs can reference adapters we do not install
+  -- here, such as node-terminal. Drop those entries before prompting so the
+  -- picker only shows runnable configurations.
+  dap.providers.configs["dap.launch.json"] = function(bufnr)
+    return prune_configs(launch_json_provider(bufnr))
+  end
+
+  dap.continue = function(...)
+    prune_missing_adapters(vim.bo.filetype)
+    return dap_continue(...)
+  end
+
+  vim.fn.sign_define("DapBreakpoint", { text = "", texthl = "DiagnosticError", linehl = "", numhl = "" })
+  vim.fn.sign_define("DapBreakpointCondition", { text = "", texthl = "DiagnosticWarn", linehl = "", numhl = "" })
+  vim.fn.sign_define("DapLogPoint", { text = "", texthl = "DiagnosticInfo", linehl = "", numhl = "" })
+  vim.fn.sign_define("DapStopped", { text = "", texthl = "DiagnosticHint", linehl = "", numhl = "" })
+
+  dapui.setup({
+    floating = ui.float(),
+    layouts = {
+      {
+        elements = {
+          { id = "scopes", size = 0.45 },
+          { id = "breakpoints", size = 0.15 },
+          { id = "stacks", size = 0.2 },
+          { id = "watches", size = 0.2 },
+        },
+        position = "right",
+        size = 50,
+      },
+      {
+        elements = {
+          { id = "repl", size = 0.5 },
+          { id = "console", size = 0.5 },
+        },
+        position = "bottom",
+        size = 12,
+      },
+    },
+  })
+
+  local open_view = function()
+    dapui.open()
+  end
+
+  dap.listeners.after.event_initialized["dap_view"] = open_view
+
+  local debugpy = vim.fn.exepath("debugpy-adapter")
+  if debugpy ~= "" then
+    dap.adapters.python = {
+      type = "executable",
+      command = debugpy,
+    }
+
+    dap.configurations.python = {
+      {
+        type = "python",
+        request = "launch",
+        name = "Current file",
+        program = "${file}",
+        console = "integratedTerminal",
+        pythonPath = function()
+          return vim.fn.exepath("python3")
+        end,
+      },
+      {
+        type = "python",
+        request = "launch",
+        name = "Pytest file",
+        module = "pytest",
+        args = { "${file}" },
+        console = "integratedTerminal",
+        pythonPath = function()
+          return vim.fn.exepath("python3")
+        end,
+      },
+    }
+
+    dap_python.test_runner = "pytest"
+  end
+
+  -- VSCODE_JS_DEBUG_SERVER set by nix-darwin; fall back to nix store glob before darwin-rebuild runs
+  local js_debug_server = vim.fn.expand("$VSCODE_JS_DEBUG_SERVER")
+  if js_debug_server == "$VSCODE_JS_DEBUG_SERVER" or js_debug_server == "" then
+    js_debug_server =
+      vim.fn.glob("/nix/store/*-vscode-js-debug-*/lib/node_modules/js-debug/dist/src/dapDebugServer.js", true)
+    -- glob returns newline-separated list if multiple versions exist; take the last
+    local entries = vim.split(js_debug_server, "\n", { trimempty = true })
+    js_debug_server = entries[#entries] or ""
+  end
+
+  if js_debug_server ~= "" and vim.fn.exepath("node") ~= "" then
+    local js_adapters = {
+      "pwa-node",
+      "pwa-chrome",
+      "pwa-msedge",
+      "node-terminal",
+      "pwa-extensionHost",
+    }
+
+    for _, adapter in ipairs(js_adapters) do
+      dap.adapters[adapter] = {
+        type = "server",
+        host = "127.0.0.1",
+        port = "${port}",
+        executable = {
+          command = "node",
+          args = { js_debug_server, "${port}", "127.0.0.1" },
+        },
+      }
+    end
+
+    local js_configurations = {
+      {
+        type = "pwa-node",
+        request = "launch",
+        name = "Current file",
+        program = "${file}",
+        cwd = "${workspaceFolder}",
+        console = "integratedTerminal",
+        sourceMaps = true,
+      },
+      {
+        type = "pwa-node",
+        request = "attach",
+        name = "Attach to port 9229",
+        port = 9229,
+        cwd = "${workspaceFolder}",
+        sourceMaps = true,
+        resolveSourceMapLocations = { "${workspaceFolder}/**", "!**/node_modules/**" },
+      },
+      {
+        type = "pwa-node",
+        request = "attach",
+        name = "Attach process",
+        processId = require("dap.utils").pick_process,
+        cwd = "${workspaceFolder}",
+        sourceMaps = true,
+      },
+    }
+
+    for _, filetype in ipairs({ "javascript", "javascriptreact", "typescript", "typescriptreact" }) do
+      dap.configurations[filetype] = js_configurations
+    end
+  end
+
+  dap.adapters.go = function(callback, _)
+    callback({
+      type = "server",
+      host = "127.0.0.1",
+      port = "${port}",
+      executable = {
+        command = vim.fn.exepath("dlv"),
+        args = { "dap", "-l", "127.0.0.1:${port}" },
+      },
+    })
+  end
+
+  dap.configurations.go = {
+    {
+      type = "go",
+      name = "Debug file",
+      request = "launch",
+      program = "${file}",
+    },
+    {
+      type = "go",
+      name = "Debug package",
+      request = "launch",
+      program = "${fileDirname}",
+    },
+    {
+      type = "go",
+      name = "Debug test file",
+      request = "launch",
+      mode = "test",
+      program = "${file}",
+    },
+  }
+end

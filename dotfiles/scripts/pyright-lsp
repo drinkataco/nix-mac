@@ -1,0 +1,3 @@
+#!/bin/sh
+# Alias for claude-code to find correct LSP binary
+exec /run/current-system/sw/bin/pyright-langserver "$@"

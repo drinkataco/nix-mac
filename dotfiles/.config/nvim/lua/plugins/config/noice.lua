@@ -9,6 +9,10 @@ return function()
     FloatBorder = "DiagnosticInfo",
   }
 
+  vim.keymap.set("n", "<Esc>", function()
+    require("noice").cmd("dismiss")
+  end, { desc = "Dismiss notifications" })
+
   require("noice").setup({
     cmdline = {
       enabled = true,
@@ -20,6 +24,16 @@ return function()
       view_error = "mini",
       view_warn = "mini",
       view_history = "messages",
+    },
+    routes = {
+      {
+        filter = {
+          event = "lsp",
+          kind = { "progress", "message" },
+          find = "[Pp]yright",
+        },
+        opts = { skip = true },
+      },
     },
     popupmenu = {
       enabled = true,
@@ -53,7 +67,10 @@ return function()
       },
     },
     views = {
+      -- Keep command prompts in a predictable stack so DAP confirm/input
+      -- dialogs remain visible at the same time.
       cmdline_popup = {
+        zindex = 200,
         position = {
           row = 5,
           col = "50%",
@@ -67,7 +84,41 @@ return function()
           winhighlight = popup_winhighlight,
         },
       },
+      cmdline_input = {
+        view = "cmdline_popup",
+        zindex = 220,
+        position = {
+          row = 9,
+          col = "50%",
+        },
+        size = {
+          width = 100,
+          height = "auto",
+        },
+        border = popup_border,
+        win_options = {
+          winhighlight = popup_winhighlight,
+        },
+      },
+      cmdline_popupmenu = {
+        relative = "editor",
+        zindex = 230,
+        position = {
+          row = 12,
+          col = "50%",
+        },
+        size = {
+          width = 100,
+          height = "auto",
+          max_height = 10,
+        },
+        border = popup_border,
+        win_options = {
+          winhighlight = popup_winhighlight,
+        },
+      },
       popupmenu = {
+        zindex = 210,
         relative = "editor",
         position = {
           row = 8,
@@ -99,6 +150,7 @@ return function()
       mini = {
         align = "message-left",
         timeout = 5000,
+        zindex = 200,
         position = {
           row = -1,
           col = 0,

@@ -14,10 +14,11 @@
     computerName = hostname;
     localHostName = hostname;
   };
+
   system.primaryUser = username;
 
-  # Host-specific Homebrew casks for work
   homebrew = {
+    # Host specific caskses
     casks = [
       "malwarebytes"
     ];
@@ -25,14 +26,24 @@
     # Remove old Homebrew downloads, caches, and unneeded app bundles on rebuild
     cleanUp = "zap";
 
-    # Upgrade already-installed Homebrew formulae and casks during activation
-    upgrade = true;
+    # Upgrade during activation
+    autoUpgrade = true;
 
     # Allow Homebrew taps to update outside the pinned Nix-managed revisions
     mutableTaps = false;
   };
 
-  # Host-specific Nix packages for work
+  pnpm = {
+    # Upgrade during activation
+    autoUpgrade = true;
+  };
+
+  uv = {
+    # Upgrade during activation
+    autoUpgrade = true;
+  };
+
+  # Host-specific Nix packages
   environment.systemPackages = [
     pkgs.openconnect
   ];

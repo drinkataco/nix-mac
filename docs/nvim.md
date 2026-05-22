@@ -9,11 +9,13 @@
   * [Statusline](#statusline)
   * [Search and navigation](#search-and-navigation)
   * [Diagnostics](#diagnostics)
+  * [Debugging](#debugging)
 * [Editor keymaps](#editor-keymaps)
   * [Core](#core)
   * [Files and tabs](#files-and-tabs)
   * [LSP](#lsp)
   * [Diagnostics](#diagnostics-1)
+  * [Debugging](#debugging-1)
 * [Config files in this setup](#config-files-in-this-setup)
 
 ## General docs
@@ -138,6 +140,12 @@ vim.keymap.set({ "n", "x" }, "x", '"dx')
 - `LuaSnip`
   - docs: [github.com/L3MON4D3/LuaSnip](https://github.com/L3MON4D3/LuaSnip)
   - `friendly-snippets` is loaded for common languages, including TypeScript, JavaScript, JSON, Rust, and Python.
+- `neogen`
+  - docs: [github.com/danymat/neogen](https://github.com/danymat/neogen)
+  - Generates docblock comments for functions, classes, and types using Tree-sitter.
+  - TypeScript and TSX use TSDoc format.
+  - Common keys:
+    - `<leader>jd` generates a docblock for the symbol under the cursor
 - `CodeCompanion.nvim`
   - docs: [codecompanion.olimorris.dev](https://codecompanion.olimorris.dev/)
   - AI chat, action palette, and inline editing live inside Neovim.
@@ -154,6 +162,11 @@ vim.keymap.set({ "n", "x" }, "x", '"dx')
 
 ### Git and workflow
 
+- `snacks.gitbrowse`
+  - docs: [github.com/folke/snacks.nvim/blob/main/docs/gitbrowse.md](https://github.com/folke/snacks.nvim/blob/main/docs/gitbrowse.md)
+  - Opens the current file (or visual selection) on GitHub in the browser.
+  - Common keys:
+    - `<leader>go` opens the current file at the current line on GitHub
 - `vim-fugitive`
   - docs: [github.com/tpope/vim-fugitive](https://github.com/tpope/vim-fugitive)
   - Example Commands:
@@ -260,10 +273,45 @@ vim.keymap.set({ "n", "x" }, "x", '"dx')
     - `<leader>np`: toggles the output panel
     - `<leader>nx`: stops the current test run
 
+### Debugging
+
+- `nvim-dap`
+  - docs: [github.com/mfussenegger/nvim-dap](https://github.com/mfussenegger/nvim-dap)
+  - core debug adapter client for Neovim
+- `nvim-dap-ui`
+  - docs: [github.com/rcarriga/nvim-dap-ui](https://github.com/rcarriga/nvim-dap-ui)
+  - opens scopes, breakpoints, stacks, watches, REPL, and console panes around an active session
+- `nvim-dap-virtual-text`
+  - docs: [github.com/theHamsta/nvim-dap-virtual-text](https://github.com/theHamsta/nvim-dap-virtual-text)
+  - shows variable values inline while stopped in the debugger
+- `nvim-dap-python`
+  - docs: [github.com/mfussenegger/nvim-dap-python](https://github.com/mfussenegger/nvim-dap-python)
+  - Python debugging is wired through `debugpy`
+  - available launch modes:
+    - current file
+    - pytest on current file
+- Go debugging uses `dlv` directly through DAP
+  - available launch modes:
+    - current file
+    - current package
+    - current test file
+- JavaScript and TypeScript debugging uses `vscode-js-debug`
+  - supports `pwa-node` and VS Code `launch.json` configs such as `node-terminal`
+  - available launch modes:
+    - current file
+    - attach to process
+- The DAP UI opens automatically when a session starts and closes when it exits
+
 ## Editor keymaps
 
 ### Core
 
+- `<leader>jd`
+  - generate a docblock for the symbol under the cursor (neogen)
+- `<leader>go`
+  - open the current file at the current line on GitHub (snacks.gitbrowse)
+- `]w` / `[w`
+  - jump to next / previous LSP reference of the word under the cursor (snacks.words)
 - `<leader>p`
   - format current buffer
 - `<leader>h`
@@ -337,6 +385,25 @@ vim.keymap.set({ "n", "x" }, "x", '"dx')
 - `<leader>xl`
   - location list
 
+### Debugging
+
+- `<leader>dc`
+  - continue / start debugging
+- `<leader>db`
+  - toggle breakpoint
+- `<leader>di`
+  - step into
+- `<leader>do`
+  - step over
+- `<leader>dO`
+  - step out
+- `<leader>dr`
+  - toggle debug REPL
+- `<leader>du`
+  - toggle DAP UI
+- `<leader>dt`
+  - terminate debug session
+
 ### Tests
 
 - `<leader>nr`
@@ -359,5 +426,6 @@ vim.keymap.set({ "n", "x" }, "x", '"dx')
 - plugin config index: [`dotfiles/.config/nvim/lua/plugins/config.lua`](../dotfiles/.config/nvim/lua/plugins/config.lua)
 - per-plugin configs: [`dotfiles/.config/nvim/lua/plugins/config/`](../dotfiles/.config/nvim/lua/plugins/config)
   - files in this directory are loaded as `config.<filename>`, for example `lualine.lua` becomes `config.lualine`
+- DAP config: [`dotfiles/.config/nvim/lua/plugins/config/dap.lua`](../dotfiles/.config/nvim/lua/plugins/config/dap.lua)
 - docs helper: [`dotfiles/.config/nvim/lua/commands/nvim_docs.lua`](../dotfiles/.config/nvim/lua/commands/nvim_docs.lua)
   - toggles `docs/nvim.md` in a read-only float and handles `<CR>` jumps on local Markdown TOC links

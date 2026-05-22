@@ -1,110 +1,1251 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SOURCE="${BASH_SOURCE[0]}"
+while [ -L "$SOURCE" ]; do
+  # updatessy is normally reached through ~/scripts; resolve that link so the
+  # helper paths and repo root stay correct even when the checkout moves.
+  SOURCE_DIR="$(cd -P "$(dirname "$SOURCE")" && pwd)"
+  SOURCE="$(readlink "$SOURCE")"
+  [[ "$SOURCE" != /* ]] && SOURCE="${SOURCE_DIR}/${SOURCE}"
+done
+
+SCRIPT_DIR="$(cd -P "$(dirname "$SOURCE")" && pwd)"
 YES_NO="${SCRIPT_DIR}/yes_no"
-REPO_ROOT="${HOME}/projects/nix-mac"
 
 APPROVE_ALL=false
-RUN_UPDATE=true
+APPROVE_BREW=false
+APPROVE_NIX=false
+APPROVE_PNPM=false
+APPROVE_UV=false
+COMMIT_FLAKE_UPDATE=false
+RUN_UPGRADE=true
+SILENT_MODE=false
+STATUS_MODE=""
 
+COLOR_RESET=$'\033[0m'
+COLOR_RED=$'\033[1;31m'
+COLOR_GREEN=$'\033[1;32m'
+COLOR_YELLOW=$'\033[1;33m'
+COLOR_BLUE=$'\033[1;34m'
+COLOR_CYAN=$'\033[1;36m'
+
+#######################################
+# Prints a startup banner when stdout is a terminal.
+# Outputs:
+#   Writes colored ASCII art and a short summary to stdout.
+#######################################
+print_banner() {
+  if [[ ! -t 1 ]]; then
+    return 0
+  fi
+
+  printf '%b\n' "${COLOR_CYAN}   __  __          __      __                             ${COLOR_RESET}"
+  printf '%b\n' "${COLOR_CYAN}  / / / /___  ____/ /___ _/ /____  ____________  __       ${COLOR_RESET}"
+  printf '%b\n' "${COLOR_BLUE} / / / / __ \\/ __  / __ \`/ __/ _ \\/ ___/ ___/ / / /    ${COLOR_RESET}"
+  printf '%b\n' "${COLOR_BLUE}/ /_/ / /_/ / /_/ / /_/ / /_/  __(__  |__  ) /_/ /        ${COLOR_RESET}"
+  printf '%b\n' "${COLOR_YELLOW}\\____/ .___/\\__,_/\\__,_/\\__/\\___/____/____/\\__, / ${COLOR_RESET}"
+  printf '%b\n' "${COLOR_YELLOW}    /_/                                   /____/        ${COLOR_RESET}"
+  printf '\n'
+  printf '%b\n' "Update nix, brew, pnpm, and uv for computer '$(hostname)'"
+  echo
+  echo '---'
+  echo
+}
+
+#######################################
+# Prints an error message to stderr in red when stderr is a terminal.
+# Arguments:
+#   Error text.
+# Outputs:
+#   Writes the formatted error to stderr.
+#######################################
+err() {
+  if [[ -t 2 ]]; then
+    printf '%b\n' "${COLOR_RED}Error:${COLOR_RESET} $*" >&2
+  else
+    printf 'Error: %s\n' "$*" >&2
+  fi
+}
+
+#######################################
+# Prints command usage.
+# Outputs:
+#   Writes help text to stdout.
+#######################################
 usage() {
   cat <<'EOF'
 Usage: updatessy [--approve] [--rebuild-only]
 
-Update this nix-darwin repo and rebuild the current host.
+Update this nix-darwin repo from its Makefile workflow.
 
 Notes:
   - This repo manages Homebrew through nix-homebrew.
   - This repo manages pnpm itself through nixpkgs.
-  - Global pnpm tools are refreshed by Home Manager activation during rebuild.
-  - So brew/pnpm updates flow through flake updates and darwin-rebuild.
+  - Global pnpm tools are installed by Home Manager and upgraded manually here.
+  - uv tools are upgraded manually from this script.
+  - `make upgrade` updates flake.lock.
+  - `make update` rebuilds the current host.
 
 Options:
-  --approve       Skip prompts and approve actions
-  --rebuild-only  Rebuild without running `nix flake update`
+  --approve-all   Approve nix, brew, pnpm, and uv actions
+  --approve       Alias for --approve-all
+  --approve-nix   Approve flake, rebuild, and lockfile commit prompts
+  --approve-brew  Approve Homebrew package upgrades
+  --approve-pnpm  Approve pnpm global tool upgrades
+  --approve-uv    Approve uv tool upgrades
+  --commit-flake-update
+                  Approve committing flake.lock after a flake update
+  --rebuild-only  Run `make update` without running `make upgrade`
+  --silent        Run `make upgrade`, collect dependency status, and write logs
+                  to a timestamped directory without prompting or rebuilding
+  --status        Show how many updates are outstanding
+  --status=LONG   Show counts plus package-level detail where available
   --help          Show this help
 EOF
 }
 
-prompt_or_approve() {
-  local question="$1"
+#######################################
+# Checks whether a prompt scope has been approved by CLI option.
+# Globals:
+#   APPROVE_ALL
+#   APPROVE_BREW
+#   APPROVE_NIX
+#   APPROVE_PNPM
+#   APPROVE_UV
+#   COMMIT_FLAKE_UPDATE
+# Arguments:
+#   Approval scope: nix, brew, pnpm, uv, or commit-flake.
+# Returns:
+#   0 when approved, 1 otherwise.
+#######################################
+scope_approved() {
+  local scope="$1"
 
   if [[ "${APPROVE_ALL}" == true ]]; then
+    return 0
+  fi
+
+  case "$scope" in
+    brew) [[ "${APPROVE_BREW}" == true ]] ;;
+    commit-flake) [[ "${COMMIT_FLAKE_UPDATE}" == true ]] ;;
+    nix) [[ "${APPROVE_NIX}" == true ]] ;;
+    pnpm) [[ "${APPROVE_PNPM}" == true ]] ;;
+    uv) [[ "${APPROVE_UV}" == true ]] ;;
+    *) return 1 ;;
+  esac
+}
+
+#######################################
+# Prompts for a yes/no answer unless the scope was approved.
+# Globals:
+#   YES_NO
+# Arguments:
+#   Approval scope.
+#   Prompt text.
+# Returns:
+#   0 when approved, 1 otherwise.
+#######################################
+prompt_or_approve() {
+  local scope="$1"
+  local question="$2"
+
+  if scope_approved "$scope"; then
     return 0
   fi
 
   "${YES_NO}" "${question}" "y"
 }
 
-ensure_nix() {
-  if command -v nix >/dev/null 2>&1; then
-    return 0
-  fi
-
-  if [[ -r /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh ]]; then
-    # shellcheck disable=SC1091
-    . /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
-  fi
-
-  command -v nix >/dev/null 2>&1
-}
-
+#######################################
+# Parses command-line options.
+# Globals:
+#   APPROVE_ALL
+#   APPROVE_BREW
+#   APPROVE_NIX
+#   APPROVE_PNPM
+#   APPROVE_UV
+#   COMMIT_FLAKE_UPDATE
+#   RUN_UPGRADE
+# Arguments:
+#   CLI arguments.
+# Outputs:
+#   Writes usage or unknown-option errors.
+#######################################
 parse_args() {
   while [[ $# -gt 0 ]]; do
     case "$1" in
-      --approve)
+      --approve|--approve-all)
         APPROVE_ALL=true
         ;;
+      --approve-brew)
+        APPROVE_BREW=true
+        ;;
+      --approve-nix)
+        APPROVE_NIX=true
+        ;;
+      --approve-pnpm)
+        APPROVE_PNPM=true
+        ;;
+      --approve-uv)
+        APPROVE_UV=true
+        ;;
+      --commit-flake-update)
+        COMMIT_FLAKE_UPDATE=true
+        ;;
       --rebuild-only)
-        RUN_UPDATE=false
+        RUN_UPGRADE=false
+        ;;
+      --silent)
+        SILENT_MODE=true
+        ;;
+      --status)
+        STATUS_MODE="SHORT"
+        ;;
+      --status=LONG)
+        STATUS_MODE="LONG"
         ;;
       --help|-h)
         usage
         exit 0
         ;;
       *)
-        echo "Unknown option: $1"
+        err "Unknown option: $1"
         usage
         exit 1
         ;;
     esac
     shift
   done
+
+  if [[ "${SILENT_MODE}" == true && -n "${STATUS_MODE}" ]]; then
+    err '--silent and --status cannot be used together'
+    exit 1
+  fi
 }
 
+#######################################
+# Finds the current Git repository root.
+# Outputs:
+#   Writes the absolute repo root to stdout.
+#######################################
+repo_root() {
+  git rev-parse --show-toplevel
+}
+
+#######################################
+# Finds the nix-darwin host to update.
+# Globals:
+#   HOST
+# Outputs:
+#   Writes the host name to stdout.
+#######################################
+current_host() {
+  if [[ -n "${HOST:-}" ]]; then
+    printf '%s\n' "$HOST"
+  elif command -v scutil >/dev/null 2>&1; then
+    scutil --get LocalHostName 2>/dev/null || hostname -s
+  else
+    hostname -s
+  fi
+}
+
+#######################################
+# Checks whether nix-darwin already upgrades Homebrew on activation.
+# Arguments:
+#   Host name.
+# Outputs:
+#   Writes a warning to stderr if evaluation fails.
+# Returns:
+#   0 when activation upgrades are enabled or unknown, 1 when disabled.
+#######################################
+homebrew_activation_upgrade_enabled() {
+  local host="$1"
+  local value
+
+  if ! value="$(nix eval --json ".#darwinConfigurations.${host}.config.homebrew.onActivation.upgrade" 2>/dev/null)"; then
+    # A failed eval means we do not know whether activation already handled brew
+    # upgrades. Skip the manual prompt instead of risking duplicate work.
+    err "Could not evaluate homebrew.onActivation.upgrade for host ${host}; skipping manual brew upgrade prompts."
+    return 0
+  fi
+
+  [[ "$value" == "true" ]]
+}
+
+#######################################
+# Prints a concise summary of flake.lock input changes.
+# Outputs:
+#   Writes changed flake inputs to stdout.
+#######################################
+print_lock_updates() {
+  local old_lock
+  local new_lock
+
+  old_lock="$(mktemp)"
+  new_lock="$(mktemp)"
+  trap "rm -f '$old_lock' '$new_lock'; trap - RETURN" RETURN
+
+  # Compare against HEAD instead of the index so the summary reflects what the
+  # user would commit after a normal flake update.
+  git show HEAD:flake.lock > "$old_lock"
+  cp flake.lock "$new_lock"
+
+  echo "flake.lock updates:"
+
+  if command -v jq >/dev/null 2>&1; then
+    jq -r -n --slurpfile old "$old_lock" --slurpfile new "$new_lock" '
+      def locked($doc; $name): $doc[0].nodes[$name].locked // {};
+      def ident($lock):
+        if $lock.rev then
+          $lock.rev[0:12]
+        elif $lock.version then
+          $lock.version
+        elif $lock.lastModified then
+          ($lock.lastModified | tostring)
+        else
+          "unknown"
+        end;
+
+      (($old[0].nodes + $new[0].nodes) | keys_unsorted | unique[]) as $name
+      | (locked($old; $name)) as $old_lock
+      | (locked($new; $name)) as $new_lock
+      | select($old_lock != $new_lock)
+      | "- \($name): \(ident($old_lock)) -> \(ident($new_lock))"
+    '
+  else
+    git diff --stat -- flake.lock
+  fi
+}
+
+#######################################
+# Runs the repo rebuild target.
+# Outputs:
+#   Streams make output.
+#######################################
+run_make_update() {
+  make update
+}
+
+#######################################
+# Prompts for applying available package and tool updates.
+# Arguments:
+#   Prompt text.
+# Outputs:
+#   Writes prompt text to the terminal and one of "a", "y", or "n" to stdout.
+#######################################
+prompt_apply_updates_mode() {
+  local question="$1"
+  local value
+
+  if [[ "${APPROVE_ALL}" == true ]]; then
+    printf 'a\n'
+    return 0
+  fi
+
+  if [[ "${APPROVE_BREW}" == true || "${APPROVE_PNPM}" == true || "${APPROVE_UV}" == true ]]; then
+    printf 'y\n'
+    return 0
+  fi
+
+  if [ -r /dev/tty ] && [ -w /dev/tty ]; then
+    printf "%s" "${question}" >/dev/tty
+    read -r value </dev/tty
+  else
+    printf "%s" "${question}" >&2
+    read -r value
+  fi
+
+  case "$value" in
+    A*|a*) printf 'a\n' ;;
+    Y*|y*) printf 'y\n' ;;
+    *) printf 'n\n' ;;
+  esac
+}
+
+#######################################
+# Counts newline-separated items.
+# Arguments:
+#   Newline-separated item list.
+# Outputs:
+#   Writes the item count to stdout.
+#######################################
+count_items() {
+  local items="$1"
+
+  if [[ -z "$items" ]]; then
+    printf '0\n'
+  else
+    printf '%s\n' "$items" | sed '/^$/d' | wc -l | tr -d ' '
+  fi
+}
+
+#######################################
+# Lists outdated Homebrew packages.
+# Arguments:
+#   Optional brew flags, such as --cask.
+# Outputs:
+#   Writes package names to stdout.
+#######################################
+brew_outdated_packages() {
+  brew outdated -q "$@" 2>/dev/null || true
+}
+
+#######################################
+# Lists outdated Homebrew packages as JSON.
+# Outputs:
+#   Writes brew outdated JSON to stdout.
+#######################################
+brew_outdated_json() {
+  brew outdated --json=v2 2>/dev/null || printf '{"formulae":[],"casks":[]}\n'
+}
+
+#######################################
+# Counts installed Homebrew formulae.
+# Outputs:
+#   Writes the installed formula count to stdout.
+#######################################
+brew_installed_formulae_count() {
+  brew list --formula 2>/dev/null | sed '/^$/d' | wc -l | tr -d ' '
+}
+
+#######################################
+# Counts installed Homebrew casks.
+# Outputs:
+#   Writes the installed cask count to stdout.
+#######################################
+brew_installed_casks_count() {
+  brew list --cask 2>/dev/null | sed '/^$/d' | wc -l | tr -d ' '
+}
+
+#######################################
+# Ensures pnpm uses the repo's expected global bin directory.
+# Globals:
+#   HOME
+#   PATH
+#   PNPM_HOME
+# Outputs:
+#   Creates the pnpm global bin directory if needed.
+#######################################
+ensure_pnpm_env() {
+  export PNPM_HOME="${PNPM_HOME:-$HOME/.local/share/pnpm}"
+  export PATH="$PNPM_HOME/bin:$PATH"
+
+  mkdir -p "$PNPM_HOME/bin"
+}
+
+#######################################
+# Lists outdated global pnpm packages.
+# Outputs:
+#   Writes package names to stdout.
+#######################################
+pnpm_outdated_packages() {
+  local outdated_json
+
+  ensure_pnpm_env
+
+  outdated_json="$(pnpm outdated -g --format json 2>/dev/null || true)"
+  if [[ -z "$outdated_json" ]]; then
+    return 0
+  fi
+
+  printf '%s' "$outdated_json" | jq -r '
+    if type == "array" then
+      .[]? | .name // .package // empty
+    elif type == "object" then
+      keys[]
+    else
+      empty
+    end
+  '
+}
+
+#######################################
+# Lists outdated global pnpm packages as JSON.
+# Outputs:
+#   Writes pnpm outdated JSON to stdout.
+#######################################
+pnpm_outdated_json() {
+  ensure_pnpm_env
+  pnpm outdated -g --format json 2>/dev/null || true
+}
+
+#######################################
+# Counts installed global pnpm packages.
+# Outputs:
+#   Writes the installed package count to stdout.
+#######################################
+pnpm_installed_count() {
+  local root
+
+  ensure_pnpm_env
+  root="$(pnpm root -g 2>/dev/null || true)"
+
+  if [[ -z "$root" || ! -d "$root" ]]; then
+    printf '0\n'
+    return 0
+  fi
+
+  find "$root" -mindepth 1 -maxdepth 2 -type d ! -name .bin \
+    | awk -F/ '
+        /\/node_modules\/@[^/]+\/[^/]+$/ { count++ }
+        /\/node_modules\/[^@][^/]*$/ { count++ }
+        END { print count + 0 }
+      '
+}
+
+#######################################
+# Lists installed uv tools.
+# Outputs:
+#   Writes uv tool names to stdout.
+#######################################
+uv_tool_names() {
+  uv tool list 2>/dev/null | awk '/^[[:alnum:]_.-]+ v[0-9]/ { print $1 }'
+}
+
+#######################################
+# Lists outdated uv tools.
+# Outputs:
+#   Writes outdated uv tool lines to stdout.
+#######################################
+uv_outdated_tools() {
+  (uv tool list --outdated --show-version-specifiers 2>/dev/null || true) | awk '
+    /^[[:alnum:]_.-]+ v[0-9]/ {
+      if (record != "") {
+        print record
+      }
+      record = $0
+      next
+    }
+
+    /^[[:space:]]+/ {
+      gsub(/^[[:space:]]+/, "", $0)
+      if (record != "") {
+        record = record " " $0
+      }
+      next
+    }
+
+    END {
+      if (record != "") {
+        print record
+      }
+    }
+  '
+}
+
+#######################################
+# Counts installed uv tools.
+# Outputs:
+#   Writes the installed tool count to stdout.
+#######################################
+uv_installed_count() {
+  (uv tool list 2>/dev/null || true) | awk '/^[[:alnum:]_.-]+ v[0-9]/ { count++ } END { print count + 0 }'
+}
+
+#######################################
+# Returns the current and candidate nixpkgs lock revisions.
+# Outputs:
+#   Writes tab-separated fields:
+#     outdated-count, total-count, current-rev, candidate-rev
+#######################################
+nixpkgs_status() {
+  local current_rev
+  local candidate_rev
+  local temp_lock
+
+  current_rev="$(jq -r '.nodes.nixpkgs.locked.rev // "unknown"' flake.lock)"
+  temp_lock="$(mktemp)"
+  cp flake.lock "$temp_lock"
+
+  if ! nix flake lock . --quiet --output-lock-file "$temp_lock" --update-input nixpkgs >/dev/null 2>&1; then
+    rm -f "$temp_lock"
+    printf '0\t1\t%s\t%s\n' "$current_rev" "$current_rev"
+    return 0
+  fi
+
+  candidate_rev="$(jq -r '.nodes.nixpkgs.locked.rev // "unknown"' "$temp_lock")"
+  rm -f "$temp_lock"
+
+  if [[ "$current_rev" == "$candidate_rev" ]]; then
+    printf '0\t1\t%s\t%s\n' "$current_rev" "$candidate_rev"
+  else
+    printf '1\t1\t%s\t%s\n' "$current_rev" "$candidate_rev"
+  fi
+}
+
+#######################################
+# Shortens a revision for human-readable output.
+# Arguments:
+#   Revision.
+# Outputs:
+#   Writes the shortened revision to stdout.
+#######################################
+short_rev() {
+  local rev="$1"
+
+  if [[ "${#rev}" -gt 12 ]]; then
+    printf '%s\n' "${rev:0:12}"
+  else
+    printf '%s\n' "$rev"
+  fi
+}
+
+#######################################
+# Counts outdated Homebrew formulae from brew JSON.
+# Arguments:
+#   Brew outdated JSON.
+# Outputs:
+#   Writes the outdated formula count to stdout.
+#######################################
+brew_outdated_formulae_count() {
+  local brew_json="$1"
+  printf '%s' "$brew_json" | jq '.formulae | length'
+}
+
+#######################################
+# Counts outdated Homebrew casks from brew JSON.
+# Arguments:
+#   Brew outdated JSON.
+# Outputs:
+#   Writes the outdated cask count to stdout.
+#######################################
+brew_outdated_casks_count() {
+  local brew_json="$1"
+  printf '%s' "$brew_json" | jq '.casks | length'
+}
+
+#######################################
+# Counts outdated global pnpm packages from pnpm JSON.
+# Arguments:
+#   pnpm outdated JSON.
+# Outputs:
+#   Writes the outdated package count to stdout.
+#######################################
+pnpm_outdated_count() {
+  local pnpm_json="$1"
+
+  if [[ -z "$pnpm_json" ]]; then
+    printf '0\n'
+    return 0
+  fi
+
+  printf '%s' "$pnpm_json" | jq '
+    if type == "array" then
+      length
+    elif type == "object" then
+      length
+    else
+      0
+    end
+  '
+}
+
+#######################################
+# Prints one manager status line.
+# Arguments:
+#   Label.
+#   Outdated count.
+#   Installed count.
+# Outputs:
+#   Writes the status summary to stdout.
+#######################################
+print_manager_status() {
+  local label="$1"
+  local outdated_count="$2"
+  local installed_count="$3"
+
+  if [[ -t 1 ]]; then
+    printf '%b\n' "${COLOR_YELLOW}${label}:${COLOR_RESET} ${COLOR_BLUE}${outdated_count}${COLOR_RESET} out of ${COLOR_BLUE}${installed_count}${COLOR_RESET} packages to update"
+  else
+    echo "${label}: ${outdated_count} out of ${installed_count} packages to update"
+  fi
+}
+
+#######################################
+# Prints the nixpkgs flake input status.
+# Arguments:
+#   Outdated count.
+# Outputs:
+#   Writes the nixpkgs pin status to stdout.
+#######################################
+print_nixpkgs_status() {
+  local outdated_count="$1"
+
+  if [[ -t 1 ]]; then
+    if [[ "$outdated_count" -gt 0 ]]; then
+      printf '%b\n' "${COLOR_YELLOW}nixpkgs pin:${COLOR_RESET} ${COLOR_BLUE}update available${COLOR_RESET}"
+    else
+      printf '%b\n' "${COLOR_YELLOW}nixpkgs pin:${COLOR_RESET} ${COLOR_GREEN}up to date${COLOR_RESET}"
+    fi
+  else
+    if [[ "$outdated_count" -gt 0 ]]; then
+      echo "nixpkgs pin: update available"
+    else
+      echo "nixpkgs pin: up to date"
+    fi
+  fi
+}
+
+#######################################
+# Prints a colored long-form package detail line.
+# Arguments:
+#   Package/tool name.
+#   Current version/details.
+#   Target version/details.
+# Outputs:
+#   Writes the formatted detail line to stdout.
+#######################################
+print_status_detail() {
+  local name="$1"
+  local current="$2"
+  local target="$3"
+
+  if [[ -t 1 ]]; then
+    printf '%b\n' "  - ${COLOR_BLUE}${name}${COLOR_RESET}: ${COLOR_RED}${current}${COLOR_RESET} -> ${COLOR_GREEN}${target}${COLOR_RESET}"
+  else
+    printf '  - %s: %s -> %s\n' "$name" "$current" "$target"
+  fi
+}
+
+#######################################
+# Prints a colored status section title.
+# Arguments:
+#   Title text.
+# Outputs:
+#   Writes the formatted title to stdout.
+#######################################
+print_status_title() {
+  local title="$1"
+
+  if [[ -t 1 ]]; then
+    printf '%b\n' "${COLOR_YELLOW}${title}${COLOR_RESET}"
+  else
+    printf '%s\n' "$title"
+  fi
+}
+
+#######################################
+# Prints a colorized LONG section title with counts.
+# Arguments:
+#   Title text.
+#   Outdated count.
+#   Installed count.
+# Outputs:
+#   Writes the formatted title line to stdout.
+#######################################
+print_status_title_with_count() {
+  local title="$1"
+  local outdated_count="$2"
+  local installed_count="$3"
+
+  if [[ -t 1 ]]; then
+    printf '%b\n' "${COLOR_YELLOW}${title}${COLOR_RESET} (${COLOR_BLUE}${outdated_count}${COLOR_RESET} out of ${COLOR_BLUE}${installed_count}${COLOR_RESET} packages to update):"
+  else
+    printf '%s (%s out of %s packages to update):\n' "$title" "$outdated_count" "$installed_count"
+  fi
+}
+
+#######################################
+# Prints the LONG nixpkgs section title.
+# Arguments:
+#   Outdated count.
+# Outputs:
+#   Writes the formatted nixpkgs title line to stdout.
+#######################################
+print_nixpkgs_title() {
+  local outdated_count="$1"
+
+  if [[ -t 1 ]]; then
+    if [[ "$outdated_count" -gt 0 ]]; then
+      printf '%b\n' "${COLOR_YELLOW}nixpkgs pin${COLOR_RESET} (${COLOR_BLUE}update available${COLOR_RESET}):"
+    else
+      printf '%b\n' "${COLOR_YELLOW}nixpkgs pin${COLOR_RESET} (${COLOR_GREEN}up to date${COLOR_RESET}):"
+    fi
+  else
+    if [[ "$outdated_count" -gt 0 ]]; then
+      echo "nixpkgs pin (update available):"
+    else
+      echo "nixpkgs pin (up to date):"
+    fi
+  fi
+}
+
+#######################################
+# Prints long-form Homebrew package details.
+# Arguments:
+#   Brew outdated JSON.
+# Outputs:
+#   Writes package-level outdated details to stdout.
+#######################################
+print_brew_status_long() {
+  local brew_json="$1"
+  local name
+  local current
+  local target
+
+  while IFS=$'\t' read -r name current target; do
+    [[ -z "$name" ]] && continue
+    print_status_detail "$name" "$current" "$target"
+  done < <(
+    printf '%s' "$brew_json" | jq -r '
+      (.formulae[]? | [.name, (.installed_versions[0] // "unknown"), .current_version]) ,
+      (.casks[]? | [.name, (.installed_versions[0] // "unknown"), .current_version])
+      | @tsv
+    '
+  )
+}
+
+#######################################
+# Prints long-form pnpm package details.
+# Arguments:
+#   pnpm outdated JSON.
+# Outputs:
+#   Writes package-level outdated details to stdout.
+#######################################
+print_pnpm_status_long() {
+  local pnpm_json="$1"
+  local name
+  local current
+  local target
+
+  if [[ -z "$pnpm_json" ]]; then
+    return 0
+  fi
+
+  while IFS=$'\t' read -r name current target; do
+    [[ -z "$name" ]] && continue
+    print_status_detail "$name" "$current" "$target"
+  done < <(
+    printf '%s' "$pnpm_json" | jq -r '
+      if type == "array" then
+        .[]? | [.name // .package // "unknown", (.current // "unknown"), (.latest // .wanted // "unknown")]
+      elif type == "object" then
+        to_entries[] | [.key, (.value.current // "unknown"), (.value.latest // .value.wanted // "unknown")]
+      else
+        empty
+      end
+      | @tsv
+    '
+  )
+}
+
+#######################################
+# Prints long-form uv tool details.
+# Arguments:
+#   uv outdated tool list.
+# Outputs:
+#   Writes outdated tool lines to stdout.
+#######################################
+print_uv_status_long() {
+  local uv_tools="$1"
+  local line
+  local name
+  local details
+
+  if [[ -z "$uv_tools" ]]; then
+    return 0
+  fi
+
+  while IFS= read -r line; do
+    [[ -z "$line" ]] && continue
+    name="${line%% *}"
+    details="${line#${name}}"
+    if [[ -t 1 ]]; then
+      printf '%b\n' "  - ${COLOR_BLUE}${name}${COLOR_RESET}${COLOR_GREEN}${details}${COLOR_RESET}"
+    else
+      printf '  - %s\n' "$line"
+    fi
+  done <<< "$uv_tools"
+}
+
+#######################################
+# Prints dependency update status.
+# Arguments:
+#   SHORT or LONG.
+# Outputs:
+#   Writes manager-level update status to stdout.
+#######################################
+print_status_report() {
+  local mode="$1"
+  local brew_json
+  local pnpm_json
+  local uv_tools
+  local nixpkgs_raw
+  local brew_outdated
+  local brew_installed
+  local pnpm_outdated
+  local pnpm_installed
+  local uv_outdated
+  local uv_installed
+  local nixpkgs_outdated
+  local nixpkgs_total
+  local nixpkgs_current
+  local nixpkgs_candidate
+
+  brew_json="$(brew_outdated_json)"
+  pnpm_json="$(pnpm_outdated_json)"
+  uv_tools="$(uv_outdated_tools)"
+  nixpkgs_raw="$(nixpkgs_status)"
+
+  brew_outdated=$(( $(brew_outdated_formulae_count "$brew_json") + $(brew_outdated_casks_count "$brew_json") ))
+  brew_installed=$(( $(brew_installed_formulae_count) + $(brew_installed_casks_count) ))
+  pnpm_outdated="$(pnpm_outdated_count "$pnpm_json")"
+  pnpm_installed="$(pnpm_installed_count)"
+  uv_outdated="$(count_items "$uv_tools")"
+  uv_installed="$(uv_installed_count)"
+  IFS=$'\t' read -r nixpkgs_outdated nixpkgs_total nixpkgs_current nixpkgs_candidate <<< "$nixpkgs_raw"
+
+  if [[ "$mode" != "LONG" ]]; then
+    print_nixpkgs_status "$nixpkgs_outdated"
+    print_manager_status "Homebrew" "$brew_outdated" "$brew_installed"
+    print_manager_status "pnpm" "$pnpm_outdated" "$pnpm_installed"
+    print_manager_status "uv" "$uv_outdated" "$uv_installed"
+    return 0
+  fi
+
+  print_nixpkgs_title "$nixpkgs_outdated"
+  if [[ "$nixpkgs_outdated" -gt 0 ]]; then
+    print_status_detail 'nixpkgs' "$(short_rev "$nixpkgs_current")" "$(short_rev "$nixpkgs_candidate")"
+  fi
+
+  echo
+  print_status_title_with_count 'Homebrew' "$brew_outdated" "$brew_installed"
+  if [[ "$brew_outdated" -gt 0 ]]; then
+    print_brew_status_long "$brew_json"
+  fi
+
+  echo
+  print_status_title_with_count 'pnpm' "$pnpm_outdated" "$pnpm_installed"
+  if [[ "$pnpm_outdated" -gt 0 ]]; then
+    print_pnpm_status_long "$pnpm_json"
+  fi
+
+  echo
+  print_status_title_with_count 'uv' "$uv_outdated" "$uv_installed"
+  if [[ "$uv_outdated" -gt 0 ]]; then
+    print_uv_status_long "$uv_tools"
+  fi
+}
+
+#######################################
+# Creates a timestamped log directory for silent runs.
+# Outputs:
+#   Writes the absolute log directory path to stdout.
+#######################################
+silent_log_dir() {
+  local base_dir="${HOME}/.cache/updatessy"
+  local timestamp
+  timestamp="$(date +%Y%m%d-%H%M%S)"
+  mkdir -p "${base_dir}/${timestamp}"
+  printf '%s\n' "${base_dir}/${timestamp}"
+}
+
+#######################################
+# Runs the non-interactive silent workflow and logs results.
+# Outputs:
+#   Writes the log directory path to stdout.
+#######################################
+run_silent_mode() {
+  local log_dir
+  log_dir="$(silent_log_dir)"
+
+  if [[ "${RUN_UPGRADE}" == true ]]; then
+    if ! git diff --quiet -- flake.lock || ! git diff --cached --quiet -- flake.lock; then
+      err 'flake.lock already has uncommitted changes; commit or stash it before running upgrade.'
+      exit 1
+    fi
+
+    if ! make upgrade >"${log_dir}/make-upgrade.log" 2>&1; then
+      err "make upgrade failed; see ${log_dir}/make-upgrade.log"
+      exit 1
+    fi
+  fi
+
+  git diff -- flake.lock > "${log_dir}/flake.lock.diff" 2>&1 || true
+  brew_outdated_json > "${log_dir}/brew-outdated.json"
+  pnpm_outdated_json > "${log_dir}/pnpm-outdated.json"
+  uv_outdated_tools > "${log_dir}/uv-outdated.txt"
+  print_status_report "LONG" > "${log_dir}/status.txt"
+
+  echo "Silent update logs written to ${log_dir}"
+}
+
+#######################################
+# Prints available update counts across user-managed package tools.
+# Arguments:
+#   Outdated Homebrew formulae.
+#   Outdated Homebrew casks.
+#   Outdated pnpm global tools.
+#   Installed uv tools.
+# Outputs:
+#   Writes a concise update summary to stdout.
+#######################################
+print_update_counts() {
+  local brew_formulae="$1"
+  local brew_casks="$2"
+  local pnpm_tools="$3"
+  local uv_tools="$4"
+  local brew_formula_count
+  local brew_cask_count
+  local brew_total
+
+  brew_formula_count="$(count_items "$brew_formulae")"
+  brew_cask_count="$(count_items "$brew_casks")"
+  brew_total=$((brew_formula_count + brew_cask_count))
+
+  echo "Available updates:"
+  echo "- Homebrew: ${brew_total} (${brew_formula_count} formulae, ${brew_cask_count} casks)"
+  echo "- pnpm global tools: $(count_items "$pnpm_tools")"
+  echo "- uv tools: $(count_items "$uv_tools")"
+}
+
+#######################################
+# Applies Homebrew package updates from a precomputed package list.
+# Arguments:
+#   Human-readable package group label.
+#   Newline-separated package list.
+#   Optional brew flags, such as --cask.
+# Outputs:
+#   Writes prompt and brew output.
+#######################################
+apply_brew_updates() {
+  local label="$1"
+  local packages="$2"
+  shift 2
+
+  local package
+
+  if [[ -z "$packages" ]]; then
+    return 0
+  fi
+
+  echo "Outdated Homebrew ${label}:"
+  printf '%s\n' "$packages" | sed 's/^/- /'
+
+  if scope_approved brew; then
+    brew upgrade "$@"
+    return 0
+  fi
+
+  while IFS= read -r package; do
+    [[ -z "$package" ]] && continue
+    if prompt_or_approve brew "Upgrade ${package}? [Y/n] "; then
+      brew upgrade "$@" "$package"
+    fi
+  done <<< "$packages"
+}
+
+#######################################
+# Applies pnpm global tool updates from a precomputed package list.
+# Arguments:
+#   Newline-separated package list.
+# Outputs:
+#   Writes prompt and pnpm output.
+#######################################
+apply_pnpm_updates() {
+  local packages="$1"
+  local package
+
+  if [[ -z "$packages" ]]; then
+    return 0
+  fi
+
+  ensure_pnpm_env
+
+  echo 'Outdated pnpm global tools:'
+  printf '%s\n' "$packages" | sed 's/^/- /'
+
+  if scope_approved pnpm; then
+    pnpm update -g --latest --config.ignore-scripts=false --config.optional=true
+    return 0
+  fi
+
+  while IFS= read -r package; do
+    [[ -z "$package" ]] && continue
+    if prompt_or_approve pnpm "Upgrade ${package}? [Y/n] "; then
+      pnpm update -g --latest --config.ignore-scripts=false --config.optional=true "$package"
+    fi
+  done <<< "$packages"
+}
+
+#######################################
+# Applies uv tool updates from a precomputed tool list.
+# Arguments:
+#   Newline-separated tool list.
+# Outputs:
+#   Writes prompt and uv output.
+#######################################
+apply_uv_updates() {
+  local tools="$1"
+  local tool
+
+  if [[ -z "$tools" ]]; then
+    return 0
+  fi
+
+  echo 'Installed uv tools:'
+  printf '%s\n' "$tools" | sed 's/^/- /'
+
+  if scope_approved uv; then
+    uv tool upgrade --all
+    return 0
+  fi
+
+  while IFS= read -r tool; do
+    [[ -z "$tool" ]] && continue
+    if prompt_or_approve uv "Upgrade ${tool}? [Y/n] "; then
+      uv tool upgrade "$tool"
+    fi
+  done <<< "$tools"
+}
+
+#######################################
+# Prompts once for whether to apply available package/tool updates.
+# Arguments:
+#   Host name.
+# Outputs:
+#   Writes update summary, prompts, and package manager output.
+#######################################
+maybe_apply_available_updates() {
+  local host="$1"
+  local brew_formulae
+  local brew_casks
+  local pnpm_tools
+  local uv_tools
+  local mode
+  local total_updates
+
+  brew_formulae=''
+  brew_casks=''
+  if ! homebrew_activation_upgrade_enabled "$host"; then
+    brew_formulae="$(brew_outdated_packages)"
+    brew_casks="$(brew_outdated_packages --cask)"
+  fi
+
+  pnpm_tools="$(pnpm_outdated_packages)"
+  uv_tools="$(uv_tool_names)"
+
+  total_updates=$(
+    (
+      count_items "$brew_formulae"
+      count_items "$brew_casks"
+      count_items "$pnpm_tools"
+      count_items "$uv_tools"
+    ) | awk '{ total += $1 } END { print total + 0 }'
+  )
+
+  print_update_counts "$brew_formulae" "$brew_casks" "$pnpm_tools" "$uv_tools"
+
+  if [[ "$total_updates" -eq 0 ]]; then
+    return 0
+  fi
+
+  mode="$(prompt_apply_updates_mode "Apply available updates? [A]ll/[y] individual/[n] none ")"
+  case "$mode" in
+    a)
+      APPROVE_BREW=true
+      APPROVE_PNPM=true
+      APPROVE_UV=true
+      ;;
+    y)
+      ;;
+    *)
+      echo 'Skipping package and tool updates'
+      return 0
+      ;;
+  esac
+
+  apply_brew_updates 'formulae' "$brew_formulae"
+  apply_brew_updates 'casks' "$brew_casks" --cask
+  apply_pnpm_updates "$pnpm_tools"
+  apply_uv_updates "$uv_tools"
+}
+
+#######################################
+# Offers to commit an updated flake.lock.
+# Outputs:
+#   Writes git commit output or a skip message.
+#######################################
+commit_lockfile() {
+  if git diff --quiet -- flake.lock; then
+    return 0
+  fi
+
+  if prompt_or_approve commit-flake "Commit updated flake.lock? [Y/n] "; then
+    git add flake.lock
+    git commit -m "Update flake lock"
+  else
+    echo 'Leaving flake.lock uncommitted'
+  fi
+}
+
+#######################################
+# Runs the update workflow.
+# Arguments:
+#   CLI arguments.
+# Outputs:
+#   Streams update, rebuild, prompt, brew, and git output.
+#######################################
 main() {
   parse_args "$@"
 
-  if ! ensure_nix; then
-    echo 'nix not found'
+  cd "${SCRIPT_DIR}"
+
+  local repo
+  repo="$(repo_root)"
+  cd "${repo}"
+
+  if [[ ! -f flake.nix || ! -f Makefile ]]; then
+    err "Expected flake.nix and Makefile in ${repo}"
     exit 1
   fi
 
-  if [[ ! -d "${REPO_ROOT}" || ! -f "${REPO_ROOT}/flake.nix" ]]; then
-    echo "flake repo not found at ${REPO_ROOT}"
-    exit 1
+  if [[ -n "${STATUS_MODE}" ]]; then
+    print_status_report "${STATUS_MODE}"
+    return 0
   fi
+
+  if [[ "${SILENT_MODE}" == true ]]; then
+    run_silent_mode
+    return 0
+  fi
+
+  print_banner
 
   local host
-  host="$(hostname -s)"
+  host="$(current_host)"
+  local lock_changed=false
 
-  cd "${REPO_ROOT}"
-
-  if [[ "${RUN_UPDATE}" == true ]]; then
-    if prompt_or_approve "Run nix flake update? [Y/n] "; then
-      nix flake update
-    else
-      echo 'Skipping flake update'
+  if [[ "${RUN_UPGRADE}" == true ]]; then
+    # Refuse to run over a dirty lockfile so the before/after summary is about
+    # this invocation, not a mix of earlier edits and new flake input updates.
+    if ! git diff --quiet -- flake.lock || ! git diff --cached --quiet -- flake.lock; then
+      err 'flake.lock already has uncommitted changes; commit or stash it before running upgrade.'
+      exit 1
     fi
+
+    make upgrade
   fi
 
-  if prompt_or_approve "Rebuild nix-darwin for ${host}? [Y/n] "; then
-    if command -v darwin-rebuild >/dev/null 2>&1; then
-      sudo darwin-rebuild switch --flake ".#${host}"
-    else
-      sudo nix run nix-darwin/master#darwin-rebuild -- switch --flake ".#${host}"
-    fi
+  if ! git diff --quiet -- flake.lock; then
+    lock_changed=true
+  fi
+
+  if [[ "$lock_changed" == true ]]; then
+    print_lock_updates
+  else
+    echo 'flake.lock unchanged'
+  fi
+
+  maybe_apply_available_updates "$host"
+
+  if prompt_or_approve nix "Run make update? [Y/n] "; then
+    run_make_update
+  fi
+
+  if [[ "$lock_changed" == true ]]; then
+    commit_lockfile
   fi
 }
 

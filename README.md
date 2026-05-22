@@ -78,6 +78,21 @@ sudo darwin-rebuild switch --flake '.#work'
 make update HOST=work
 ```
 
+### Upgrading
+
+There is also a local helper script [updatessy](./dotfiles/scripts/updatessy).
+
+Use that when you want one guided upgrade pass across the machine - it:
+
+- Updates packages
+  - `make update` - updating `flake.lock` and `nixpkgs`
+  - `brew --upgrade` - upgrading homebrew packages
+  - `pnpm ...` - upgrades any packages installed by pnpm
+  - `uv ...` - upgrades any packages installed by uv
+- Rebuild the current host with `make update`
+
+Use `updatessy --help` to see its flags and how to use it
+
 ### Uninstalling Nix
 
 If a machine already has a different Nix installation and I want to reset it back to the repo's expected upstream Nix install, run:
@@ -99,9 +114,45 @@ in `flake.nix`.
 - `watts`: user `osh`, Apple Silicon (`aarch64-darwin`)
 - `work`: user `osh`, Apple Silicon (`aarch64-darwin`)
 
-## Dotfiles
+## Dotfiles and core setup
 
 Dotfiles live in this repo as normal files and are symlinked into `$HOME` by Home Manager.
+
+The important part of this setup is that most interactive tooling still uses its
+native config files under [`dotfiles/`](./dotfiles), rather than being rewritten
+into Nix:
+
+- shell: [`dotfiles/.zshrc`](./dotfiles/.zshrc) and [`dotfiles/.zsh/`](./dotfiles/.zsh)
+- terminal: [`dotfiles/.config/alacritty/`](./dotfiles/.config/alacritty)
+- tmux: [`dotfiles/.tmux.conf`](./dotfiles/.tmux.conf) and [`dotfiles/.tmux/`](./dotfiles/.tmux)
+- Neovim: [`dotfiles/.config/nvim/`](./dotfiles/.config/nvim)
+
+Nix and Home Manager handle package installation, system settings, file linking,
+and a few small activation hooks. The source of truth for day-to-day editor,
+shell, and terminal behavior is still the file tree in `dotfiles/`.
+
+The main interactive setup on these machines is:
+
+- shell and CLI: macOS `/bin/zsh` with [Zim](https://github.com/zimfw/zimfw), [fzf](https://github.com/junegunn/fzf), and [Oh My Zsh git aliases](https://github.com/ohmyzsh/ohmyzsh/tree/master/plugins/git)
+- tmux: persistent sessions, [TPM](https://github.com/tmux-plugins/tpm)-managed plugins, clipboard integration, and navigation with Neovim
+- Neovim: [LSP](https://neovim.io/doc/user/lsp.html), [Treesitter](https://github.com/nvim-treesitter/nvim-treesitter), completion, formatting, Git workflow, and file-based config in this repo
+
+Core platform pieces behind the setup:
+
+- [nix-darwin](https://github.com/nix-darwin/nix-darwin)
+- [Home Manager](https://github.com/nix-community/home-manager)
+- [Neovim](https://github.com/neovim/neovim)
+
+Useful docs in this repo:
+
+- shell and CLI notes: [docs/cli.md](./docs/cli.md)
+- tmux notes: [docs/tmux.md](./docs/tmux.md)
+- Neovim notes: [docs/nvim.md](./docs/nvim.md)
+- Git notes: [docs/git.md](./docs/git.md)
+
+If you only need one place to understand the core editing workflow, start with
+[`docs/nvim.md`](./docs/nvim.md). That is the densest part of the setup and the
+one most likely to need reference later.
 
 ## Background
 

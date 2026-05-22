@@ -19,6 +19,7 @@ return function()
     "lua",
     "markdown",
     "markdown_inline",
+    "python",
     "regex",
     "rust",
     "toml",
@@ -46,6 +47,34 @@ return function()
     vim.list_extend(filetypes, aliases)
   end
 
+  local treesitter = require("nvim-treesitter")
+  -- Avoid kicking off duplicate installs when multiple buffers hit the same
+  -- missing parser during startup.
+  local installing = {}
+
+  local function start_parser(bufnr, parser)
+    if not vim.api.nvim_buf_is_valid(bufnr) then
+      return false
+    end
+
+    if not pcall(vim.treesitter.language.add, parser) then
+      return false
+    end
+
+    return pcall(vim.treesitter.start, bufnr, parser)
+  end
+
+  local function retry_start(bufnr, parser, attempts)
+    if start_parser(bufnr, parser) or attempts <= 0 then
+      installing[parser] = nil
+      return
+    end
+
+    vim.defer_fn(function()
+      retry_start(bufnr, parser, attempts - 1)
+    end, 200)
+  end
+
   for parser, aliases in pairs(fenced_language_aliases) do
     vim.treesitter.language.register(parser, aliases)
   end
@@ -57,11 +86,20 @@ return function()
       local filetype = vim.bo[args.buf].filetype
       local parser = vim.treesitter.language.get_lang(filetype) or filetype
 
-      if not pcall(vim.treesitter.language.add, parser) then
+      if not start_parser(args.buf, parser) then
+        if not installing[parser] then
+          installing[parser] = true
+
+          vim.schedule(function()
+            -- Install missing parsers on demand, then retry attaching
+            -- Treesitter for the buffer that triggered the install.
+            treesitter.install(parser, { summary = true })
+            retry_start(args.buf, parser, 30)
+          end)
+        end
+
         return
       end
-
-      pcall(vim.treesitter.start, args.buf, parser)
     end,
   })
 end
