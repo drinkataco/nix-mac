@@ -29,7 +29,7 @@ let
   # This is an indirect autofs map. macOS creates entries below cfg.mountPoint
   # and only attempts the NFS mount when one of those entries is accessed.
   # Keeping the map static avoids probing the server during rebuilds.
-  autoNfsShares = pkgs.writeText "auto_nfs_shares" (
+  nfsMap = pkgs.writeText "nfs" (
     lib.concatMapStringsSep "\n" (mount: "${mount.key} -${mountOptions} ${mount.spec}") mounts + "\n"
   );
 in
@@ -75,13 +75,13 @@ in
 
     # nix-darwin manages the map file, while the activation hook below only
     # teaches the system autofs master map where to find it.
-    environment.etc."auto_nfs_shares".source = autoNfsShares;
+    environment.etc."nfs".source = nfsMap;
 
     system.activationScripts.etc.text = lib.mkAfter ''
       echo "setting up NFS automounts..." >&2
 
       mount_point=${lib.escapeShellArg cfg.mountPoint}
-      master_line=${lib.escapeShellArg "${cfg.mountPoint} /etc/auto_nfs_shares -nosuid"}
+      master_line=${lib.escapeShellArg "${cfg.mountPoint} /etc/nfs -nosuid"}
 
       if ! mkdir -p "$mount_point"; then
         echo "warning: could not create $mount_point; skipping NFS automount setup" >&2

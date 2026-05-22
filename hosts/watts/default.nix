@@ -24,6 +24,7 @@
   # normally when the share is unavailable.
   networkShares.nfs.mounts = [
     "fileserver:/srv"
+    "fileserver:/srv/downloads"
   ];
 
   homebrew = {
