@@ -20,9 +20,16 @@
   # Keep a generated ~/Applications/Games directory for games
   features.gamesDir = true;
 
+  # Lazy NFS mounts: rebuilds do not contact the server, and access fails
+  # normally when the share is unavailable.
+  networkShares.nfs.mounts = [
+    "fileserver:/srv"
+  ];
+
   homebrew = {
     # Host specific casks
     casks = [
+      "pcsx2"
       "steam"
     ];
 
