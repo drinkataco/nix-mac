@@ -16,5 +16,8 @@
       "Bash(wc:*)",
       "Bash(pwd:*)"
     ]
+  },
+  "enabledPlugins": {
+    "datadog@claude-plugins-official": true
   }
 }
