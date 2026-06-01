@@ -12,6 +12,14 @@ let
       source = mkSource ".config/karabiner";
       force = true;
     };
+    "Library/Application Support/PCSX2/gamesettings" = {
+      source = mkSource "Library/Application Support/PCSX2/gamesettings";
+      force = true;
+    };
+    "Library/Application Support/PCSX2/inputprofiles" = {
+      source = mkSource "Library/Application Support/PCSX2/inputprofiles";
+      force = true;
+    };
   };
 
   mkEntry = path: attrs: {
