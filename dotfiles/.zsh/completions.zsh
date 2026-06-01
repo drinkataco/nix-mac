@@ -8,6 +8,11 @@ autoload -U +X bashcompinit && bashcompinit
 # Kubernetes
 [[ $commands[kubectl] || $commands[k] ]] && source <(kubectl completion zsh)
 
+# Helm
+if command -v helm > /dev/null 2>&1; then
+  source <(helm completion zsh)
+fi
+
 # K9s
 if command -v k9s > /dev/null 2>&1; then
   source <(k9s completion zsh)
