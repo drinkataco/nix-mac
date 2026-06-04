@@ -32,6 +32,7 @@
       autoUpdate = lib.mkDefault false;
       cleanup = lib.mkDefault "none";
       upgrade = lib.mkDefault true;
+      extraFlags = [ "--force-cleanup" ];
     };
 
     # These apps are installed on every host. For host-specific apps, add

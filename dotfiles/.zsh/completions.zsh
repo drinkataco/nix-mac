@@ -18,6 +18,13 @@ if command -v k9s > /dev/null 2>&1; then
   source <(k9s completion zsh)
 fi
 
+# gcloud (Nix install: bash completion sourced via bashcompinit)
+if command -v gcloud > /dev/null 2>&1; then
+  _gcloud_comp="$(dirname $(dirname $(dirname $(readlink -f $(which gcloud)))))/share/bash-completion/completions/gcloud"
+  [[ -f "$_gcloud_comp" ]] && source "$_gcloud_comp"
+  unset _gcloud_comp
+fi
+
 # AWS
 if command -v aws_completer > /dev/null 2>&1; then
   complete -C "$(command -v aws_completer)" aws

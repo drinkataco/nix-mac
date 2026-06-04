@@ -77,6 +77,14 @@ in
     # teaches the system autofs master map where to find it.
     environment.etc."nfs".source = nfsMap;
 
+    home-manager.users.${config.system.primaryUser}.home.activation.networkSharesDesktopLink = {
+      after = [ "writeBoundary" ];
+      before = [ ];
+      data = ''
+        ln -sfn ${lib.escapeShellArg cfg.mountPoint} "$HOME/Desktop/$(basename ${lib.escapeShellArg cfg.mountPoint})"
+      '';
+    };
+
     system.activationScripts.etc.text = lib.mkAfter ''
       echo "setting up NFS automounts..." >&2
 

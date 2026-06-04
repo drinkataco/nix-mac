@@ -56,7 +56,7 @@
 
   # Host-specific Nix packages
   environment.systemPackages = [
-    # Scarlett MixControl
+    (pkgs.callPackage ../../modules/darwin/apps/packages/duckstation.nix { })
     (pkgs.callPackage ../../modules/darwin/apps/packages/scarlett-mixcontrol.nix { })
   ];
 

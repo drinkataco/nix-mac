@@ -95,6 +95,7 @@
 
     # Media and data tools
     mkvtoolnix
+    unar
     xan
   ];
 }
