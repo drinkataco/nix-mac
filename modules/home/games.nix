@@ -6,9 +6,14 @@
     steam_common="$HOME/Library/Application Support/Steam/steamapps/common"
 
     mkdir -p "$games_dir" "$steam_dir"
+    mkdir -p "$games_dir/.data/bios" "$games_dir/.data/saves" "$games_dir/.data/states"
 
     # Emulator launchers sit at the top level of the Games folder.
-    for app in "/Applications/PCSX2.app" "/Applications/Nix Apps/DuckStation.app"; do
+    for app in \
+      "/Applications/Dolphin.app" \
+      "/Applications/PCSX2.app" \
+      "/Applications/RetroArch.app" \
+      "/Applications/Nix Apps/DuckStation.app"; do
       if [ -d "$app" ]; then
         ln -sfn "$app" "$games_dir/$(basename "$app")"
       fi

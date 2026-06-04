@@ -30,7 +30,9 @@
   homebrew = {
     # Host specific casks
     casks = [
+      "dolphin"
       "pcsx2"
+      "retroarch"
       "steam"
     ];
 
