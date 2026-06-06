@@ -182,6 +182,7 @@ return function()
   vim.lsp.config("terraformls", {
     capabilities = capabilities,
     on_attach = on_attach,
+    filetypes = { "terraform", "terraform-vars" },
   })
 
   vim.lsp.enable("bashls")

@@ -58,7 +58,7 @@
     pinentry_mac
     pnpm
     python3
-    silver-searcher
+    ripgrep
     typescript
     uv
     vscode-js-debug
