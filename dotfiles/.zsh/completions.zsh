@@ -71,7 +71,7 @@ zstyle ':fzf-tab:complete:git-checkout:*' fzf-preview '
 zstyle ':fzf-tab:complete:bat:*' fzf-preview '[ -f $realpath ] && cat $realpath || stat $realpath'
 zstyle ':fzf-tab:complete:cat:*' fzf-preview '[ -f $realpath ] && cat $realpath || stat $realpath'
 zstyle ':fzf-tab:complete:cd:*' fzf-preview 'stat $realpath'
-zstyle ':fzf-tab:complete:ag:*' fzf-preview 'stat $realpath'
+zstyle ':fzf-tab:complete:rg:*' fzf-preview 'stat $realpath'
 zstyle ':fzf-tab:complete:fd:*' fzf-preview 'stat $realpath'
 zstyle ':fzf-tab:complete:git-(add|restore|rm):*' fzf-preview '
   if [ -f "$realpath" ]; then
