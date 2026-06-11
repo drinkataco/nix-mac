@@ -124,7 +124,17 @@ return function()
       "typescriptreact",
       "typescript.tsx",
     },
-    root_markers = { "tsconfig.json", "jsconfig.json", "package.json", ".git" },
+    -- Walk up from the file to find the nearest tsconfig, so projects with
+    -- a tsconfig in a subdirectory are rooted there rather than at .git.
+    root_dir = function(bufnr)
+      local fname = vim.api.nvim_buf_get_name(bufnr)
+      local match = vim.fs.find({ "tsconfig.json", "jsconfig.json", "package.json" }, {
+        upward = true,
+        path = vim.fs.dirname(fname),
+        stop = vim.env.HOME,
+      })[1]
+      return match and vim.fs.dirname(match) or vim.fs.dirname(fname)
+    end,
     single_file_support = true,
   })
 
