@@ -87,7 +87,9 @@
     terraform-ls # Terraform/OpenTofu language server
     typescript-language-server # TypeScript and JavaScript language server
     # Node 24 breaks vscode-langservers-extracted 4.x (CJS/ESM conflict), pin to 22.
-    (vscode-langservers-extracted.override { nodejs = nodejs_22; })
+    (vscode-langservers-extracted.override {
+      buildNpmPackage = buildNpmPackage.override { nodejs = nodejs_22; };
+    })
     yaml-language-server # YAML language server
 
     # Monitoring and networking
