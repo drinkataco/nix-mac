@@ -115,32 +115,12 @@ return function()
   vim.lsp.config("ts_ls", {
     capabilities = capabilities,
     on_attach = on_attach,
-    cmd = { "typescript-language-server", "--stdio" },
-    filetypes = {
-      "javascript",
-      "javascriptreact",
-      "javascript.jsx",
-      "typescript",
-      "typescriptreact",
-      "typescript.tsx",
-    },
-    -- Walk up from the file to find the nearest tsconfig, so projects with
-    -- a tsconfig in a subdirectory are rooted there rather than at .git.
-    root_dir = function(bufnr)
-      local fname = vim.api.nvim_buf_get_name(bufnr)
-      local match = vim.fs.find({ "tsconfig.json", "jsconfig.json", "package.json" }, {
-        upward = true,
-        path = vim.fs.dirname(fname),
-        stop = vim.env.HOME,
-      })[1]
-      return match and vim.fs.dirname(match) or vim.fs.dirname(fname)
-    end,
-    single_file_support = true,
   })
 
   vim.lsp.config("jsonls", {
     capabilities = capabilities,
     on_attach = on_attach,
+    cmd = { "vscode-json-languageserver", "--stdio" },
     settings = {
       json = {
         schemas = require("schemastore").json.schemas(),
