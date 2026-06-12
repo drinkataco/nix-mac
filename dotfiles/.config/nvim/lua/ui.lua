@@ -49,6 +49,14 @@ vim.api.nvim_set_hl(0, "CursorLineNr", {
   bold = true,
 })
 
+-- Use the bold box-drawing character so split borders read as a solid line
+-- rather than a faint dashed one, and dim the colour so it recedes behind content.
+vim.opt.fillchars:append({ vert = "┃", vertleft = "┃", vertright = "┃", verthoriz = "┃" })
+vim.api.nvim_set_hl(0, "WinSeparator", {
+  fg = darken(comment_fg, 0.45),
+  bg = "NONE",
+})
+
 vim.api.nvim_set_hl(0, "BufferLineFill", {
   bg = terminal_bg,
 })
