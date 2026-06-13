@@ -1,4 +1,7 @@
 {
+  "application": {
+    "pathManagementStrategy": "manual"
+  },
   "kubernetes": {
     "enabled": true,
     "k3s": {
