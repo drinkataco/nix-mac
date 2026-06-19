@@ -5,6 +5,11 @@
 ##########################
 autoload -U +X bashcompinit && bashcompinit
 
+# uv
+if command -v uv > /dev/null 2>&1; then
+  eval "$(uv generate-shell-completion zsh)"
+fi
+
 # Kubernetes
 [[ $commands[kubectl] || $commands[k] ]] && source <(kubectl completion zsh)
 
