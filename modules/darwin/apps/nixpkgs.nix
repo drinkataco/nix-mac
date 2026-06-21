@@ -48,6 +48,7 @@
     hadolint
     google-cloud-sdk
     jq
+    argocd
     k9s
     kubernetes-helm
     kubectl
