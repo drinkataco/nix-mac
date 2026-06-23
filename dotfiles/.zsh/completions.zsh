@@ -23,6 +23,11 @@ if command -v k9s > /dev/null 2>&1; then
   source <(k9s completion zsh)
 fi
 
+# ArgoCD
+if command -v argocd > /dev/null 2>&1; then
+  source <(argocd completion zsh)
+fi
+
 # gcloud (Nix install: bash completion sourced via bashcompinit)
 if command -v gcloud > /dev/null 2>&1; then
   _gcloud_comp="$(dirname $(dirname $(dirname $(readlink -f $(which gcloud)))))/share/bash-completion/completions/gcloud"
