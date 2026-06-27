@@ -14,7 +14,7 @@ update:
 	fi
 
 upgrade:
-	sudo nix flake update
+	sudo --preserve-env=HOME nix flake update
 
 dry-run:
 	nix build --dry-run '.#darwinConfigurations.$(HOST).system'
