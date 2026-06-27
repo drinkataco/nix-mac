@@ -115,22 +115,12 @@ return function()
   vim.lsp.config("ts_ls", {
     capabilities = capabilities,
     on_attach = on_attach,
-    cmd = { "typescript-language-server", "--stdio" },
-    filetypes = {
-      "javascript",
-      "javascriptreact",
-      "javascript.jsx",
-      "typescript",
-      "typescriptreact",
-      "typescript.tsx",
-    },
-    root_markers = { "tsconfig.json", "jsconfig.json", "package.json", ".git" },
-    single_file_support = true,
   })
 
   vim.lsp.config("jsonls", {
     capabilities = capabilities,
     on_attach = on_attach,
+    cmd = { "vscode-json-languageserver", "--stdio" },
     settings = {
       json = {
         schemas = require("schemastore").json.schemas(),
@@ -182,6 +172,7 @@ return function()
   vim.lsp.config("terraformls", {
     capabilities = capabilities,
     on_attach = on_attach,
+    filetypes = { "terraform", "terraform-vars" },
   })
 
   vim.lsp.enable("bashls")

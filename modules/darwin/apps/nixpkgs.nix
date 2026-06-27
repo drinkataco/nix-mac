@@ -48,6 +48,7 @@
     hadolint
     google-cloud-sdk
     jq
+    argocd
     k9s
     kubernetes-helm
     kubectl
@@ -58,7 +59,7 @@
     pinentry_mac
     pnpm
     python3
-    silver-searcher
+    ripgrep
     typescript
     uv
     vscode-js-debug
@@ -86,7 +87,7 @@
     taplo # TOML language server
     terraform-ls # Terraform/OpenTofu language server
     typescript-language-server # TypeScript and JavaScript language server
-    vscode-langservers-extracted # JSON language server
+    vscode-json-languageserver # JSON language server
     yaml-language-server # YAML language server
 
     # Monitoring and networking
@@ -95,6 +96,7 @@
 
     # Media and data tools
     mkvtoolnix
+    unar
     xan
   ];
 }

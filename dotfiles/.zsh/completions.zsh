@@ -5,12 +5,34 @@
 ##########################
 autoload -U +X bashcompinit && bashcompinit
 
+# uv
+if command -v uv > /dev/null 2>&1; then
+  eval "$(uv generate-shell-completion zsh)"
+fi
+
 # Kubernetes
 [[ $commands[kubectl] || $commands[k] ]] && source <(kubectl completion zsh)
+
+# Helm
+if command -v helm > /dev/null 2>&1; then
+  source <(helm completion zsh)
+fi
 
 # K9s
 if command -v k9s > /dev/null 2>&1; then
   source <(k9s completion zsh)
+fi
+
+# ArgoCD
+if command -v argocd > /dev/null 2>&1; then
+  source <(argocd completion zsh)
+fi
+
+# gcloud (Nix install: bash completion sourced via bashcompinit)
+if command -v gcloud > /dev/null 2>&1; then
+  _gcloud_comp="$(dirname $(dirname $(dirname $(readlink -f $(which gcloud)))))/share/bash-completion/completions/gcloud"
+  [[ -f "$_gcloud_comp" ]] && source "$_gcloud_comp"
+  unset _gcloud_comp
 fi
 
 # AWS
@@ -59,7 +81,7 @@ zstyle ':fzf-tab:complete:git-checkout:*' fzf-preview '
 zstyle ':fzf-tab:complete:bat:*' fzf-preview '[ -f $realpath ] && cat $realpath || stat $realpath'
 zstyle ':fzf-tab:complete:cat:*' fzf-preview '[ -f $realpath ] && cat $realpath || stat $realpath'
 zstyle ':fzf-tab:complete:cd:*' fzf-preview 'stat $realpath'
-zstyle ':fzf-tab:complete:ag:*' fzf-preview 'stat $realpath'
+zstyle ':fzf-tab:complete:rg:*' fzf-preview 'stat $realpath'
 zstyle ':fzf-tab:complete:fd:*' fzf-preview 'stat $realpath'
 zstyle ':fzf-tab:complete:git-(add|restore|rm):*' fzf-preview '
   if [ -f "$realpath" ]; then

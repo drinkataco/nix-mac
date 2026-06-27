@@ -17,6 +17,7 @@ in
     ./gpg.nix
     ./node.nix
     ./ssh.nix
+    ./syncthing.nix
     ./tmux.nix
     ./uv.nix
   ]

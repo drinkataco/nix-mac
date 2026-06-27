@@ -23,6 +23,7 @@ in
 {
   home.sessionPath = [
     "${config.home.homeDirectory}/.local/share/fnm/aliases/default/bin"
+    "${config.home.homeDirectory}/.local/share/pnpm/bin"
   ];
 
   home.activation.installFnmNodeVersions = lib.hm.dag.entryAfter [ "writeBoundary" ] ''

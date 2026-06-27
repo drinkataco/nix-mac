@@ -20,9 +20,19 @@
   # Keep a generated ~/Applications/Games directory for games
   features.gamesDir = true;
 
+  # Lazy NFS mounts: rebuilds do not contact the server, and access fails
+  # normally when the share is unavailable.
+  networkShares.nfs.mounts = [
+    "fileserver:/srv"
+    "fileserver:/srv/downloads"
+  ];
+
   homebrew = {
     # Host specific casks
     casks = [
+      "dolphin"
+      "pcsx2"
+      "retroarch"
       "steam"
     ];
 
@@ -48,7 +58,7 @@
 
   # Host-specific Nix packages
   environment.systemPackages = [
-    # Scarlett MixControl
+    (pkgs.callPackage ../../modules/darwin/apps/packages/duckstation.nix { })
     (pkgs.callPackage ../../modules/darwin/apps/packages/scarlett-mixcontrol.nix { })
   ];
 

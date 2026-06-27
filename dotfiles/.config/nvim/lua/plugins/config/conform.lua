@@ -143,7 +143,7 @@ return function()
         return {
           command = prettier,
           args = { "--stdin-filepath", "$FILENAME" },
-          cwd = prettier_root(prettier),
+          cwd = function() return prettier_root(prettier) end,
           stdin = true,
         }
       end,

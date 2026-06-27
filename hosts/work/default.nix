@@ -35,12 +35,12 @@
 
   pnpm = {
     # Upgrade during activation
-    autoUpgrade = true;
+    autoUpgrade = false;
   };
 
   uv = {
     # Upgrade during activation
-    autoUpgrade = true;
+    autoUpgrade = false;
   };
 
   # Host-specific Nix packages
