@@ -90,7 +90,6 @@
     yaml-language-server # YAML language server
 
     # AI
-    herdr
     ollama
 
     # Monitoring and networking
