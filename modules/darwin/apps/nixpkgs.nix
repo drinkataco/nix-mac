@@ -71,7 +71,6 @@
     gopls # Go language server
     helm-ls # Helm language server
     lua-language-server # Lua language server
-    marksman # Markdown language server
     nixd # Nix language server
     nixfmt # Nix formatter
     prettier # HTML, CSS, Markdown, JSONC, and JavaScript formatter
@@ -89,6 +88,9 @@
     typescript-language-server # TypeScript and JavaScript language server
     vscode-json-languageserver # JSON language server
     yaml-language-server # YAML language server
+
+    # AI
+    ollama
 
     # Monitoring and networking
     htop
