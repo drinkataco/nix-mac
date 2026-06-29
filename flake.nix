@@ -21,6 +21,7 @@
       url = "github:homebrew/homebrew-cask";
       flake = false;
     };
+    herdr.url = "github:ogulcancelik/herdr";
   };
 
   outputs =

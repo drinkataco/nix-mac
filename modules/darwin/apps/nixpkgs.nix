@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ pkgs, inputs, system, ... }:
 {
   # These packages are installed on every host. For host-specific packages, add
   #  `environment.systemPackages = [ ... ];` in the relevant host module
@@ -90,6 +90,7 @@
     yaml-language-server # YAML language server
 
     # AI
+    inputs.herdr.packages.${system}.default
     ollama
 
     # Monitoring and networking
