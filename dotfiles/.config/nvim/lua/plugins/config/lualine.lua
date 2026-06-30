@@ -134,7 +134,7 @@ return function()
       lualine_c = { filename, lsp_status, recording_status },
       lualine_x = { diff, diagnostics, filetype },
       lualine_y = {},
-      lualine_z = {},
+      lualine_z = { "location" },
     },
   })
 end
