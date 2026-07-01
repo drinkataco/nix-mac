@@ -50,5 +50,15 @@ opt.sessionoptions:remove("folds")
 -- Keep folds and cursor/window state in per-file views when using :mkview/:loadview.
 opt.viewoptions = { "cursor", "folds", "slash", "unix" }
 
+-- Explicitly enable Neovim's built-in EditorConfig support
+vim.g.editorconfig = true
+
+-- Filetype overrides
+vim.filetype.add({
+  filename = {
+    [".yamllint"] = "yaml",
+  },
+})
+
 -- Netrw
 g.netrw_banner = 0

@@ -11,7 +11,6 @@ return {
   { "christoomey/vim-tmux-navigator" },
   { "tpope/vim-obsession" },
   { "tpope/vim-vinegar" },
-  { "editorconfig/editorconfig-vim" },
   {
     "NMAC427/guess-indent.nvim",
     event = "BufReadPre",
@@ -107,6 +106,10 @@ return {
   {
     "stevearc/conform.nvim",
     config = config.conform,
+  },
+  {
+    "mfussenegger/nvim-lint",
+    config = config.lint,
   },
   {
     "mfussenegger/nvim-dap",

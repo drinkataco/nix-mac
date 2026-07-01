@@ -88,6 +88,7 @@
     typescript-language-server # TypeScript and JavaScript language server
     vscode-json-languageserver # JSON language server
     yaml-language-server # YAML language server
+    yamllint # YAML linter used by nvim-lint
 
     # AI
     inputs.herdr.packages.${system}.default
