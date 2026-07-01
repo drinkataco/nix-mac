@@ -34,6 +34,11 @@
       upgrade = lib.mkDefault true;
     };
 
+  system.activationScripts.postActivation.text = lib.mkAfter ''
+    mkdir -p /Users/${username}/.local/bin
+    ln -sf /opt/homebrew/bin/claude /Users/${username}/.local/bin/claude
+  '';
+
     # These apps are installed on every host. For host-specific apps, add
     #  `homebrew.casks = [ ... ];` in the relevant host module
     # Keep GUI apps in Homebrew so they have stable /Applications paths
