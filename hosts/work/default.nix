@@ -33,6 +33,8 @@
     mutableTaps = false;
   };
 
+  projects.dirName = "projects.newfmt";
+
   pnpm = {
     # Upgrade during activation
     autoUpgrade = false;

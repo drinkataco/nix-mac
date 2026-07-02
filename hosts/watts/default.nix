@@ -46,6 +46,8 @@
     mutableTaps = false;
   };
 
+  projects.dirName = "projects-new";
+
   pnpm = {
     # Upgrade during activation
     autoUpgrade = false;

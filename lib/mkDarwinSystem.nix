@@ -35,6 +35,12 @@ darwin.lib.darwinSystem {
             default = false;
             description = "Upgrade global uv tools during Home Manager activation.";
           };
+
+          projects.dirName = lib.mkOption {
+            type = lib.types.str;
+            default = "projects";
+            description = "Name of the projects directory created under the user's home.";
+          };
         };
 
         config = {
