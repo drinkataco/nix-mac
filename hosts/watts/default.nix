@@ -46,6 +46,7 @@
     mutableTaps = false;
   };
 
+  # Override default projects directory name whilst format is ported over
   projects.dirName = "projects-new";
 
   pnpm = {
