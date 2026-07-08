@@ -3,7 +3,7 @@ let
   dir = "/Users/${username}/${config.projects.dirName}";
 in
 {
-  system.activationScripts.projects.text = lib.mkAfter ''
+  system.activationScripts.postActivation.text = lib.mkAfter ''
     echo "setting up ${dir}..." >&2
     mkdir -p \
       "${dir}/work/_example/repos" \
