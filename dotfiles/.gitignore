@@ -44,8 +44,16 @@ yarn-error.log*
 target/
 
 #
+# AI and AGENTS
+#
+.claude/settings.local.json
+
+#
 # MISC
 #
 .env
 /vendor/
 .direnv/
+
+
+**/.claude/settings.local.json

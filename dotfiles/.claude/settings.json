@@ -1,6 +1,5 @@
 {
   "includeCoAuthoredBy": false,
-  "editorMode": "vim",
   "permissions": {
     "allow": [
       "Bash(git status:*)",
@@ -18,9 +17,26 @@
       "Bash(pwd:*)"
     ]
   },
+  "model": "opus[1m]",
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash '/Users/osh/.claude/hooks/herdr-agent-state.sh' session",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  },
   "enabledPlugins": {
-    "datadog@claude-plugins-official": true,
+    "datadog@claude-plugins-official": false,
     "lua-lsp@claude-plugins-official": true,
     "typescript-lsp@claude-plugins-official": true
-  }
+  },
+  "editorMode": "vim",
+  "skipWorkflowUsageWarning": true
 }
