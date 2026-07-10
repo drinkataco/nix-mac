@@ -11,6 +11,7 @@ Applies to all my projects. Repo-specific `CLAUDE.md` files override this where 
 ## Git
 - Never commit or push unless I ask. When I do ask, don't add "Co-Authored-By" or advertising trailers.
 - If I'm on the default branch (`master`/`main`) and about to make non-trivial changes, branch first.
+- Name branches `<type>/<slug>` with a `fix/`, `feature/`, or `chore/` prefix, and include the Jira ticket key when there is one (e.g. `feature/PROJ-123-oauth-login`).
 - Keep commit messages factual and imperative; describe *why*, not just *what*.
 
 ## Verification
@@ -21,6 +22,9 @@ Applies to all my projects. Repo-specific `CLAUDE.md` files override this where 
 - Match the conventions of the surrounding code — naming, comment density, structure. Don't introduce a new style.
 - Prefer editing existing files over creating new ones. Don't add comments that just narrate the code.
 - Primary languages: TypeScript and Lua. Follow existing tooling (formatter/linter) rather than imposing preferences.
+
+## Skills
+- For the git workflow, prefer my skills over raw commands: `/start <ticket>` to begin work, then `/commit`, `/pr`, and `/address-comments` for review feedback. `/summarise` gives a read-only overview of what changed.
 
 ## Delegating to agents
 - `code-reviewer` — before I commit/PR a substantive change.

@@ -1,22 +1,5 @@
 {
   "includeCoAuthoredBy": false,
-  "permissions": {
-    "allow": [
-      "Bash(git status:*)",
-      "Bash(git log:*)",
-      "Bash(git diff:*)",
-      "Bash(git show:*)",
-      "Bash(ls:*)",
-      "Bash(find:*)",
-      "Bash(grep:*)",
-      "Bash(cat:*)",
-      "Bash(head:*)",
-      "Bash(tail:*)",
-      "Bash(diff:*)",
-      "Bash(wc:*)",
-      "Bash(pwd:*)"
-    ]
-  },
   "model": "opus[1m]",
   "hooks": {
     "SessionStart": [
@@ -33,5 +16,22 @@
     ]
   },
   "editorMode": "vim",
-  "skipWorkflowUsageWarning": true
+  "skipWorkflowUsageWarning": true,
+  "permissions": {
+    "allow": [
+      "Bash(git status:*)",
+      "Bash(git log:*)",
+      "Bash(git diff:*)",
+      "Bash(git show:*)",
+      "Bash(ls:*)",
+      "Bash(find:*)",
+      "Bash(grep:*)",
+      "Bash(cat:*)",
+      "Bash(head:*)",
+      "Bash(tail:*)",
+      "Bash(diff:*)",
+      "Bash(wc:*)",
+      "Bash(pwd:*)"
+    ]
+  }
 }
