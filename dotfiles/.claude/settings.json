@@ -32,11 +32,6 @@
       }
     ]
   },
-  "enabledPlugins": {
-    "datadog@claude-plugins-official": false,
-    "lua-lsp@claude-plugins-official": true,
-    "typescript-lsp@claude-plugins-official": true
-  },
   "editorMode": "vim",
   "skipWorkflowUsageWarning": true
 }
