@@ -23,6 +23,7 @@
       "Bash(git log:*)",
       "Bash(git diff:*)",
       "Bash(git show:*)",
+      "Bash(git shortlog:*)",
       "Bash(ls:*)",
       "Bash(find:*)",
       "Bash(grep:*)",
@@ -31,7 +32,9 @@
       "Bash(tail:*)",
       "Bash(diff:*)",
       "Bash(wc:*)",
-      "Bash(pwd:*)"
+      "Bash(pwd:*)",
+      "Bash(sort:*)",
+      "Bash(uniq:*)"
     ]
   }
 }

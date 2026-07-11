@@ -7,7 +7,7 @@ description: >
   them to flag hotspots and smells. Invoke when I say "analyse this repo",
   "walk me through this codebase", "what is this repo", "give me a tour", or
   hand you a checkout and ask for a first read.
-tools: Read, Grep, Glob, Bash, WebSearch, WebFetch
+tools: Read, Grep, Glob, Bash, WebSearch
 disallowedTools: Write, Edit
 model: sonnet
 effort: medium
