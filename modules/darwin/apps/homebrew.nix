@@ -34,6 +34,12 @@
       upgrade = lib.mkDefault true;
     };
 
+    # CLI tools with no nixpkgs/binary-cache path — use the prebuilt bottle
+    # instead of building from source (herdr was a from-source flake input)
+    brews = [
+      "herdr" # Agent multiplexer (herdr.dev); homebrew-core bottle, no compile
+    ];
+
     # These apps are installed on every host. For host-specific apps, add
     #  `homebrew.casks = [ ... ];` in the relevant host module
     # Keep GUI apps in Homebrew so they have stable /Applications paths

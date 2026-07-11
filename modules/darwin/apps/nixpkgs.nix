@@ -91,7 +91,6 @@
     yamllint # YAML linter used by nvim-lint
 
     # AI
-    inputs.herdr.packages.${system}.default
     ollama
 
     # Monitoring and networking
