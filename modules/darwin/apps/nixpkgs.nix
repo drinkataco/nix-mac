@@ -43,6 +43,7 @@
     dockerfile-language-server
     fnm
     gcc
+    gh
     gnupg
     go
     hadolint
