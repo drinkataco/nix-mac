@@ -23,11 +23,10 @@ Applies to all my projects. Repo-specific `CLAUDE.md` files override this where 
 - Prefer editing existing files over creating new ones. Don't add comments that just narrate the code.
 - Primary languages: TypeScript and Lua. Follow existing tooling (formatter/linter) rather than imposing preferences.
 
-## Skills
-- For the git workflow, prefer my skills over raw commands: `/start <ticket>` to begin work, then `/commit`, `/pr`, and `/address-comments` for review feedback. `/summarise` gives a read-only overview of what changed.
-
-## Delegating to agents
+## Delegating to agents & skills
+- When an agent's trigger phrase matches, use it — don't inline work an agent handles better. All my custom agents are loaded per session; check the list.
 - `code-reviewer` — before I commit/PR a substantive change.
 - `test-runner` — to run a suite without cluttering the main thread. Say "run"/"check" for report-only, or "fix"/"get to green" to let it edit and loop.
 - `debugger` — for non-obvious bugs needing methodical root-cause work.
-- Use the built-in `Explore`/`Plan` agents for broad search and planning rather than doing it all inline.
+- Built-in `Explore`/`Plan` for broad search and planning rather than doing it all inline.
+- Skills own the git workflow (`/start`, `/commit`, `/pr`, `/address-comments`, `/summarise`) — prefer them over raw git commands.
