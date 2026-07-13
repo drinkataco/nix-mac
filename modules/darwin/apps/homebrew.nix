@@ -60,10 +60,9 @@
       "google-chrome"
 
       # Productivity and communication
-      "chatgpt"
+      "chatgpt-classic"
       "claude"
       "claude-code"
-      "codex-app"
       "google-drive"
       "notion"
       "slack"

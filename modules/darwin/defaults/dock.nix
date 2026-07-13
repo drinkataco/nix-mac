@@ -29,9 +29,6 @@
         app = "/Applications/Claude.app";
       }
       {
-        app = "/Applications/Codex.app";
-      }
-      {
         app = "/Applications/ChatGPT.app";
       }
       {
