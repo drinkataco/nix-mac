@@ -11,7 +11,68 @@
             "complex_modifications": {
               "rules": [
                 {
-                  "description": "Use F6 as Amethyst mod1+t",
+                  "description": "F6+left/right throws window to Amethyst screen 1/2",
+                  "manipulators": [
+                    {
+                      "type": "basic",
+                      "from": {
+                        "key_code": "left_arrow",
+                        "modifiers": {
+                          "optional": [
+                            "any"
+                          ]
+                        }
+                      },
+                      "to": [
+                        {
+                          "key_code": "w",
+                          "modifiers": [
+                            "left_control",
+                            "left_option",
+                            "left_shift"
+                          ]
+                        }
+                      ],
+                      "conditions": [
+                        {
+                          "type": "variable_if",
+                          "name": "f6_layer",
+                          "value": 1
+                        }
+                      ]
+                    },
+                    {
+                      "type": "basic",
+                      "from": {
+                        "key_code": "right_arrow",
+                        "modifiers": {
+                          "optional": [
+                            "any"
+                          ]
+                        }
+                      },
+                      "to": [
+                        {
+                          "key_code": "e",
+                          "modifiers": [
+                            "left_control",
+                            "left_option",
+                            "left_shift"
+                          ]
+                        }
+                      ],
+                      "conditions": [
+                        {
+                          "type": "variable_if",
+                          "name": "f6_layer",
+                          "value": 1
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "description": "Use F6 as Amethyst mod1+t (hold for F6 layer)",
                   "manipulators": [
                     {
                       "type": "basic",
@@ -25,10 +86,25 @@
                       },
                       "to": [
                         {
+                          "set_variable": {
+                            "name": "f6_layer",
+                            "value": 1
+                          }
+                        }
+                      ],
+                      "to_after_key_up": [
+                        {
+                          "set_variable": {
+                            "name": "f6_layer",
+                            "value": 0
+                          }
+                        }
+                      ],
+                      "to_if_alone": [
+                        {
                           "key_code": "t",
                           "modifiers": [
-                            "left_option"
-                            ,
+                            "left_option",
                             "left_shift"
                           ],
                           "lazy": false
