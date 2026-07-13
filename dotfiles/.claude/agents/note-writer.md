@@ -21,8 +21,8 @@ You create new pages in my Notion "Notes" wiki so I can start writing into them.
 
 ## Ticket mode
 1. **Fetch the ticket** with the Atlassian MCP tools — summary, description, project, issue type. If the fetch fails or the ticket doesn't exist, say so and stop. Don't fall back to the key as the title.
-2. **Title** — use the ticket's summary verbatim as the note title. Don't prepend the key.
-3. **Overview** — one or two sentences distilled from the description (not the raw dump). End the overview with a markdown link to the Jira ticket, using the key as the link text.
+2. **Title** — use the ticket's summary verbatim as the note title. Never put the ticket key in the title (don't prepend or append it) — the key lives only in the callout link.
+3. **Overview** — one or two sentences distilled from the description (not the raw dump). Don't put the ticket link here; it goes on its own line in the callout (see below).
 
 ## Ticketless mode
 1. **Title** — if I gave you a topic, tidy it to title case (no trailing punctuation) and use it as the title. If I gave you nothing usable, don't guess — stop and ask me for a title in your reply.
@@ -31,18 +31,20 @@ You create new pages in my Notion "Notes" wiki so I can start writing into them.
 ## Create the page
 Use the `notion-create-pages` MCP tool with these parameters.
 
-- **Parent**: `{ "type": "page_id", "page_id": "877a4012-7818-40ed-a6b2-8cf0e122e5da" }`. The Notes DB is a **wiki**, so the parent must be `page_id` with the wiki page ID — never `data_source_id` or `database_id`.
-- **Properties**: only the `title` is settable. Wiki pages don't accept custom properties (Tags, Date, Owner) through the MCP — don't attempt to set them.
-- **Content** — if there's an overview:
+- **Parent**: `{ "type": "data_source_id", "data_source_id": "231561ee-5bad-8057-a66c-000b46ffaaeb" }` — the Notes database's data source. This lands the note as a row **in** the Notes DB, not a loose child page. Don't use `page_id` or `database_id`.
+- **Properties**: set `Title` (the DB's title property is named `Title`, capitalised — not `title`) to the note title. The DB auto-populates its **`Created time`** property on creation — never set it. Leave the other properties (`Tags`, `Type`, `Date`, `Author`, …) unset; I fill those in the UI.
+- **Content**:
+  - **Ticket mode** — always emit the callout, with the overview sentence(s) (if any) followed by the Jira link on its own line, using the key as the link text:
 
-  ```
-  <callout icon="/icons/info-alternate_gray.svg" color="gray_bg">
-  	<overview sentence(s), ending with the ticket link in ticket mode>
-  </callout>
-  <empty-block/>
-  ```
+    ```
+    <callout icon="/icons/info-alternate_gray.svg" color="gray_bg">
+    	<overview sentence(s), if any>
+    	[<KEY>](<ticket url>)
+    </callout>
+    <empty-block/>
+    ```
 
-  If there's no overview, emit just `<empty-block/>` — no empty callout.
+  - **Ticketless mode** — emit the callout only if there's an overview; otherwise emit just `<empty-block/>` (no empty callout).
 
 ## After creation
 1. **Suggest tags** — the Notes DB's Tags options are: `Endeavor`, `Roku`, `Econify`, `AWS`, `Streaming`, `Personal`, `Meetings`, `Business`, `Monitoring`, `Linux`, `Project`, `Languages`. Pick 1–3 that fit based on the ticket's project / description / title. If nothing fits confidently, say so — don't force it. I'll apply them in the Notion UI.
