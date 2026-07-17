@@ -29,7 +29,7 @@
         app = "/Applications/Claude.app";
       }
       {
-        app = "/Applications/ChatGPT.app";
+        app = "/Applications/ChatGPT Classic.app";
       }
       {
         app = "/Applications/Notion.app";
