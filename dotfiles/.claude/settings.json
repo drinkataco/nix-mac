@@ -1,25 +1,8 @@
 {
-  "includeCoAuthoredBy": false,
-  "model": "opus",
   "env": {
     "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": "1"
   },
-  "hooks": {
-    "SessionStart": [
-      {
-        "matcher": "*",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash '/Users/osh/.claude/hooks/herdr-agent-state.sh' session",
-            "timeout": 10
-          }
-        ]
-      }
-    ]
-  },
-  "editorMode": "vim",
-  "skipWorkflowUsageWarning": true,
+  "includeCoAuthoredBy": false,
   "permissions": {
     "allow": [
       "Bash(git status:*)",
@@ -41,5 +24,25 @@
       "mcp__chrome-devtools__*",
       "mcp__plugin_chrome-devtools-mcp__*"
     ]
+  },
+  "model": "opus",
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash '/Users/osh/.claude/hooks/herdr-agent-state.sh' session",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  },
+  "skipWorkflowUsageWarning": true,
+  "editorMode": "vim",
+  "enabledPlugins": {
+    "typescript-lsp@claude-plugins-official": true
   }
 }
