@@ -15,7 +15,6 @@ let
   globalNodePackages = [
     "lighthouse"
     "@openai/codex"
-    "@zed-industries/codex-acp"
   ];
 
   pnpm = "${pkgs.pnpm}/bin/pnpm";
