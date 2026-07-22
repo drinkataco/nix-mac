@@ -21,6 +21,8 @@ allowed-tools:
   - "Bash(git switch:*)"
   - "Bash(git branch:*)"
   - "Bash(git status:*)"
+  - "Bash(cat:*)"
+  - "Bash(cd:*)"
 ---
 
 Review a pull request end to end: resolve it, check it out in isolation, optionally run it, and give me categorised feedback. Don't change the PR's state.
