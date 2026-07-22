@@ -2,15 +2,17 @@ gui:
   mouseEvents: true
   nerdFontsVersion: "3"
 git:
+  branchLogCmd: "git log --graph --color=always --abbrev-commit --decorate --date=relative --pretty=medium {{branchName}} --"
   pagers:
     - colorArg: 'always'
       pager: 'delta --dark --paging=never'
-      # branchLogCmd: 'glol {{branchName}} --'
+os:
+  editPreset: 'nvim'
 keybinding:
   universal:
-    quit: '<C-c>'
-    quit-alt1: '<C-q>'
-    nextMatch: 'g'
-    prevMatch: 't'
-    redo: '<C-r>'
+    quit: 'q'
+    quit-alt1: '<ctrl-q>'
+    nextMatch: 'n'
+    prevMatch: 'N'
+    redo: '<ctrl-r>'
     undo: 'u'
