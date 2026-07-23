@@ -7,6 +7,7 @@ description: >
   "/review-pr owner/repo#123", "review PROJ-123", or "review this PR".
 argument-hint: "[PR number/URL | JIRA-KEY]"
 allowed-tools:
+  - "Bash(~/.claude/scripts/resolve-pr.sh:*)"
   - "Bash(gh pr view:*)"
   - "Bash(gh pr list:*)"
   - "Bash(gh pr diff:*)"
@@ -30,19 +31,13 @@ Review a pull request end to end: resolve it, check it out in isolation, optiona
 ## Steps
 
 ### 1. Resolve the target
-- **GitHub PR** — a bare number (`123`), `owner/repo#123`, or a PR URL → that PR. A bare number uses the current repo.
-- **Jira key** (`ABC-123`) — find the linked PR(s): try the Atlassian MCP development/linked-PR data first, then fall back to `gh search prs "ABC-123"` (matches title/branch). A ticket often spans **more than one repo** — surface *every* PR you find, grouped by repo, not just the first.
-  - If exactly one open PR → use it.
-  - If several (multiple repos or multiple PRs) → list them and let me pick with the **structured question tool (`AskUserQuestion`)**, one option per PR (repo + title + state). Note any repos that have a matching branch but no open PR yet.
-- If nothing resolves, say so and stop — don't guess.
+Run `~/.claude/scripts/resolve-pr.sh resolve <arg>` — it prints one JSON candidate per line (`{repo,number,title,headRefName,baseRefName,url,state}`) from a bare number, `owner/repo#123`, a PR URL, or a Jira key.
+- **For a Jira key**, try the Atlassian MCP development/linked-PR data *first* (richer, cross-repo); the script's `gh search prs` is the fallback. A ticket often spans **more than one repo** — surface *every* PR, grouped by repo.
+- **One candidate** → use it. **Several** → list them and let me pick with the **structured question tool (`AskUserQuestion`)**, one option per PR (repo + title + state). Note any repos with a matching branch but no open PR yet.
+- **Zero candidates** → say so and stop; don't guess.
 
 ### 2. Check it out in an isolated workspace
-Never disturb my current working tree. Create a **git worktree** for the PR and check the branch out there:
-```
-gh pr checkout <n> --repo <owner/repo> --branch pr-<n>      # creates local branch
-git worktree add ../<repo>-pr-<n> pr-<n>                    # isolated checkout
-```
-(or fetch `pull/<n>/head` into a branch and `git worktree add` from it). Tell me the worktree path. Everything below happens in that worktree.
+Never disturb my current working tree. Run `~/.claude/scripts/resolve-pr.sh worktree <arg>` for the chosen PR — it does the `gh pr checkout` + `git worktree add ../<repo>-pr-<n>` and re-emits the JSON with a `worktree` path. Tell me that path; everything below happens in that worktree. (The `worktree` command refuses an ambiguous ref, so pick in step 1 first.)
 
 ### 3. Ask whether to run it
 Use the **structured question tool (`AskUserQuestion`)**: *"Run the code to test it?"* — options **Yes** / **No**.

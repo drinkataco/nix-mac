@@ -10,6 +10,7 @@ description: >
 argument-hint: "[PR number/URL | JIRA-KEY]"
 effort: high
 allowed-tools:
+  - "Bash(~/.claude/scripts/resolve-pr.sh:*)"
   - "Bash(git status:*)"
   - "Bash(git diff:*)"
   - "Bash(git log:*)"
@@ -32,23 +33,15 @@ Work through the review feedback on a PR. Goal: every comment ends up resolved, 
 ## Steps
 
 ### 1. Resolve the target PR
-Same resolution rules as `/review-pr`:
-- **No argument** → the PR for the current branch (`gh pr view --json number,url,title,headRefName,headRepository,baseRefName`). If none, say so and stop.
-- **Bare number** (`72`), **URL**, or `owner/repo#N` → that PR.
-- **Jira key** (`ABC-123`) → find linked PR(s) via the Atlassian MCP dev data first, falling back to `gh search prs "ABC-123"`. A ticket often spans multiple repos.
-  - Exactly one open PR → use it.
-  - Several → list them and let me pick with **`AskUserQuestion`**, one option per PR (repo + title + state).
-- If nothing resolves, say so and stop — don't guess.
+Run `~/.claude/scripts/resolve-pr.sh resolve <arg>` — one JSON candidate per line (`{repo,number,title,headRefName,baseRefName,url,state}`) from no arg (current branch's PR), a bare number, `owner/repo#N`, a URL, or a Jira key.
+- **For a Jira key**, try the Atlassian MCP dev data *first* (cross-repo); the script's `gh search prs` is the fallback. A ticket often spans multiple repos.
+- **One candidate** → use it. **Several** → let me pick with **`AskUserQuestion`**, one option per PR (repo + title + state).
+- **Zero candidates** → say so and stop; don't guess.
 
 ### 2. Isolate if needed
-Compare the PR's `headRefName` + repo to my current branch and repo (`git branch --show-current`, `gh repo view --json nameWithOwner`).
+Compare the resolved `headRefName` + repo to my current branch and repo (`git branch --show-current`, `gh repo view --json nameWithOwner`).
 - **Same branch, same repo, clean tree** → work in place.
-- **Different branch, different repo, or dirty tree** → create a **git worktree** so my in-progress work stays intact:
-  ```
-  gh pr checkout <n> --repo <owner/repo> --branch pr-<n>
-  git worktree add ../<repo>-pr-<n> pr-<n>
-  ```
-  (or fetch `pull/<n>/head` into a branch and `git worktree add` from it). Tell me the worktree path. Everything below happens in that worktree.
+- **Different branch, different repo, or dirty tree** → run `~/.claude/scripts/resolve-pr.sh worktree <arg>` so my in-progress work stays intact. It does the `gh pr checkout` + `git worktree add ../<repo>-pr-<n>` and re-emits the JSON with a `worktree` path. Tell me that path; everything below happens in that worktree.
 
 ### 3. Collect every comment thread
 - `gh pr view --comments` for top-level review/issue comments.
