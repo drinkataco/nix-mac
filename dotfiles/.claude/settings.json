@@ -1,9 +1,4 @@
 {
-  "env": {
-    "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": "1",
-    "CLAUDE_CODE_DISABLE_UPDATE_NOTIFICATION": "1",
-    "CLAUDE_CODE_DISABLE_AUTO_UPDATE": "1"
-  },
   "includeCoAuthoredBy": false,
   "permissions": {
     "allow": [
@@ -22,9 +17,7 @@
       "Bash(wc:*)",
       "Bash(pwd:*)",
       "Bash(sort:*)",
-      "Bash(uniq:*)",
-      "mcp__chrome-devtools__*",
-      "mcp__plugin_chrome-devtools-mcp__*"
+      "Bash(uniq:*)"
     ]
   },
   "model": "opus",
@@ -42,9 +35,7 @@
       }
     ]
   },
-  "skipWorkflowUsageWarning": true,
   "editorMode": "vim",
-  "enabledPlugins": {
-    "typescript-lsp@claude-plugins-official": true
-  }
+  "skipWorkflowUsageWarning": true,
+  "effortLevel": "xhigh"
 }

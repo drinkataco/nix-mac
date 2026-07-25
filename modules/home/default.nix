@@ -15,6 +15,7 @@ in
     ./direnv.nix
     ./dotfiles.nix
     ./gpg.nix
+    ./herdr.nix
     ./node.nix
     ./ssh.nix
     ./syncthing.nix
