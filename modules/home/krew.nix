@@ -17,7 +17,12 @@ in
 
   home.activation.installKrewPlugins = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
     export KREW_ROOT="$HOME/.krew"
-    krew="${pkgs.krew}/bin/kubectl-krew"
+    krew="${pkgs.krew}/bin/krew"
+
+    # nixpkgs ships the binary as `krew`, so expose a `kubectl-krew` shim on
+    # PATH to make `kubectl krew` work, not just `krew` directly.
+    mkdir -p "$KREW_ROOT/bin"
+    ln -sf "$krew" "$KREW_ROOT/bin/kubectl-krew"
 
     [ -d "$KREW_ROOT/index" ] || "$krew" update
 

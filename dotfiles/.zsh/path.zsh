@@ -36,4 +36,7 @@ PATH="${BREW_PREFIX}/opt/findutils/libexec/gnubin:$PATH"
 # Rancher
 PATH="${HOME}/.rd/bin:$PATH"
 
+# Krew (kubectl plugins)
+PATH="${KREW_ROOT:-$HOME/.krew}/bin:$PATH"
+
 export PATH PNPM_HOME
