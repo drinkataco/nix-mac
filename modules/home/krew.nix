@@ -7,7 +7,10 @@
 let
   # krew has no native manifest, so this list is the declarative source of
   # truth; the activation below reconciles it into ~/.krew idempotently.
-  krewPlugins = [ "ctx" ];
+  krewPlugins = [
+    "ctx"
+    "ns"
+  ];
 in
 {
   home.sessionPath = [ "${config.home.homeDirectory}/.krew/bin" ];
