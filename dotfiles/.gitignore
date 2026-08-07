@@ -46,7 +46,8 @@ target/
 #
 # AI and AGENTS
 #
-.claude/settings.local.json
+**/.claude/settings.local.json
+CLAUDE.local.md
 
 #
 # MISC
@@ -54,6 +55,3 @@ target/
 .env
 /vendor/
 .direnv/
-
-
-**/.claude/settings.local.json

@@ -1,5 +1,19 @@
 {
   "includeCoAuthoredBy": false,
+  "deniedMcpServers": [
+    { "serverName": "claude.ai Vercel" },
+    { "serverName": "claude.ai Zoom for Claude" },
+    { "serverName": "claude.ai Slack" },
+    { "serverName": "claude.ai EULER" },
+    { "serverName": "claude.ai monday.com" },
+    { "serverName": "claude.ai Linear" },
+    { "serverName": "claude.ai Intercom" },
+    { "serverName": "claude.ai HubSpot" },
+    { "serverName": "claude.ai Figma" },
+    { "serverName": "claude.ai Canva" },
+    { "serverName": "claude.ai Box" },
+    { "serverName": "claude.ai Asana" }
+  ],
   "permissions": {
     "allow": [
       "Bash(git status:*)",
@@ -35,7 +49,8 @@
       }
     ]
   },
-  "editorMode": "vim",
+  "effortLevel": "xhigh",
   "skipWorkflowUsageWarning": true,
-  "effortLevel": "xhigh"
+  "editorMode": "vim",
+  "tui": "fullscreen"
 }
