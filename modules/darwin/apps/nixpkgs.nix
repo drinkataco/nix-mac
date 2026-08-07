@@ -53,6 +53,7 @@
     k9s
     kubernetes-helm
     kubectl
+    krew
     lazygit
     nmap
     opentofu

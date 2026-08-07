@@ -16,6 +16,7 @@ in
     ./dotfiles.nix
     ./gpg.nix
     ./herdr.nix
+    ./krew.nix
     ./node.nix
     ./ssh.nix
     ./syncthing.nix
