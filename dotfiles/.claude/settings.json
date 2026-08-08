@@ -1,19 +1,24 @@
 {
-  "includeCoAuthoredBy": false,
   "deniedMcpServers": [
-    { "serverName": "claude.ai Vercel" },
-    { "serverName": "claude.ai Zoom for Claude" },
-    { "serverName": "claude.ai Slack" },
-    { "serverName": "claude.ai EULER" },
-    { "serverName": "claude.ai monday.com" },
-    { "serverName": "claude.ai Linear" },
-    { "serverName": "claude.ai Intercom" },
-    { "serverName": "claude.ai HubSpot" },
-    { "serverName": "claude.ai Figma" },
-    { "serverName": "claude.ai Canva" },
-    { "serverName": "claude.ai Box" },
-    { "serverName": "claude.ai Asana" }
   ],
+  "editorMode": "vim",
+  "effortLevel": "xhigh",
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "command": "bash '/Users/osh/.claude/hooks/herdr-agent-state.sh' session",
+            "timeout": 10,
+            "type": "command"
+          }
+        ],
+        "matcher": "*"
+      }
+    ]
+  },
+  "includeCoAuthoredBy": false,
+  "model": "opus",
   "permissions": {
     "allow": [
       "Bash(git status:*)",
@@ -34,23 +39,7 @@
       "Bash(uniq:*)"
     ]
   },
-  "model": "opus",
-  "hooks": {
-    "SessionStart": [
-      {
-        "matcher": "*",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash '/Users/osh/.claude/hooks/herdr-agent-state.sh' session",
-            "timeout": 10
-          }
-        ]
-      }
-    ]
-  },
-  "effortLevel": "xhigh",
+  "skipAutoPermissionPrompt": true,
   "skipWorkflowUsageWarning": true,
-  "editorMode": "vim",
   "tui": "fullscreen"
 }

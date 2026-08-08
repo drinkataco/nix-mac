@@ -26,12 +26,6 @@
         app = "/Applications/Nix Apps/Alacritty.app";
       }
       {
-        app = "/Applications/Claude.app";
-      }
-      {
-        app = "/Applications/ChatGPT Classic.app";
-      }
-      {
         app = "/Applications/Notion.app";
       }
       {

@@ -60,7 +60,7 @@
       "google-chrome"
 
       # Productivity and communication
-      "chatgpt-classic"
+      "chatgpt"
       "claude"
       "claude-code"
       "google-drive"
