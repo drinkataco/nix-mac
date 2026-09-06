@@ -101,5 +101,8 @@
 
     # Media and data tools
     xan
+
+    # LaTeX
+    tectonic
   ];
 }
