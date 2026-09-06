@@ -47,7 +47,7 @@
   };
 
   # Override default projects directory name whilst format is ported over
-  projects.dirName = "projects-new";
+  projects.dirName = "projects";
 
   pnpm = {
     # Upgrade during activation
