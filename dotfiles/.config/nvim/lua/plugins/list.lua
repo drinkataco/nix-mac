@@ -229,6 +229,12 @@ return {
   },
   { "towolf/vim-helm" },
   {
+    "jmbuhr/otter.nvim",
+    dependencies = { "nvim-treesitter/nvim-treesitter" },
+    ft = { "yaml", "helm" },
+    config = config.otter,
+  },
+  {
     "MeanderingProgrammer/render-markdown.nvim",
     ft = { "markdown" },
     dependencies = {
