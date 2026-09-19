@@ -16,3 +16,7 @@ source "${HOME}/.zsh/completions.zsh"
 source "${HOME}/.zsh/cli.zsh"
 source "${HOME}/.zsh/alias.zsh"
 source "${HOME}/.zsh/update.sh"
+
+### MANAGED BY RANCHER DESKTOP START (DO NOT EDIT)
+export PATH="/Users/osh/.rd/bin:$PATH"
+### MANAGED BY RANCHER DESKTOP END (DO NOT EDIT)
