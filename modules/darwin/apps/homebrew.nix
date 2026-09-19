@@ -40,6 +40,7 @@
       "herdr" # Agent multiplexer (herdr.dev); homebrew-core bottle, no compile
       "unar" # Unarchiver CLI; bottle avoids a broken from-source nix build
       "mkvtoolnix" # Matroska CLI tools; bottle avoids a slow from-source build
+      "worktrunk" # Git worktree manager for parallel AI-agent workflows (worktrunk.dev)
     ];
 
     # These apps are installed on every host. For host-specific apps, add
