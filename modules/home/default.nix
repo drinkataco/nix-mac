@@ -22,6 +22,7 @@ in
     ./syncthing.nix
     ./tmux.nix
     ./uv.nix
+    ./claude-plugins.nix
   ]
   ++ lib.optionals features.gamesDir [
     ./games.nix

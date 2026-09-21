@@ -1,24 +1,5 @@
 {
-  "deniedMcpServers": [
-  ],
-  "editorMode": "vim",
-  "effortLevel": "xhigh",
-  "hooks": {
-    "SessionStart": [
-      {
-        "hooks": [
-          {
-            "command": "bash '/Users/osh/.claude/hooks/herdr-agent-state.sh' session",
-            "timeout": 10,
-            "type": "command"
-          }
-        ],
-        "matcher": "*"
-      }
-    ]
-  },
   "includeCoAuthoredBy": false,
-  "model": "opus",
   "permissions": {
     "allow": [
       "Bash(git status:*)",
@@ -39,7 +20,36 @@
       "Bash(uniq:*)"
     ]
   },
+  "model": "opus",
+  "deniedMcpServers": [],
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash '/Users/osh/.claude/hooks/herdr-agent-state.sh' session",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  },
+  "extraKnownMarketplaces": {
+    "worktrunk": {
+      "source": {
+        "source": "github",
+        "repo": "max-sixty/worktrunk"
+      }
+    }
+  },
+  "effortLevel": "xhigh",
+  "tui": "fullscreen",
+  "editorMode": "vim",
   "skipAutoPermissionPrompt": true,
   "skipWorkflowUsageWarning": true,
-  "tui": "fullscreen"
+  "enabledPlugins": {
+    "worktrunk@worktrunk": true
+  }
 }
