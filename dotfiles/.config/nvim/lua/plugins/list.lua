@@ -227,7 +227,6 @@ return {
     },
     opts = {},
   },
-  { "towolf/vim-helm" },
   {
     "jmbuhr/otter.nvim",
     dependencies = { "nvim-treesitter/nvim-treesitter" },
