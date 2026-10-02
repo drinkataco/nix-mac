@@ -28,6 +28,7 @@
 
     # Core Unix tools
     coreutils
+    curl
     findutils
     gawk
     gettext
