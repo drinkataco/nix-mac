@@ -90,6 +90,13 @@ return {
     config = config.lsp,
   },
   {
+    "qvalentin/helm-ls.nvim",
+    ft = "helm",
+    -- Ships the ftdetect that classifies templates/values files, an ftplugin
+    -- with the gotmpl commentstring, and `%` jumping between {{ if }}/{{ end }}.
+    opts = {},
+  },
+  {
     "hrsh7th/nvim-cmp",
     dependencies = {
       "L3MON4D3/LuaSnip",
