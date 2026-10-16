@@ -26,6 +26,9 @@
         app = "/Applications/Nix Apps/Alacritty.app";
       }
       {
+        app = "/Applications/Claude.app";
+      }
+      {
         app = "/Applications/Notion.app";
       }
       {
