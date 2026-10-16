@@ -48,6 +48,10 @@ return function()
   for _, aliases in pairs(fenced_language_aliases) do
     vim.list_extend(filetypes, aliases)
   end
+  -- helm-ls.nvim sets values*.yaml to the compound filetype "yaml.helm-values".
+  -- FileType autocmd patterns match that string literally, so "yaml" alone
+  -- never fires for it even though get_lang() resolves it to the yaml parser.
+  table.insert(filetypes, "yaml.helm-values")
 
   local treesitter = require("nvim-treesitter")
   -- Avoid kicking off duplicate installs when multiple buffers hit the same
@@ -79,6 +83,17 @@ return function()
 
   for parser, aliases in pairs(fenced_language_aliases) do
     vim.treesitter.language.register(parser, aliases)
+  end
+
+  -- helm's highlights.scm declares "inherits: gotmpl" for the {{ }} keywords,
+  -- punctuation, and operators, but no buffer ever has filetype "gotmpl" to
+  -- trigger the on-demand install below, so install it eagerly.
+  -- vim.treesitter.language.add returns nil (not an error) when the parser
+  -- is missing, so pcall alone can't detect failure here.
+  if not vim.treesitter.language.add("gotmpl") then
+    vim.schedule(function()
+      treesitter.install("gotmpl", { summary = true })
+    end)
   end
 
   vim.api.nvim_create_autocmd("FileType", {

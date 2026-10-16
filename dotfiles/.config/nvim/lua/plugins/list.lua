@@ -102,7 +102,12 @@ return {
     ft = "helm",
     -- Ships the ftdetect that classifies templates/values files, an ftplugin
     -- with the gotmpl commentstring, and `%` jumping between {{ if }}/{{ end }}.
-    opts = {},
+    opts = {
+      -- Replaces {{ }} expressions with their live hover value, hiding the
+      -- real template source except on the cursor's line. Prefer always
+      -- seeing the actual syntax now that treesitter highlights it properly.
+      conceal_templates = { enabled = false },
+    },
   },
   {
     "hrsh7th/nvim-cmp",
