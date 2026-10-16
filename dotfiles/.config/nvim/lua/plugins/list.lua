@@ -26,7 +26,7 @@ return {
     init = function()
       -- fzf 0.74 defaults to a tmux floating pane under tmux 3.7+, which picks
       -- up the tmux pane border; keep the picker inside Neovim instead.
-      vim.g.fzf_layout = { window = { width = 0.9, height = 0.6 } }
+      vim.g.fzf_layout = { window = { width = 0.9, height = 0.8 } }
     end,
   },
   { "junegunn/fzf.vim" },
