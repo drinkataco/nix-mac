@@ -20,7 +20,7 @@ Commit the current changes following my conventions. Do the work; don't ask for 
 
 ## Steps
 1. **Inspect** — `git status` and `git diff` (plus `git diff --staged`) to see what's actually changing. If nothing is staged or modified, say so and stop.
-2. **Branch-first** — if the current branch is `master` or `main` and this is a non-trivial change, create a branch before committing. Name it with the same convention as `/start`: a type prefix (`fix/`, `feature/`, `chore/`) + a short kebab-case slug — and include the Jira ticket key if one is obvious from the change (e.g. `feature/PROJ-123-oauth-login`, else `chore/tidy-commit-skill`). Skip for trivial edits (typo, one-liner) unless I ask.
+2. **Branch-first** — if the current branch is `master` or `main` and this is a non-trivial change, ask me whether to create a branch before committing rather than creating one automatically. If I say yes, name it with the same convention as `/start`: a type prefix (`fix/`, `feature/`, `chore/`) + a short kebab-case slug — and include the Jira ticket key if one is obvious from the change (e.g. `feature/PROJ-123-oauth-login`, else `chore/tidy-commit-skill`). Skip asking for trivial edits (typo, one-liner) unless I ask.
 3. **Stage** — stage the relevant files. Don't blindly `git add -A` if unrelated changes are present; stage what belongs to this commit and mention anything you left out.
 4. **Message** — write it factual and imperative, explaining *why* not just *what*. Subject line in imperative mood, ~50 chars; add a body when the reasoning isn't obvious from the subject. Match the style of recent `git log`.
 5. **Commit** — commit. Do **not** push unless I explicitly asked in this request.
