@@ -23,8 +23,8 @@
   # Lazy NFS mounts: rebuilds do not contact the server, and access fails
   # normally when the share is unavailable.
   networkShares.nfs.mounts = [
-    "fileserver:/srv"
-    "fileserver:/srv/downloads"
+    "fileserver:/srv/martin"
+    "fileserver:/srv/olsen"
   ];
 
   homebrew = {
