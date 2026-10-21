@@ -48,6 +48,7 @@
 
   # Host-specific Nix packages
   environment.systemPackages = [
+    pkgs.databricks-cli
     pkgs.openconnect
   ];
 
