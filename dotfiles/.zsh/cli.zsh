@@ -7,7 +7,7 @@
 export AWS_PAGER="$PAGER"
 
 # kubectl — merge multiple kubeconfig files
-export KUBECONFIG="$HOME/.kube/config:$HOME/.kube/pi-cluster"
+export KUBECONFIG="$HOME/.kube/config:$HOME/.kube/tmnt"
 
 # gpg
 export GPG_TTY=$(tty)
