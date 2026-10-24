@@ -32,7 +32,7 @@ Applies to all my projects. Repo-specific `CLAUDE.md` files override this where 
 
 ## Git
 - Never commit or push unless I ask. When I do ask, don't add "Co-Authored-By" or advertising trailers.
-- If I'm on the default branch (`master`/`main`) and about to make non-trivial changes, branch first.
+- If I'm on the default branch (`master`/`main`) and about to make non-trivial changes, ask whether I want a branch first rather than creating one automatically. Skip asking for trivial edits (typo, one-liner).
 - Name branches `<type>/<slug>` with a `fix/`, `feature/`, or `chore/` prefix, and include the Jira ticket key when there is one (e.g. `feature/PROJ-123-oauth-login`).
 - Keep commit messages factual and imperative; describe *why*, not just *what*.
 
